@@ -24,23 +24,30 @@ export const MQTT_CONFIG = {
 
 // Mapping des topics MQTT vers identifiants internes
 export const TOPIC_MAPPING = {
-    // System
-    'rpi/system/uptime': 'system.uptime',
-    'rpi/system/cpu/core1': 'system.cpu.core1',
-    'rpi/system/cpu/core2': 'system.cpu.core2',
-    'rpi/system/cpu/core3': 'system.cpu.core3',
-    'rpi/system/cpu/core4': 'system.cpu.core4',
-    'rpi/system/cpu/freq': 'system.cpu.frequency',
-    'rpi/system/temperature/cpu': 'system.temp.cpu',
-    'rpi/system/temperature/gpu': 'system.temp.gpu',
-    'rpi/system/memory/total': 'system.memory.total',
-    'rpi/system/memory/used': 'system.memory.used',
-    'rpi/system/memory/free': 'system.memory.free',
-    'rpi/system/memory/percent': 'system.memory.percent',
-    'rpi/system/disk/total': 'system.disk.total',
-    'rpi/system/disk/used': 'system.disk.used',
-    'rpi/system/disk/free': 'system.disk.free',
-    'rpi/system/disk/percent': 'system.disk.percent',
+
+	// System - Topics corrigés
+	'rpi/system/uptime': 'system.uptime',
+	'rpi/system/cpu/core1': 'system.cpu.core1',
+	'rpi/system/cpu/core2': 'system.cpu.core2',
+	'rpi/system/cpu/core3': 'system.cpu.core3',
+	'rpi/system/cpu/core4': 'system.cpu.core4',
+
+	// Fréquences
+	'rpi/system/frequency/cpu': 'system.cpu.frequency',  // Au lieu de 'rpi/system/cpu/freq'
+	'rpi/system/frequency/gpu': 'system.gpu.frequency',  // Nouveau
+
+	// Températures - CPU GPU
+	'rpi/system/temperature/cpu': 'system.temp.cpu',
+	'rpi/system/temperature/gpu': 'system.temp.gpu',
+
+	// Mémoire
+	'rpi/system/memory/ram': 'system.memory.ram',        // RAM en %
+	'rpi/system/memory/swap': 'system.memory.swap',      // Swap en %
+
+	// Disque
+	'rpi/system/disk/total': 'system.disk.total',
+	'rpi/system/disk/used': 'system.disk.used',
+	'rpi/system/disk/free': 'system.disk.free',
     
     // Network
     'rpi/network/wifi/clients': 'network.wifi.clients',

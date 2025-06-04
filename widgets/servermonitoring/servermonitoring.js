@@ -16,30 +16,74 @@ window.servermonitoring = (function() {
                 
                 // Récupérer tous les éléments de métriques
                 elements = {
-                    cpu: {
-                        core1: widgetElement.querySelector('[data-metric="cpu-core1"]'),
-                        core2: widgetElement.querySelector('[data-metric="cpu-core2"]'),
-                        core3: widgetElement.querySelector('[data-metric="cpu-core3"]'),
-                        core4: widgetElement.querySelector('[data-metric="cpu-core4"]'),
-                        freq: widgetElement.querySelector('[data-metric="cpu-freq"]')
+                    // CPU
+                    'cpu-core1': {
+                        row: widgetElement.querySelector('[data-metric="cpu-core1"]'),
+                        bar: null,
+                        value: null
                     },
-                    temp: {
-                        cpu: widgetElement.querySelector('[data-metric="temp-cpu"]'),
-                        gpu: widgetElement.querySelector('[data-metric="temp-gpu"]')
+                    'cpu-core2': {
+                        row: widgetElement.querySelector('[data-metric="cpu-core2"]'),
+                        bar: null,
+                        value: null
                     },
-                    memory: {
-                        used: widgetElement.querySelector('[data-metric="mem-used"]'),
-                        total: widgetElement.querySelector('[data-metric="mem-total"]'),
-                        percent: widgetElement.querySelector('[data-metric="mem-percent"]'),
-                        bar: widgetElement.querySelector('.memory-bar-fill')
+                    'cpu-core3': {
+                        row: widgetElement.querySelector('[data-metric="cpu-core3"]'),
+                        bar: null,
+                        value: null
                     },
-                    disk: {
-                        used: widgetElement.querySelector('[data-metric="disk-used"]'),
-                        total: widgetElement.querySelector('[data-metric="disk-total"]'),
-                        percent: widgetElement.querySelector('[data-metric="disk-percent"]'),
-                        bar: widgetElement.querySelector('.disk-bar-fill')
+                    'cpu-core4': {
+                        row: widgetElement.querySelector('[data-metric="cpu-core4"]'),
+                        bar: null,
+                        value: null
+                    },
+                    // Températures
+                    'temp-cpu': {
+                        row: widgetElement.querySelector('[data-metric="temp-cpu"]'),
+                        bar: null,
+                        value: null
+                    },
+                    'temp-gpu': {
+                        row: widgetElement.querySelector('[data-metric="temp-gpu"]'),
+                        bar: null,
+                        value: null
+                    },
+                    // Fréquences
+                    'freq-cpu': {
+                        row: widgetElement.querySelector('[data-metric="freq-cpu"]'),
+                        bar: null,
+                        value: null
+                    },
+                    'freq-gpu': {
+                        row: widgetElement.querySelector('[data-metric="freq-gpu"]'),
+                        bar: null,
+                        value: null
+                    },
+                    // Mémoire
+                    'memory-ram': {
+                        row: widgetElement.querySelector('[data-metric="memory-ram"]'),
+                        bar: null,
+                        value: null
+                    },
+                    'memory-swap': {
+                        row: widgetElement.querySelector('[data-metric="memory-swap"]'),
+                        bar: null,
+                        value: null
+                    },
+                    'memory-disk': {
+                        row: widgetElement.querySelector('[data-metric="memory-disk"]'),
+                        bar: null,
+                        value: null
                     }
                 };
+                
+                // Pour chaque métrique, récupérer la barre et la valeur
+                Object.keys(elements).forEach(key => {
+                    if (elements[key].row) {
+                        elements[key].bar = elements[key].row.querySelector('.progress-bar');
+                        elements[key].value = elements[key].row.querySelector('.progress-value');
+                    }
+                });
                 
                 // Enregistrer auprès de l'orchestrateur
                 if (window.orchestrator) {
@@ -56,87 +100,74 @@ window.servermonitoring = (function() {
     }
     
     function updateMetric(topic, data) {
+        console.log('Server monitoring update:', topic, data);
+        
         // CPU Cores
-        if (topic === 'system.cpu.core1' && elements.cpu.core1) {
-            elements.cpu.core1.textContent = data.formatted;
-            updateCpuColor(elements.cpu.core1, data.raw);
+        if (topic === 'system.cpu.core1') {
+            updateProgressBar('cpu-core1', data.raw, data.formatted);
         }
-        else if (topic === 'system.cpu.core2' && elements.cpu.core2) {
-            elements.cpu.core2.textContent = data.formatted;
-            updateCpuColor(elements.cpu.core2, data.raw);
+        else if (topic === 'system.cpu.core2') {
+            updateProgressBar('cpu-core2', data.raw, data.formatted);
         }
-        else if (topic === 'system.cpu.core3' && elements.cpu.core3) {
-            elements.cpu.core3.textContent = data.formatted;
-            updateCpuColor(elements.cpu.core3, data.raw);
+        else if (topic === 'system.cpu.core3') {
+            updateProgressBar('cpu-core3', data.raw, data.formatted);
         }
-        else if (topic === 'system.cpu.core4' && elements.cpu.core4) {
-            elements.cpu.core4.textContent = data.formatted;
-            updateCpuColor(elements.cpu.core4, data.raw);
+        else if (topic === 'system.cpu.core4') {
+            updateProgressBar('cpu-core4', data.raw, data.formatted);
         }
-        else if (topic === 'system.cpu.frequency' && elements.cpu.freq) {
-            elements.cpu.freq.textContent = data.formatted;
+        // CPU Frequency
+        else if (topic === 'system.cpu.frequency') {
+            // La fréquence est en MHz, max théorique du Pi 5 est 2400 MHz
+            const freqPercent = (data.raw / 2400) * 100;
+            updateProgressBar('freq-cpu', freqPercent, data.formatted);
         }
-        
         // Températures
-        else if (topic === 'system.temp.cpu' && elements.temp.cpu) {
-            elements.temp.cpu.textContent = data.formatted;
-            updateTempColor(elements.temp.cpu, data.raw);
+        else if (topic === 'system.temp.cpu') {
+            updateProgressBar('temp-cpu', (data.raw / 100) * 100, data.formatted); // 100°C max
         }
-        else if (topic === 'system.temp.gpu' && elements.temp.gpu) {
-            elements.temp.gpu.textContent = data.formatted;
-            updateTempColor(elements.temp.gpu, data.raw);
+        else if (topic === 'system.temp.gpu') {
+            updateProgressBar('temp-gpu', (data.raw / 100) * 100, data.formatted); // 100°C max
         }
-        
         // Mémoire
-        else if (topic === 'system.memory.used' && elements.memory.used) {
-            elements.memory.used.textContent = data.formatted;
+        else if (topic === 'system.memory.percent') {
+            updateProgressBar('memory-ram', data.raw, data.formatted);
         }
-        else if (topic === 'system.memory.total' && elements.memory.total) {
-            elements.memory.total.textContent = data.formatted;
+        // Swap (à implémenter côté collecteur)
+        else if (topic === 'system.memory.swap.percent') {
+            updateProgressBar('memory-swap', data.raw, data.formatted);
         }
-        else if (topic === 'system.memory.percent' && elements.memory.percent) {
-            elements.memory.percent.textContent = data.formatted;
-            if (elements.memory.bar) {
-                elements.memory.bar.style.width = data.raw + '%';
-                updateBarColor(elements.memory.bar, data.raw);
+        // Disque
+        else if (topic === 'system.disk.percent') {
+            updateProgressBar('memory-disk', data.raw, data.formatted);
+        }
+    }
+    
+    function updateProgressBar(metric, percentage, formattedValue) {
+        const element = elements[metric];
+        if (!element || !element.row) return;
+        
+        // Limiter le pourcentage entre 0 et 100
+        percentage = Math.max(0, Math.min(100, percentage));
+        
+        // Mettre à jour la barre de progression
+        if (element.bar) {
+            element.bar.style.width = percentage + '%';
+            
+            // Ajouter des classes de couleur selon la valeur
+            element.bar.classList.remove('low', 'medium', 'high');
+            if (percentage < 50) {
+                element.bar.classList.add('low');
+            } else if (percentage < 80) {
+                element.bar.classList.add('medium');
+            } else {
+                element.bar.classList.add('high');
             }
         }
         
-        // Disque
-        else if (topic === 'system.disk.used' && elements.disk.used) {
-            elements.disk.used.textContent = data.formatted;
+        // Mettre à jour la valeur affichée
+        if (element.value) {
+            element.value.textContent = formattedValue;
         }
-        else if (topic === 'system.disk.total' && elements.disk.total) {
-            elements.disk.total.textContent = data.formatted;
-        }
-        else if (topic === 'system.disk.percent' && elements.disk.percent) {
-            elements.disk.percent.textContent = data.formatted;
-            if (elements.disk.bar) {
-                elements.disk.bar.style.width = data.raw + '%';
-                updateBarColor(elements.disk.bar, data.raw);
-            }
-        }
-    }
-    
-    function updateCpuColor(element, value) {
-        element.classList.remove('low', 'medium', 'high');
-        if (value < 50) element.classList.add('low');
-        else if (value < 80) element.classList.add('medium');
-        else element.classList.add('high');
-    }
-    
-    function updateTempColor(element, value) {
-        element.classList.remove('low', 'medium', 'high');
-        if (value < 60) element.classList.add('low');
-        else if (value < 75) element.classList.add('medium');
-        else element.classList.add('high');
-    }
-    
-    function updateBarColor(element, value) {
-        element.classList.remove('low', 'medium', 'high');
-        if (value < 60) element.classList.add('low');
-        else if (value < 80) element.classList.add('medium');
-        else element.classList.add('high');
     }
     
     function destroy() {
