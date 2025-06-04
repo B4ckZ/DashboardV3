@@ -19,7 +19,7 @@
 </head>
 <body>
     <!-- Dashboard Container (structure identique à V1) -->
-    <div id="dashboard-container" class="dashboard-container">
+    <div id="dashboard-container" class="dashboard">
         <!-- Les widgets seront chargés ici dynamiquement -->
     </div>
     
@@ -37,11 +37,9 @@
             
             async loadWidget(widgetName) {
                 const container = document.createElement('div');
-                container.id = `${widgetName}-container`;
+                // IMPORTANT: L'ID doit correspondre exactement au nom du widget pour le CSS
+                container.id = widgetName;
                 container.className = 'widget-container';
-                
-                // IMPORTANT: Ajouter l'attribut data-widget pour le positionnement CSS
-                container.setAttribute('data-widget', widgetName);
                 
                 document.getElementById('dashboard-container').appendChild(container);
                 

@@ -53,23 +53,42 @@ class Orchestrator {
     
     handleMessage(topic, payload) {
         try {
-            const data = JSON.parse(payload);
+            let data;
+            
+            // Essayer de parser en JSON
+            try {
+                data = JSON.parse(payload);
+            } catch (jsonError) {
+                // Si ce n'est pas du JSON, traiter comme une valeur simple
+                // Vérifier si c'est un nombre
+                if (!isNaN(payload)) {
+                    data = { value: parseFloat(payload) };
+                } else {
+                    // Sinon c'est une string
+                    data = { value: payload };
+                }
+            }
+            
             const internalTopic = this.mapTopic(topic);
             
-            if (!internalTopic) return;
+            if (!internalTopic) {
+                console.warn(`Unknown topic: ${topic}`);
+                return;
+            }
             
             const formatted = this.formatData(internalTopic, data);
             this.distribute(internalTopic, formatted);
             
         } catch (error) {
-            console.error('Error handling message:', error);
+            console.error(`Error handling message for topic ${topic}:`, error);
+            console.error('Payload was:', payload);
         }
     }
     
     mapTopic(mqttTopic) {
         for (const [pattern, internal] of Object.entries(TOPIC_MAPPING)) {
             if (pattern.includes('+')) {
-                const regex = new RegExp(pattern.replace('+', '[^/]+'));
+                const regex = new RegExp(pattern.replace(/\+/g, '[^/]+'));
                 if (regex.test(mqttTopic)) return internal;
             } else if (pattern === mqttTopic) {
                 return internal;
@@ -81,8 +100,11 @@ class Orchestrator {
     formatData(topic, data) {
         const formatted = { ...data };
         
+        // Gérer les cas où data.value n'existe pas
+        const value = data.value !== undefined ? data.value : data;
+        
         if (topic.includes('uptime')) {
-            const seconds = parseInt(data.value || 0);
+            const seconds = parseInt(value) || 0;
             const d = Math.floor(seconds / 86400);
             const h = Math.floor((seconds % 86400) / 3600);
             const m = Math.floor((seconds % 3600) / 60);
@@ -91,20 +113,23 @@ class Orchestrator {
             formatted.raw = seconds;
         }
         else if (topic.includes('cpu') || topic.includes('percent')) {
-            formatted.formatted = `${parseFloat(data.value).toFixed(1)}%`;
-            formatted.raw = data.value;
+            const numValue = parseFloat(value) || 0;
+            formatted.formatted = `${numValue.toFixed(1)}%`;
+            formatted.raw = numValue;
         }
         else if (topic.includes('temperature')) {
-            formatted.formatted = `${parseFloat(data.value).toFixed(1)}°C`;
-            formatted.raw = data.value;
+            const numValue = parseFloat(value) || 0;
+            formatted.formatted = `${numValue.toFixed(1)}°C`;
+            formatted.raw = numValue;
         }
         else if (topic.includes('freq')) {
-            formatted.formatted = `${(parseFloat(data.value) / 1000).toFixed(2)} GHz`;
-            formatted.raw = data.value;
+            const numValue = parseFloat(value) || 0;
+            formatted.formatted = `${(numValue / 1000).toFixed(2)} GHz`;
+            formatted.raw = numValue;
         }
         else if (topic.includes('memory') || topic.includes('disk')) {
             if (!topic.includes('percent')) {
-                const bytes = parseInt(data.value);
+                const bytes = parseInt(value) || 0;
                 const units = ['B', 'KB', 'MB', 'GB', 'TB'];
                 let i = 0;
                 let val = bytes;
@@ -113,8 +138,31 @@ class Orchestrator {
                     i++;
                 }
                 formatted.formatted = `${val.toFixed(2)} ${units[i]}`;
+                formatted.raw = bytes;
+            } else {
+                const numValue = parseFloat(value) || 0;
+                formatted.formatted = `${numValue.toFixed(1)}%`;
+                formatted.raw = numValue;
             }
-            formatted.raw = data.value;
+        }
+        else if (topic === 'test.result') {
+            // Pour les résultats de test, garder la structure complète
+            formatted.timestamp = new Date(data.timestamp || Date.now()).toLocaleString('fr-FR');
+            formatted.raw = data;
+        }
+        else if (topic.includes('mqtt')) {
+            // Pour les stats MQTT, garder les valeurs telles quelles
+            formatted.raw = value;
+            if (typeof value === 'number') {
+                formatted.formatted = value.toString();
+            } else {
+                formatted.formatted = value;
+            }
+        }
+        else {
+            // Par défaut, garder la valeur telle quelle
+            formatted.raw = value;
+            formatted.formatted = value.toString();
         }
         
         return formatted;
@@ -139,6 +187,7 @@ class Orchestrator {
     }
     
     registerWidget(id, widget, subscribes = []) {
+        console.log(`Registering widget: ${id}`);
         this.widgets.set(id, widget);
         this.subscriptions.set(id, subscribes);
     }
@@ -149,7 +198,10 @@ class Orchestrator {
     }
     
     publish(topic, payload) {
-        if (!this.connected) return;
+        if (!this.connected) {
+            console.warn('Not connected, cannot publish');
+            return;
+        }
         
         const message = new Paho.Message(
             typeof payload === 'string' ? payload : JSON.stringify(payload)
