@@ -98,7 +98,7 @@ class Orchestrator {
     }
     
     formatData(topic, data) {
-        const formatted = { ...data };
+        let formatted = { ...data };
         
         // Gérer les cas où data.value n'existe pas
         const value = data.value !== undefined ? data.value : data;
@@ -112,7 +112,12 @@ class Orchestrator {
             formatted.formatted = `${d}j ${h}h ${m}m ${s}s`;
             formatted.raw = seconds;
         }
-        else if (topic.includes('cpu') || topic.includes('percent')) {
+        else if (topic.includes('cpu') && topic.includes('core')) {
+            const numValue = parseFloat(value) || 0;
+            formatted.formatted = `${numValue.toFixed(1)}%`;
+            formatted.raw = numValue;
+        }
+        else if (topic.includes('memory') || topic.includes('swap') || topic.includes('disk')) {
             const numValue = parseFloat(value) || 0;
             formatted.formatted = `${numValue.toFixed(1)}%`;
             formatted.raw = numValue;
@@ -122,33 +127,29 @@ class Orchestrator {
             formatted.formatted = `${numValue.toFixed(1)}°C`;
             formatted.raw = numValue;
         }
-        else if (topic.includes('freq')) {
+        else if (topic.includes('frequency')) {
             const numValue = parseFloat(value) || 0;
-            formatted.formatted = `${(numValue / 1000).toFixed(2)} GHz`;
-            formatted.raw = numValue;
-        }
-        else if (topic.includes('memory') || topic.includes('disk')) {
-            if (!topic.includes('percent')) {
-                const bytes = parseInt(value) || 0;
-                const units = ['B', 'KB', 'MB', 'GB', 'TB'];
-                let i = 0;
-                let val = bytes;
-                while (val >= 1024 && i < units.length - 1) {
-                    val /= 1024;
-                    i++;
-                }
-                formatted.formatted = `${val.toFixed(2)} ${units[i]}`;
-                formatted.raw = bytes;
+            
+            // Debug
+            console.log(`Frequency topic: ${topic}, raw value: ${numValue}`);
+            
+            // Si c'est pour le CPU, la valeur du collecteur est déjà en GHz
+            if (topic.includes('cpu')) {
+                formatted.formatted = `${numValue.toFixed(2)} GHz`;
+                formatted.raw = numValue;
             } else {
-                const numValue = parseFloat(value) || 0;
-                formatted.formatted = `${numValue.toFixed(1)}%`;
+                // GPU est en MHz
+                formatted.formatted = `${numValue.toFixed(0)} MHz`;
                 formatted.raw = numValue;
             }
         }
-        else if (topic === 'test.result') {
-            // Pour les résultats de test, garder la structure complète
-            formatted.timestamp = new Date(data.timestamp || Date.now()).toLocaleString('fr-FR');
-            formatted.raw = data;
+        else if (topic === 'network.wifi.clients' || topic === 'network.wifi.status') {
+            // Pour les données WiFi, retourner la structure complète
+            if (data.timestamp) {
+                formatted.timestamp = new Date(data.timestamp).toLocaleString('fr-FR');
+            }
+            // Pas besoin de réassigner, juste retourner formatted qui contient déjà toutes les données
+            return formatted;
         }
         else if (topic.includes('mqtt')) {
             // Pour les stats MQTT, garder les valeurs telles quelles

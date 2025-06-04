@@ -90,10 +90,10 @@ window.servermonitoring = (function() {
                     window.orchestrator.registerWidget('servermonitoring', {
                         update: updateMetric
                     }, [
-                        'system.cpu.*',
+                        'system.cpu.*',      // Inclut system.cpu.frequency
+                        'system.gpu.*',      // Inclut system.gpu.frequency
                         'system.temp.*',
-                        'system.memory.*',
-                        'system.disk.*'
+                        'system.memory.*'
                     ]);
                 }
             });
@@ -117,9 +117,21 @@ window.servermonitoring = (function() {
         }
         // CPU Frequency
         else if (topic === 'system.cpu.frequency') {
-            // La fréquence est en MHz, max théorique du Pi 5 est 2400 MHz
-            const freqPercent = (data.raw / 2400) * 100;
+            console.log('CPU Frequency update:', data);
+            // La fréquence du collecteur est déjà en GHz, pas besoin de diviser
+            // Pour le Pi 5, max est 2.4 GHz
+            const freqGHz = data.raw; // Déjà en GHz depuis le collecteur
+            const freqPercent = (freqGHz / 2.4) * 100;
             updateProgressBar('freq-cpu', freqPercent, data.formatted);
+        }
+        // GPU Frequency
+        else if (topic === 'system.gpu.frequency') {
+            console.log('GPU Frequency update:', data);
+            // La fréquence GPU est en MHz
+            const freqMHz = data.raw;
+            // Pour le Pi 5, max GPU est 910 MHz
+            const freqPercent = (freqMHz / 910) * 100;
+            updateProgressBar('freq-gpu', freqPercent, data.formatted);
         }
         // Températures
         else if (topic === 'system.temp.cpu') {
@@ -129,15 +141,13 @@ window.servermonitoring = (function() {
             updateProgressBar('temp-gpu', (data.raw / 100) * 100, data.formatted); // 100°C max
         }
         // Mémoire
-        else if (topic === 'system.memory.percent') {
+        else if (topic === 'system.memory.ram') {
             updateProgressBar('memory-ram', data.raw, data.formatted);
         }
-        // Swap (à implémenter côté collecteur)
-        else if (topic === 'system.memory.swap.percent') {
+        else if (topic === 'system.memory.swap') {
             updateProgressBar('memory-swap', data.raw, data.formatted);
         }
-        // Disque
-        else if (topic === 'system.disk.percent') {
+        else if (topic === 'system.memory.disk') {
             updateProgressBar('memory-disk', data.raw, data.formatted);
         }
     }

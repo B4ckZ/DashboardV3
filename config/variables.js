@@ -33,8 +33,8 @@ export const TOPIC_MAPPING = {
 	'rpi/system/cpu/core4': 'system.cpu.core4',
 
 	// Fréquences
-	'rpi/system/frequency/cpu': 'system.cpu.frequency',  // Au lieu de 'rpi/system/cpu/freq'
-	'rpi/system/frequency/gpu': 'system.gpu.frequency',  // Nouveau
+	'rpi/system/frequency/cpu': 'system.cpu.frequency',
+	'rpi/system/frequency/gpu': 'system.gpu.frequency',
 
 	// Températures - CPU GPU
 	'rpi/system/temperature/cpu': 'system.temp.cpu',
@@ -43,8 +43,9 @@ export const TOPIC_MAPPING = {
 	// Mémoire
 	'rpi/system/memory/ram': 'system.memory.ram',        // RAM en %
 	'rpi/system/memory/swap': 'system.memory.swap',      // Swap en %
+	'rpi/system/memory/disk': 'system.memory.disk',      // Disque en %
 
-	// Disque
+	// Disque (détails - non utilisés actuellement)
 	'rpi/system/disk/total': 'system.disk.total',
 	'rpi/system/disk/used': 'system.disk.used',
 	'rpi/system/disk/free': 'system.disk.free',

@@ -1,14 +1,18 @@
 {
   "b6:19:49:e8:b1:a3": {
     "name": "PC Max",
-    "icon": "monitor.svg"
+    "icon": "assets/icons/monitor.svg"
+  },
+   "A8:41:F4:86:96:EC": {
+    "name": "PC Soufflage",
+    "icon": "assets/icons/monitor.svg"
   },
   "96:d3:89:ef:7b:6a": {
-    "name": "Phone max",
-    "icon": "smartphone.svg"
+    "name": "SmartPhone de Max",
+    "icon": "assets/icons/smartphone.svg"
   },
   "11:22:33:44:55:66": {
     "name": "iPhone Marie",
-    "icon": "wifi.svg"
+    "icon": "assets/icons/wifi.svg"
   }
 }
