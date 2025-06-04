@@ -1,0 +1,14 @@
+{
+  "b6:19:49:e8:b1:a3": {
+    "name": "PC Max",
+    "icon": "monitor.svg"
+  },
+  "96:d3:89:ef:7b:6a": {
+    "name": "Phone max",
+    "icon": "smartphone.svg"
+  },
+  "11:22:33:44:55:66": {
+    "name": "iPhone Marie",
+    "icon": "wifi.svg"
+  }
+}

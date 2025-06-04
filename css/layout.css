@@ -1,0 +1,68 @@
+/* Dashboard principal */
+.dashboard {
+    width: 100%;
+    height: 100vh;
+    overflow: hidden;
+    position: relative;
+    background-color: var(--nord0);
+}
+
+/* Mode positionnement absolu pour le dashboard */
+.dashboard.absolute-positioning {
+    display: block;
+    position: relative;
+    padding: 0;
+    margin: 0;
+}
+
+/* Conteneur de widget de base */
+.widget-container {
+    padding: var(--widget-padding);
+    display: flex;
+    flex-direction: column;
+    overflow: hidden;
+    position: relative;
+}
+
+/* Extension pour le positionnement absolu */
+.widget-container.absolute-positioned {
+    position: absolute;
+    margin: 0;
+    transform: translate(-50%, -50%);
+    max-width: none;
+    min-width: 0;
+    flex: none;
+    box-sizing: border-box;
+}
+
+/* Styles de base pour les titres de widgets */
+.widget-title {
+    display: flex;
+    align-items: center;
+    margin-bottom: 16px;
+    font-size: 18px;
+    font-weight: 600;
+    color: var(--nord9);
+}
+
+.widget-icon {
+    width: 24px;
+    height: 24px;
+    margin-right: 12px;
+}
+
+/* Styles pour les colonnes avec séparateurs */
+.columns-with-separators {
+    position: relative;
+}
+
+.separator {
+    width: 1px;
+    align-self: stretch;
+    background: linear-gradient(to bottom, 
+        transparent, 
+        var(--nord9), 
+        transparent);
+    margin: 0 var(--widget-gap);
+    flex: 0 0 1px;
+}

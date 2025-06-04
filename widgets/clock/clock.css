@@ -1,0 +1,41 @@
+/**
+ * Styles pour le widget Horloge - Avec séparation des préoccupations
+ * Cette version sépare clairement les styles standards des styles de stabilisation
+ */
+
+.clock-container {
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    justify-content: center;
+    height: calc(100% - 40px);
+    padding: 10px;
+    background-color: var(--nord0);
+    border-radius: calc(var(--border-radius) - 4px);
+    box-shadow: 
+        inset 2px 2px 4px var(--shadow-color),
+        inset -2px -2px 4px var(--highlight-color);
+}
+
+/* Styles de base pour l'heure - MODIFIEZ LA TAILLE ICI */
+.clock-time {
+    font-size: 18px;  /* Taille modifiable pour l'heure */
+    font-weight: 600;
+    color: var(--nord8);
+    letter-spacing: 2px;
+}
+
+/* Styles pour la stabilité - ne pas modifier ceux-ci */
+.clock-time-stable {
+    font-family: 'Roboto Mono', monospace;
+    width: 160px;
+    text-align: center;
+    white-space: nowrap;
+}
+
+/* Styles pour la date - MODIFIEZ LA TAILLE ICI */
+.clock-date {
+    font-size: 14px;  /* Taille modifiable pour la date */
+    color: var(--nord4);
+    letter-spacing: 1px;
+}

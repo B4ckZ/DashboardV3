@@ -1,0 +1,99 @@
+/* Barres de progression */
+.progress-row {
+    display: flex;
+    align-items: center;
+    margin-bottom: 10px;
+}
+
+.progress-label {
+    width: 80px;
+    font-size: 14px;
+    color: var(--nord5);
+    font-weight: 500;
+}
+
+.progress-label-wide {
+    width: 100px;
+    font-size: 14px;
+    color: var(--nord5);
+    font-weight: 500;
+}
+
+.progress-label-short {
+    width: 60px;
+    font-size: 14px;
+    color: var(--nord5);
+    font-weight: 500;
+}
+
+.progress-container {
+    flex: 1;
+    height: 8px;
+    border-radius: 4px;
+    margin-right: 16px;
+    max-width: 200px;
+    background-color: var(--nord0);
+    overflow: hidden;
+    box-shadow: 
+        inset 2px 2px 4px var(--shadow-color),
+        inset -2px -2px 4px var(--highlight-color);
+}
+
+.progress-bar {
+    height: 100%;
+    border-radius: 4px;
+    transition: width 0.4s ease;
+}
+
+/* CPU Cores - style unifié pour tous les cœurs */
+[data-metric^="cpu-core"] .progress-bar {
+    background: linear-gradient(to right, var(--nord14), var(--nord10));
+}
+
+/* Température - Dégradé vert à rouge pour visualiser facilement les températures critiques */
+[data-metric^="temp-"] .progress-bar {
+    background: linear-gradient(to right, var(--nord14), var(--nord13), var(--nord12), var(--nord11));
+}
+
+/* Fréquence - Dégradé de bleus pour les fréquences */
+[data-metric^="freq-"] .progress-bar {
+    background: linear-gradient(to right, var(--nord10), var(--nord9), var(--nord8));
+}
+
+/* Mémoire - Dégradé de violet à bleu-vert */
+[data-metric^="memory-"] .progress-bar {
+    background: linear-gradient(to right, var(--nord15), var(--nord10), var(--nord7));
+}
+
+.progress-value {
+    width: 100px;
+    text-align: right;
+    font-size: 14px;
+    font-weight: 500;
+    color: var(--nord5);
+    white-space: nowrap;
+}
+
+/* Colonnes */
+.columns {
+    display: flex;
+    gap: var(--widget-gap);
+    margin-top: 8px;
+}
+
+.column {
+    flex: 1;
+    min-width: 0;
+}
+
+/* Styles pour les séparateurs verticaux */
+.separator {
+    width: 1px;
+    align-self: stretch;
+    background: linear-gradient(to bottom, 
+        transparent, 
+        var(--nord9), 
+        transparent);
+    margin: 0 var(--widget-gap);
+    flex: 0 0 2px;
+}

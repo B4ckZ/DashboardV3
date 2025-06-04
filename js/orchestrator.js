@@ -1,0 +1,163 @@
+// js/orchestrator.js - Orchestrateur Central MaxLink V3
+// =====================================================
+
+import { MQTT_CONFIG, TOPIC_MAPPING, DATA_FORMATS } from '../config/variables.js';
+
+class Orchestrator {
+    constructor() {
+        this.client = null;
+        this.connected = false;
+        this.widgets = new Map();
+        this.subscriptions = new Map();
+    }
+    
+    init() {
+        console.log('Orchestrator V3 starting...');
+        this.connect();
+    }
+    
+    connect() {
+        this.client = new Paho.Client(
+            MQTT_CONFIG.host,
+            MQTT_CONFIG.port,
+            MQTT_CONFIG.path,
+            MQTT_CONFIG.clientId
+        );
+        
+        this.client.onConnectionLost = (response) => {
+            console.log('Connection lost:', response.errorMessage);
+            this.connected = false;
+            setTimeout(() => this.connect(), 5000);
+        };
+        
+        this.client.onMessageArrived = (message) => {
+            this.handleMessage(message.destinationName, message.payloadString);
+        };
+        
+        this.client.connect({
+            onSuccess: () => {
+                console.log('Connected to MQTT');
+                this.connected = true;
+                this.subscribeAll();
+            },
+            userName: MQTT_CONFIG.username,
+            password: MQTT_CONFIG.password
+        });
+    }
+    
+    subscribeAll() {
+        Object.keys(TOPIC_MAPPING).forEach(topic => {
+            this.client.subscribe(topic);
+        });
+    }
+    
+    handleMessage(topic, payload) {
+        try {
+            const data = JSON.parse(payload);
+            const internalTopic = this.mapTopic(topic);
+            
+            if (!internalTopic) return;
+            
+            const formatted = this.formatData(internalTopic, data);
+            this.distribute(internalTopic, formatted);
+            
+        } catch (error) {
+            console.error('Error handling message:', error);
+        }
+    }
+    
+    mapTopic(mqttTopic) {
+        for (const [pattern, internal] of Object.entries(TOPIC_MAPPING)) {
+            if (pattern.includes('+')) {
+                const regex = new RegExp(pattern.replace('+', '[^/]+'));
+                if (regex.test(mqttTopic)) return internal;
+            } else if (pattern === mqttTopic) {
+                return internal;
+            }
+        }
+        return null;
+    }
+    
+    formatData(topic, data) {
+        const formatted = { ...data };
+        
+        if (topic.includes('uptime')) {
+            const seconds = parseInt(data.value || 0);
+            const d = Math.floor(seconds / 86400);
+            const h = Math.floor((seconds % 86400) / 3600);
+            const m = Math.floor((seconds % 3600) / 60);
+            const s = seconds % 60;
+            formatted.formatted = `${d}j ${h}h ${m}m ${s}s`;
+            formatted.raw = seconds;
+        }
+        else if (topic.includes('cpu') || topic.includes('percent')) {
+            formatted.formatted = `${parseFloat(data.value).toFixed(1)}%`;
+            formatted.raw = data.value;
+        }
+        else if (topic.includes('temperature')) {
+            formatted.formatted = `${parseFloat(data.value).toFixed(1)}°C`;
+            formatted.raw = data.value;
+        }
+        else if (topic.includes('freq')) {
+            formatted.formatted = `${(parseFloat(data.value) / 1000).toFixed(2)} GHz`;
+            formatted.raw = data.value;
+        }
+        else if (topic.includes('memory') || topic.includes('disk')) {
+            if (!topic.includes('percent')) {
+                const bytes = parseInt(data.value);
+                const units = ['B', 'KB', 'MB', 'GB', 'TB'];
+                let i = 0;
+                let val = bytes;
+                while (val >= 1024 && i < units.length - 1) {
+                    val /= 1024;
+                    i++;
+                }
+                formatted.formatted = `${val.toFixed(2)} ${units[i]}`;
+            }
+            formatted.raw = data.value;
+        }
+        
+        return formatted;
+    }
+    
+    distribute(topic, data) {
+        this.subscriptions.forEach((subs, widgetId) => {
+            const widget = this.widgets.get(widgetId);
+            if (!widget) return;
+            
+            const matches = subs.some(sub => {
+                if (sub.includes('*')) {
+                    return topic.startsWith(sub.replace('*', ''));
+                }
+                return sub === topic;
+            });
+            
+            if (matches && widget.update) {
+                widget.update(topic, data);
+            }
+        });
+    }
+    
+    registerWidget(id, widget, subscribes = []) {
+        this.widgets.set(id, widget);
+        this.subscriptions.set(id, subscribes);
+    }
+    
+    unregisterWidget(id) {
+        this.widgets.delete(id);
+        this.subscriptions.delete(id);
+    }
+    
+    publish(topic, payload) {
+        if (!this.connected) return;
+        
+        const message = new Paho.Message(
+            typeof payload === 'string' ? payload : JSON.stringify(payload)
+        );
+        message.destinationName = topic;
+        this.client.send(message);
+    }
+}
+
+const orchestrator = new Orchestrator();
+export default orchestrator;

@@ -1,0 +1,164 @@
+/**
+ * Styles pour le widget wifi-stats
+ */
+
+/* Network Status (inchangé) */
+.network-status {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    padding: 12px;
+    margin-bottom: 12px;
+    border-radius: calc(var(--border-radius) - 4px);
+    background-color: var(--nord0);
+    box-shadow: 
+        inset 2px 2px 4px var(--shadow-color),
+        inset -2px -2px 4px var(--highlight-color);
+}
+
+.network-info-container {
+    flex: 1;
+}
+
+.network-info {
+    display: flex;
+    margin-bottom: 6px;
+    font-size: 14px;
+    color: var(--nord5);
+}
+
+.network-value {
+    margin-left: 16px;
+    color: var(--nord6);
+    font-weight: 500;
+}
+
+/* Status indicators */
+.status-indicator {
+    width: 12px;
+    height: 12px;
+    border-radius: 50%;
+    flex-shrink: 0;
+}
+
+.status-ok {
+    background-color: var(--nord14);
+    box-shadow: 0 0 8px var(--nord14);
+}
+
+.status-error {
+    background-color: var(--nord11);
+    box-shadow: 0 0 8px var(--nord11);
+}
+
+/* Conteneur des clients WiFi */
+.clients-container {
+    flex: 1;
+    overflow-y: auto;
+}
+
+/* Style simplifié pour les clients WiFi */
+.wifi-client {
+    display: flex;
+    align-items: center;
+    padding: 16px 18px;
+    margin-bottom: 8px;
+    border-radius: calc(var(--border-radius) - 4px);
+    background-color: var(--nord2);
+    font-size: 15px;
+    transition: transform 0.2s ease, box-shadow 0.2s ease;
+}
+
+.wifi-client:hover {
+    transform: translateY(-2px);
+    box-shadow: 
+        4px 4px 8px var(--shadow-color),
+        -4px -4px 8px var(--highlight-color);
+}
+
+/* Icône du device */
+.client-icon {
+    font-size: 28px;
+    margin-right: 16px;
+    flex-shrink: 0;
+}
+
+/* Informations du client */
+.client-info {
+    flex: 1;
+    min-width: 0;
+}
+
+/* Nom du device */
+.client-name {
+    font-weight: 600;
+    color: var(--nord8);
+    margin-bottom: 4px;
+    font-size: 16px;
+    overflow: hidden;
+    text-overflow: ellipsis;
+    white-space: nowrap;
+}
+
+/* Détails (MAC et uptime) */
+.client-details {
+    display: flex;
+    align-items: center;
+    font-size: 13px;
+    color: var(--nord4);
+    font-family: 'Roboto Mono', monospace;
+}
+
+.client-mac {
+    text-transform: lowercase;
+}
+
+.client-separator {
+    margin: 0 8px;
+    color: var(--nord3);
+}
+
+.client-uptime {
+    color: var(--nord5);
+    font-weight: 500;
+}
+
+/* Placeholder quand aucun client */
+.wifi-placeholder {
+    text-align: center;
+    color: var(--nord4);
+    font-style: italic;
+    padding: 40px 20px;
+}
+
+/* Animations pour l'ajout/suppression */
+@keyframes fadeIn {
+    from {
+        opacity: 0;
+        transform: translateY(10px);
+    }
+    to {
+        opacity: 1;
+        transform: translateY(0);
+    }
+}
+
+/* Responsive */
+@media (max-width: 768px) {
+    .wifi-client {
+        padding: 8px 10px;
+    }
+    
+    .client-icon {
+        font-size: 18px;
+        margin-right: 10px;
+    }
+    
+    .client-name {
+        font-size: 13px;
+    }
+    
+    .client-details {
+        font-size: 11px;
+    }
+}
