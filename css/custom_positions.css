@@ -42,7 +42,7 @@
     left: calc(var(--base-d) + 40px) !important;
     width: 425px !important;
     height: 135px !important;
-    z-index: 0 !important;
+    z-index: 5 !important; /* Z-INDEX CONTRÔLÉ */
 }
 
 #clock {
@@ -50,7 +50,7 @@
     left: calc(var(--base-d) + 485px) !important;
     width: 425px !important;
     height: 135px !important;
-    z-index: 0 !important;
+    z-index: 5 !important; /* Z-INDEX CONTRÔLÉ */
 }
 
 #uptime {
@@ -58,7 +58,7 @@
     left: calc(var(--base-d) + 125px) !important;
     width: 340px !important;
     height: 65px !important;
-    z-index: 0 !important;
+    z-index: 5 !important; /* Z-INDEX CONTRÔLÉ */
 }
 
 #rebootbutton {
@@ -66,7 +66,7 @@
     left: calc(var(--base-d) + 40px) !important;
     width: 65px !important;
     height: 65px !important;
-    z-index: 0 !important;
+    z-index: 10 !important; /* Z-INDEX CONTRÔLÉ */
 }
 
 #downloadbutton {
@@ -74,7 +74,7 @@
     left: calc(var(--base-d) + 485px) !important;
     width: 65px !important;
     height: 65px !important;
-    z-index: 0 !important;
+    z-index: 5 !important; /* Z-INDEX CONTRÔLÉ */
 }
 
 #servermonitoring {
@@ -82,7 +82,7 @@
     left: calc(var(--base-d) + 40px) !important;
     width: 1315px !important;
     height: 210px !important;
-    z-index: 0 !important;
+    z-index: 5 !important; /* Z-INDEX CONTRÔLÉ */
 }
 
 #wifistats {
@@ -90,7 +90,7 @@
     left: calc(var(--base-d) + 40px) !important;
     width: 425px !important;
     height: 400px !important;
-    z-index: 0 !important;
+    z-index: 5 !important; /* Z-INDEX CONTRÔLÉ */
 }
 
 #mqttstats {
@@ -98,7 +98,7 @@
     left: calc(var(--base-d) + 485px) !important;
     width: 425px !important;
     height: 400px !important;
-    z-index: 0 !important;
+    z-index: 5 !important; /* Z-INDEX CONTRÔLÉ */
 }
 
 #mqttlogs999 {
@@ -106,7 +106,7 @@
     left: calc(var(--base-d) + 930px) !important;
     width: 425px !important;
     height: 400px !important;
-    z-index: 0 !important;
+    z-index: 5 !important; /* Z-INDEX CONTRÔLÉ */
 }
 
 #mqttlogs509511 {
@@ -114,5 +114,5 @@
     left: calc(var(--base-d) + 1375px) !important;
     width: 500px !important;
     height: 870px !important;
-    z-index: 0 !important;
+    z-index: 5 !important; /* Z-INDEX CONTRÔLÉ */
 }
