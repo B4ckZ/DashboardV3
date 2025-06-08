@@ -128,7 +128,7 @@ window.rebootbutton = (function() {
     
     function validateInput() {
         const inputValue = elements.input.value.toLowerCase().trim();
-        const isValid = inputValue === 'oui';
+        const isValid = inputValue === 'redémarrer';
         
         elements.confirmBtn.disabled = !isValid;
         
@@ -184,7 +184,7 @@ window.rebootbutton = (function() {
                 command: 'reboot',
                 timestamp: new Date().toISOString(),
                 confirmed: true,
-                user_confirmation: 'oui'
+                user_confirmation: 'redémarrer'
             });
             
             console.log('Commande de redémarrage envoyée via MQTT');
