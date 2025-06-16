@@ -3,16 +3,20 @@
     "name": "PC Max",
     "icon": "assets/icons/monitor.svg"
   },
-   "A8:41:F4:86:96:EC": {
-    "name": "PC Soufflage",
+   "9c:b1:50:7b:45:3a": {
+    "name": "PC Max",
     "icon": "assets/icons/monitor.svg"
   },
   "96:d3:89:ef:7b:6a": {
     "name": "SmartPhone de Max",
     "icon": "assets/icons/smartphone.svg"
   },
-  "11:22:33:44:55:66": {
-    "name": "iPhone Marie",
-    "icon": "assets/icons/wifi.svg"
+   "A8:41:F4:86:96:EC": {
+    "name": "PC Soufflage",
+    "icon": "assets/icons/monitor.svg"
+  },
+  "74:4d:bd:a1:43:40": {
+    "name": "ESP32 - 511",
+    "icon": "assets/icons/cpu.svg"
   }
 }
