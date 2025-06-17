@@ -1,27 +1,23 @@
 {
   "b6:19:49:e8:b1:a3": {
     "name": "PC Admin Max",
-    "icon": "assets/icons/monitor.svg"
+    "icon": "assets/icons/user-check.svg"
   },
    "9c:b1:50:7b:45:3a": {
     "name": "PC Admin Max",
-    "icon": "assets/icons/monitor.svg"
+    "icon": "assets/icons/user-check.svg"
   },
    "a8:41:f4:86:96:ec": {
     "name": "PC RE Soufflage",
     "icon": "assets/icons/monitor.svg"
   },
-   "d4:e9:8a:b5:d1:8c": {
-    "name": "PC Stéphane Kastner",
-    "icon": "assets/icons/monitor.svg"
-  },
    "": {
     "name": "Smartphone Max",
-    "icon": "assets/icons/smartphone.svg"
+    "icon": "assets/icons/phone.svg"
   },
    "": {
     "name": "Smartphone Franck",
-    "icon": "assets/icons/smartphone.svg"
+    "icon": "assets/icons/phone.svg"
   },
    "": {
     "name": "ESP32 509",
