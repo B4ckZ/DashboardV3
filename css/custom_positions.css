@@ -38,7 +38,7 @@
 
 /* Configuration des widgets par ID avec ancrage bas-gauche */
 #logo {
-    bottom: calc(var(--base-h) + 775px) !important;
+    bottom: calc(var(--base-h) + 760px) !important;
     left: calc(var(--base-d) + 40px) !important;
     width: 425px !important;
     height: 135px !important;
@@ -46,7 +46,7 @@
 }
 
 #clock {
-    bottom: calc(var(--base-h) + 775px) !important;
+    bottom: calc(var(--base-h) + 760px) !important;
     left: calc(var(--base-d) + 485px) !important;
     width: 425px !important;
     height: 135px !important;
@@ -54,7 +54,7 @@
 }
 
 #uptime {
-    bottom: calc(var(--base-h) + 690px) !important;
+    bottom: calc(var(--base-h) + 675px) !important;
     left: calc(var(--base-d) + 125px) !important;
     width: 340px !important;
     height: 65px !important;
@@ -62,7 +62,7 @@
 }
 
 #rebootbutton {
-    bottom: calc(var(--base-h) + 690px) !important;
+    bottom: calc(var(--base-h) + 675px) !important;
     left: calc(var(--base-d) + 40px) !important;
     width: 65px !important;
     height: 65px !important;
@@ -70,7 +70,7 @@
 }
 
 #downloadbutton {
-    bottom: calc(var(--base-h) + 690px) !important;
+    bottom: calc(var(--base-h) + 675px) !important;
     left: calc(var(--base-d) + 485px) !important;
     width: 65px !important;
     height: 65px !important;
@@ -78,7 +78,7 @@
 }
 
 #servermonitoring {
-    bottom: calc(var(--base-h) + 460px) !important;
+    bottom: calc(var(--base-h) + 445px) !important;
     left: calc(var(--base-d) + 40px) !important;
     width: 1315px !important;
     height: 210px !important;
@@ -86,7 +86,7 @@
 }
 
 #wifistats {
-    bottom: calc(var(--base-h) + 40px) !important;
+    bottom: calc(var(--base-h) + 25px) !important;
     left: calc(var(--base-d) + 40px) !important;
     width: 425px !important;
     height: 400px !important;
@@ -94,7 +94,7 @@
 }
 
 #mqttstats {
-    bottom: calc(var(--base-h) + 40px) !important;
+    bottom: calc(var(--base-h) + 25px) !important;
     left: calc(var(--base-d) + 485px) !important;
     width: 425px !important;
     height: 400px !important;
@@ -102,7 +102,7 @@
 }
 
 #mqttlogs999 {
-    bottom: calc(var(--base-h) + 40px) !important;
+    bottom: calc(var(--base-h) + 25px) !important;
     left: calc(var(--base-d) + 930px) !important;
     width: 425px !important;
     height: 400px !important;
@@ -110,7 +110,7 @@
 }
 
 #mqttlogs509511 {
-    bottom: calc(var(--base-h) + 40px) !important;
+    bottom: calc(var(--base-h) + 25px) !important;
     left: calc(var(--base-d) + 1375px) !important;
     width: 500px !important;
     height: 870px !important;

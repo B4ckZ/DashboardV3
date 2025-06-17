@@ -1,22 +1,42 @@
 {
   "b6:19:49:e8:b1:a3": {
-    "name": "PC Max",
+    "name": "PC Admin Max",
     "icon": "assets/icons/monitor.svg"
   },
    "9c:b1:50:7b:45:3a": {
-    "name": "PC Max",
+    "name": "PC Admin Max",
     "icon": "assets/icons/monitor.svg"
   },
-  "96:d3:89:ef:7b:6a": {
-    "name": "SmartPhone de Max",
+   "a8:41:f4:86:96:ec": {
+    "name": "PC RE Soufflage",
+    "icon": "assets/icons/monitor.svg"
+  },
+   "d4:e9:8a:b5:d1:8c": {
+    "name": "PC Stéphane Kastner",
+    "icon": "assets/icons/monitor.svg"
+  },
+   "": {
+    "name": "Smartphone Max",
     "icon": "assets/icons/smartphone.svg"
   },
-   "A8:41:F4:86:96:EC": {
-    "name": "PC Soufflage",
-    "icon": "assets/icons/monitor.svg"
+   "": {
+    "name": "Smartphone Franck",
+    "icon": "assets/icons/smartphone.svg"
   },
-  "d4:e9:8a:b5:d1:8c": {
-    "name": "PC stephane",
+   "": {
+    "name": "ESP32 509",
     "icon": "assets/icons/cpu.svg"
+  },
+   "": {
+    "name": "ESP32 511",
+    "icon": "assets/icons/cpu.svg"
+  },
+   "": {
+    "name": "NAME",
+    "icon": "assets/icons/smartphone.svg"
+  },
+   "": {
+    "name": "NAME",
+    "icon": "assets/icons/smartphone.svg"
   }
 }
