@@ -1,5 +1,5 @@
 // ===============================================================================
-// CLOCK WIDGET V4 - DESIGN DE BASE + SYNCHRONISATION TEMPS
+// CLOCK WIDGET V4 - INDICATEUR COHÉRENT AVEC WIFISTATS/MQTTSTATS
 // widgets/clock/clock.js
 // ===============================================================================
 
@@ -19,8 +19,8 @@ window.clock = (function() {
     let syncState = {
         serverTime: null,
         connectedTimeSources: [],
-        needsSync: false,
-        lastSyncCheck: null
+        lastSyncCheck: null,
+        systemStatus: 'unknown' // 'ok', 'error', 'unknown'
     };
     
     function init(element) {
@@ -35,19 +35,11 @@ window.clock = (function() {
                 // Récupérer les éléments
                 elements.time = widgetElement.querySelector('.clock-time');
                 elements.date = widgetElement.querySelector('.clock-date');
-                elements.status = widgetElement.querySelector('.connection-status');
-                elements.syncButton = widgetElement.querySelector('.sync-button');
-                elements.syncIndicator = widgetElement.querySelector('.sync-indicator');
-                elements.title = widgetElement.querySelector('.widget-title span');
+                elements.statusIndicator = widgetElement.querySelector('#sync-status-indicator');
                 
                 // Ajouter les classes de stabilité existantes
                 if (elements.time) {
                     elements.time.classList.add('clock-time-stable');
-                }
-                
-                // Event listener pour le bouton de synchronisation
-                if (elements.syncButton) {
-                    elements.syncButton.addEventListener('click', performManualSync);
                 }
                 
                 // Démarrer l'horloge
@@ -68,7 +60,7 @@ window.clock = (function() {
                     ]);
                 }
                 
-                console.log('Clock widget avec synchronisation initialisé');
+                console.log('Clock widget avec indicateur cohérent initialisé');
             })
             .catch(error => {
                 console.error('Erreur chargement Clock widget:', error);
@@ -111,11 +103,6 @@ window.clock = (function() {
         else if (topic === 'system.time.sync.result') {
             handleSyncResult(data);
         }
-        
-        // Mettre à jour l'indicateur de statut de connexion
-        if (elements.status) {
-            elements.status.classList.toggle('connected', window.orchestrator?.connected);
-        }
     }
     
     function handleServerTime(data) {
@@ -143,37 +130,26 @@ window.clock = (function() {
             
             console.log('Sources de temps connectées:', syncState.connectedTimeSources.length);
             
-            // Vérifier si synchronisation nécessaire
-            if (syncState.connectedTimeSources.length > 0) {
-                checkTimeSync();
-            } else {
-                // Aucune source de temps connectée
-                updateSyncIndicator('no-source');
-                hideSyncButton();
-            }
+            // Vérifier le statut système
+            evaluateSystemStatus();
         });
     }
     
     function handleSyncResult(data) {
-        if (data.status === 'success') {
-            console.log('Synchronisation réussie');
-            updateSyncIndicator('synced');
-            hideSyncButton();
-            syncState.needsSync = false;
-            updateTitle('Horloge interne RPI (Sync ✓)');
-            
-            // Forcer une mise à jour de l'heure serveur
-            setTimeout(requestServerTime, 2000);
-        } else if (data.status === 'skipped') {
-            console.log('Synchronisation non nécessaire');
-            updateSyncIndicator('synced');
-            hideSyncButton();
-            syncState.needsSync = false;
-            updateTitle('Horloge interne RPI');
+        if (data.status === 'success' || data.status === 'skipped') {
+            console.log('Synchronisation OK:', data.status);
+            syncState.systemStatus = 'ok';
         } else {
-            console.error('Échec synchronisation:', data.message);
-            updateSyncIndicator('error');
-            updateTitle('Horloge interne RPI (Erreur)');
+            console.error('Synchronisation échouée:', data.message);
+            syncState.systemStatus = 'error';
+        }
+        
+        // Mettre à jour l'indicateur
+        updateStatusIndicator();
+        
+        // Forcer une mise à jour de l'heure serveur si succès
+        if (data.status === 'success') {
+            setTimeout(requestServerTime, 2000);
         }
     }
     
@@ -188,89 +164,87 @@ window.clock = (function() {
     }
     
     function checkTimeSync() {
-        if (!syncState.serverTime || syncState.connectedTimeSources.length === 0) {
-            return;
-        }
+        evaluateSystemStatus();
         
-        const now = new Date();
-        const driftMs = Math.abs(now.getTime() - syncState.serverTime.getTime());
-        const driftSeconds = Math.round(driftMs / 1000);
-        
-        console.log(`Vérification sync - Décalage: ${driftSeconds}s`);
-        
-        if (driftSeconds > config.maxDriftSeconds) {
-            // Synchronisation nécessaire
-            syncState.needsSync = true;
-            updateSyncIndicator('drift');
-            showSyncButton();
-            updateTitle('Horloge interne RPI (Sync requis)');
+        // Si sources disponibles et décalage détecté, synchroniser automatiquement
+        if (syncState.connectedTimeSources.length > 0 && syncState.serverTime) {
+            const now = new Date();
+            const driftMs = Math.abs(now.getTime() - syncState.serverTime.getTime());
+            const driftSeconds = Math.round(driftMs / 1000);
             
-            console.log(`Synchronisation requise - Décalage: ${driftSeconds}s`);
-        } else {
-            // Temps synchronisé
-            syncState.needsSync = false;
-            updateSyncIndicator('synced');
-            hideSyncButton();
-            updateTitle('Horloge interne RPI');
+            console.log(`Vérification sync - Décalage: ${driftSeconds}s`);
+            
+            if (driftSeconds > config.maxDriftSeconds) {
+                console.log(`Synchronisation automatique déclenchée - Décalage: ${driftSeconds}s`);
+                performAutoSync();
+            }
         }
     }
     
-    function updateSyncIndicator(status) {
-        if (!elements.syncIndicator) return;
+    function evaluateSystemStatus() {
+        let newStatus = 'unknown';
         
-        // Supprimer toutes les classes de statut
-        elements.syncIndicator.classList.remove(
-            'sync-ok', 'sync-drift', 'sync-error', 'sync-no-source'
-        );
+        // Déterminer le statut du système
+        if (syncState.connectedTimeSources.length === 0) {
+            // Aucune source de temps connectée
+            if (syncState.serverTime) {
+                // On a quand même une heure serveur (RTC), donc OK
+                newStatus = 'ok';
+            } else {
+                // Pas de source de temps du tout
+                newStatus = 'error';
+            }
+        } else {
+            // Au moins une source de temps connectée
+            if (syncState.serverTime) {
+                const now = new Date();
+                const driftMs = Math.abs(now.getTime() - syncState.serverTime.getTime());
+                const driftSeconds = Math.round(driftMs / 1000);
+                
+                if (driftSeconds <= config.maxDriftSeconds) {
+                    newStatus = 'ok';
+                } else {
+                    // Décalage important détecté
+                    newStatus = 'error';
+                }
+            } else {
+                // Pas encore d'heure serveur reçue
+                newStatus = 'unknown';
+            }
+        }
+        
+        // Mettre à jour le statut si changement
+        if (newStatus !== syncState.systemStatus) {
+            syncState.systemStatus = newStatus;
+            updateStatusIndicator();
+            console.log('Statut système mis à jour:', newStatus);
+        }
+    }
+    
+    function updateStatusIndicator() {
+        if (!elements.statusIndicator) return;
+        
+        // UTILISER LES MÊMES CLASSES QUE WIFISTATS/MQTTSTATS
+        elements.statusIndicator.classList.remove('status-ok', 'status-error');
         
         // Ajouter la classe appropriée
-        switch (status) {
-            case 'synced':
-                elements.syncIndicator.classList.add('sync-ok');
-                elements.syncIndicator.title = 'Temps synchronisé';
-                break;
-            case 'drift':
-                elements.syncIndicator.classList.add('sync-drift');
-                elements.syncIndicator.title = 'Synchronisation recommandée';
+        switch (syncState.systemStatus) {
+            case 'ok':
+                elements.statusIndicator.classList.add('status-ok');
+                elements.statusIndicator.title = 'Temps synchronisé';
                 break;
             case 'error':
-                elements.syncIndicator.classList.add('sync-error');
-                elements.syncIndicator.title = 'Erreur de synchronisation';
-                break;
-            case 'no-source':
-                elements.syncIndicator.classList.add('sync-no-source');
-                elements.syncIndicator.title = 'Aucune source de temps connectée';
+            case 'unknown':
+            default:
+                elements.statusIndicator.classList.add('status-error');
+                elements.statusIndicator.title = 'Problème de synchronisation';
                 break;
         }
     }
     
-    function updateTitle(newTitle) {
-        if (elements.title) {
-            elements.title.textContent = newTitle;
-        }
-    }
-    
-    function showSyncButton() {
-        if (elements.syncButton) {
-            elements.syncButton.style.display = 'inline-flex';
-            elements.syncButton.style.opacity = '1';
-        }
-    }
-    
-    function hideSyncButton() {
-        if (elements.syncButton) {
-            elements.syncButton.style.opacity = '0';
-            setTimeout(() => {
-                if (elements.syncButton) {
-                    elements.syncButton.style.display = 'none';
-                }
-            }, 300);
-        }
-    }
-    
-    function performManualSync() {
+    function performAutoSync() {
         if (syncState.connectedTimeSources.length === 0) {
-            console.warn('Aucune source de temps connectée');
+            console.warn('Aucune source de temps connectée pour la synchronisation automatique');
             return;
         }
         
@@ -278,14 +252,7 @@ window.clock = (function() {
         const timeSource = syncState.connectedTimeSources[0];
         const clientTime = new Date();
         
-        console.log('Synchronisation manuelle déclenchée');
-        updateSyncIndicator('syncing');
-        updateTitle('Horloge interne RPI (Sync...)');
-        
-        // Animation du bouton
-        if (elements.syncButton) {
-            elements.syncButton.classList.add('syncing');
-        }
+        console.log('Synchronisation automatique en cours...');
         
         // Préparer la commande de synchronisation
         const syncCommand = {
@@ -293,26 +260,19 @@ window.clock = (function() {
             timestamp: Math.floor(clientTime.getTime() / 1000),
             timezone: Intl.DateTimeFormat().resolvedOptions().timeZone,
             source_mac: timeSource.mac,
-            source: 'dashboard_manual',
+            source: 'dashboard_auto',
             request_id: generateRequestId()
         };
         
         // Envoyer via MQTT
         if (window.orchestrator && window.orchestrator.connected) {
             window.orchestrator.publish('system/time/sync/command', syncCommand);
-            console.log('Commande de synchronisation envoyée:', syncCommand);
+            console.log('Commande de synchronisation automatique envoyée:', syncCommand);
         } else {
-            console.error('MQTT non connecté');
-            updateSyncIndicator('error');
-            updateTitle('Horloge interne RPI (Erreur)');
+            console.error('MQTT non connecté - synchronisation automatique impossible');
+            syncState.systemStatus = 'error';
+            updateStatusIndicator();
         }
-        
-        // Arrêter l'animation après 3 secondes
-        setTimeout(() => {
-            if (elements.syncButton) {
-                elements.syncButton.classList.remove('syncing');
-            }
-        }, 3000);
     }
     
     function requestServerTime() {

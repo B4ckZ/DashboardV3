@@ -1,56 +1,56 @@
 {
   "b6:19:49:e8:b1:a3": {
     "name": "PC Admin Max",
-    "icon": "assets/icons/user-check.svg"
-	"time_source": true,
+    "icon": "assets/icons/user-check.svg",
+    "time_source": true,
     "description": ""
   },
-   "9c:b1:50:7b:45:3a": {
+  "9c:b1:50:7b:45:3a": {
     "name": "PC Admin Max",
-    "icon": "assets/icons/user-check.svg"
-	"time_source": true,
+    "icon": "assets/icons/user-check.svg",
+    "time_source": true,
     "description": ""
   },
-   "a8:41:f4:86:96:ec": {
+  "a8:41:f4:86:96:ec": {
     "name": "PC RE Soufflage",
-    "icon": "assets/icons/monitor.svg"
-	"time_source": true,
+    "icon": "assets/icons/monitor.svg",
+    "time_source": true,
     "description": ""
   },
-   "": {
+  "00:00:00:00:00:01": {
     "name": "Smartphone Max",
-    "icon": "assets/icons/phone.svg"
-	"time_source": false,
+    "icon": "assets/icons/phone.svg",
+    "time_source": false,
     "description": ""
   },
-   "": {
+  "00:00:00:00:00:02": {
     "name": "Smartphone Franck",
-    "icon": "assets/icons/phone.svg"
-	"time_source": false,
+    "icon": "assets/icons/phone.svg",
+    "time_source": false,
     "description": ""
   },
-   "": {
+  "00:00:00:00:00:03": {
     "name": "ESP32 509",
-    "icon": "assets/icons/cpu.svg"
-	"time_source": false,
+    "icon": "assets/icons/cpu.svg",
+    "time_source": false,
     "description": ""
   },
-   "": {
+  "00:00:00:00:00:04": {
     "name": "ESP32 511",
-    "icon": "assets/icons/cpu.svg"
-	"time_source": false,
+    "icon": "assets/icons/cpu.svg",
+    "time_source": false,
     "description": ""
   },
-   "": {
-    "name": "NAME",
-    "icon": "assets/icons/smartphone.svg"
-	"time_source": false,
+  "00:00:00:00:00:05": {
+    "name": "Device 1",
+    "icon": "assets/icons/smartphone.svg",
+    "time_source": false,
     "description": ""
   },
-   "": {
-    "name": "NAME",
-    "icon": "assets/icons/smartphone.svg"
-	"time_source": false,
+  "00:00:00:00:00:06": {
+    "name": "Device 2",
+    "icon": "assets/icons/smartphone.svg",
+    "time_source": false,
     "description": ""
   }
 }
