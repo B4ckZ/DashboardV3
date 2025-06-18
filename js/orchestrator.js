@@ -49,6 +49,17 @@ class Orchestrator {
         Object.keys(TOPIC_MAPPING).forEach(topic => {
             this.client.subscribe(topic);
         });
+        
+        // Souscrire aux topics de synchronisation temps
+        const timeTopics = [
+            'rpi/system/time',
+            'system/time/sync/result',
+            'system/time/request'
+        ];
+        
+        timeTopics.forEach(topic => {
+            this.client.subscribe(topic);
+        });
     }
     
     handleMessage(topic, payload) {
@@ -60,13 +71,18 @@ class Orchestrator {
                 data = JSON.parse(payload);
             } catch (jsonError) {
                 // Si ce n'est pas du JSON, traiter comme une valeur simple
-                // Vérifier si c'est un nombre
                 if (!isNaN(payload)) {
                     data = { value: parseFloat(payload) };
                 } else {
-                    // Sinon c'est une string
                     data = { value: payload };
                 }
+            }
+            
+            // Gestion spéciale des topics système temps
+            if (topic.startsWith('rpi/system/time') || 
+                topic.startsWith('system/time/')) {
+                this.handleSystemTopic(topic, data);
+                return;
             }
             
             const internalTopic = this.mapTopic(topic);
@@ -83,6 +99,34 @@ class Orchestrator {
             console.error(`Error handling message for topic ${topic}:`, error);
             console.error('Payload was:', payload);
         }
+    }
+    
+    handleSystemTopic(topic, data) {
+        console.log(`System topic: ${topic}`, data);
+        
+        // Normaliser le topic pour la distribution
+        let normalizedTopic = topic;
+        
+        // Mapping des topics système vers les topics normalisés
+        const topicMapping = {
+            'rpi/system/time': 'system.time',
+            'system/time/sync/result': 'system.time.sync.result',
+            'system/time/sync/command': 'system.time.sync.command',
+            'system/time/request': 'system.time.request'
+        };
+        
+        if (topicMapping[topic]) {
+            normalizedTopic = topicMapping[topic];
+        }
+        
+        // Formater les données
+        const formattedData = this.formatData(normalizedTopic, data);
+        
+        // Distribuer aux widgets
+        this.distribute(normalizedTopic, formattedData);
+        
+        // Log pour debug
+        console.log(`Distributed ${normalizedTopic} to widgets:`, formattedData);
     }
     
     mapTopic(mqttTopic) {
@@ -102,6 +146,11 @@ class Orchestrator {
         
         // Gérer les cas où data.value n'existe pas
         const value = data.value !== undefined ? data.value : data;
+        
+        // Ajouter timestamp formaté si disponible
+        if (data.timestamp) {
+            formatted.timestamp = new Date(data.timestamp).toLocaleString('fr-FR');
+        }
         
         if (topic.includes('uptime')) {
             const seconds = parseInt(value) || 0;
@@ -130,7 +179,6 @@ class Orchestrator {
         else if (topic.includes('frequency')) {
             const numValue = parseFloat(value) || 0;
             
-            // Debug
             console.log(`Frequency topic: ${topic}, raw value: ${numValue}`);
             
             // Si c'est pour le CPU, la valeur du collecteur est déjà en GHz
@@ -141,6 +189,31 @@ class Orchestrator {
                 // GPU est en MHz
                 formatted.formatted = `${numValue.toFixed(0)} MHz`;
                 formatted.raw = numValue;
+            }
+        }
+        // NOUVEAU : Gestion des topics de temps système
+        else if (topic === 'system.time' || topic.includes('time')) {
+            if (data.timestamp) {
+                // Convertir timestamp Unix en Date JavaScript
+                const serverTime = new Date(data.timestamp * 1000);
+                formatted.serverTime = serverTime;
+                formatted.formatted = serverTime.toLocaleString('fr-FR');
+                formatted.raw = data.timestamp;
+            }
+            
+            if (data.uptime_seconds) {
+                const seconds = data.uptime_seconds;
+                const days = Math.floor(seconds / 86400);
+                const hours = Math.floor((seconds % 86400) / 3600);
+                const minutes = Math.floor((seconds % 3600) / 60);
+                const secs = seconds % 60;
+                
+                formatted.uptime_formatted = `${String(days).padStart(2, '0')}j ${String(hours).padStart(2, '0')}h ${String(minutes).padStart(2, '0')}m ${String(secs).padStart(2, '0')}s`;
+            }
+            
+            // Statistiques de synchronisation si disponibles
+            if (data.stats) {
+                formatted.sync_stats = data.stats;
             }
         }
         else if (topic === 'network.wifi.clients' || topic === 'network.wifi.status') {
@@ -213,4 +286,9 @@ class Orchestrator {
 }
 
 const orchestrator = new Orchestrator();
+
+// Export pour les modules ES6
 export default orchestrator;
+
+// Compatibilité globale pour les widgets existants
+window.orchestrator = orchestrator;

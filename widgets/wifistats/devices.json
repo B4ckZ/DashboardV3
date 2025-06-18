@@ -2,37 +2,55 @@
   "b6:19:49:e8:b1:a3": {
     "name": "PC Admin Max",
     "icon": "assets/icons/user-check.svg"
+	"time_source": true,
+    "description": ""
   },
    "9c:b1:50:7b:45:3a": {
     "name": "PC Admin Max",
     "icon": "assets/icons/user-check.svg"
+	"time_source": true,
+    "description": ""
   },
    "a8:41:f4:86:96:ec": {
     "name": "PC RE Soufflage",
     "icon": "assets/icons/monitor.svg"
+	"time_source": true,
+    "description": ""
   },
    "": {
     "name": "Smartphone Max",
     "icon": "assets/icons/phone.svg"
+	"time_source": false,
+    "description": ""
   },
    "": {
     "name": "Smartphone Franck",
     "icon": "assets/icons/phone.svg"
+	"time_source": false,
+    "description": ""
   },
    "": {
     "name": "ESP32 509",
     "icon": "assets/icons/cpu.svg"
+	"time_source": false,
+    "description": ""
   },
    "": {
     "name": "ESP32 511",
     "icon": "assets/icons/cpu.svg"
+	"time_source": false,
+    "description": ""
   },
    "": {
     "name": "NAME",
     "icon": "assets/icons/smartphone.svg"
+	"time_source": false,
+    "description": ""
   },
    "": {
     "name": "NAME",
     "icon": "assets/icons/smartphone.svg"
+	"time_source": false,
+    "description": ""
   }
 }

@@ -1,9 +1,198 @@
+<!-- widgets/clock/clock.html -->
 <div class="widget-title">
     <img src="assets/icons/clock.svg" class="widget-icon" alt="Horloge">
     <span>Horloge interne RPI</span>
+    
+    <!-- Indicateur de synchronisation intégré dans le titre -->
+    <div class="sync-indicator" title="État de synchronisation"></div>
+    
+    <!-- Bouton de synchronisation dans le titre -->
+    <button class="sync-button" title="Synchroniser l'heure" style="display: none;">
+        <svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+            <path d="M23 4v6h-6"/>
+            <path d="M20.49 15a9 9 0 1 1-2.12-9.36L23 10"/>
+        </svg>
+    </button>
 </div>
 
 <div class="clock-container">
     <div class="clock-time" id="clock-time">00:00:00</div>
     <div class="clock-date" id="clock-date">00/00/0000</div>
 </div>
+
+<!-- Indicateur de connexion MQTT (optionnel) -->
+<div class="connection-status"></div>
+
+<style>
+/* =============================================================================== */
+/* EXTENSIONS DU STYLE DE BASE POUR LA SYNCHRONISATION */
+/* =============================================================================== */
+
+/* Modification du titre pour inclure les éléments de sync */
+.widget-title {
+    position: relative;
+    display: flex;
+    align-items: center;
+    gap: 8px;
+}
+
+/* Indicateur de synchronisation dans le titre */
+.sync-indicator {
+    width: 6px;
+    height: 6px;
+    border-radius: 50%;
+    background: var(--nord3);
+    transition: all 0.3s ease;
+    margin-left: auto;
+}
+
+.sync-indicator.sync-ok {
+    background: var(--nord14);
+    box-shadow: 0 0 4px rgba(163, 190, 140, 0.5);
+}
+
+.sync-indicator.sync-drift {
+    background: var(--nord13);
+    box-shadow: 0 0 4px rgba(235, 203, 139, 0.5);
+    animation: pulse-warning 2s infinite;
+}
+
+.sync-indicator.sync-error {
+    background: var(--nord11);
+    box-shadow: 0 0 4px rgba(191, 97, 106, 0.5);
+    animation: pulse-error 1s infinite;
+}
+
+.sync-indicator.sync-no-source {
+    background: var(--nord3);
+    opacity: 0.5;
+}
+
+/* Bouton de synchronisation dans le titre */
+.sync-button {
+    display: none;
+    align-items: center;
+    justify-content: center;
+    width: 20px;
+    height: 20px;
+    border: none;
+    border-radius: 4px;
+    background: var(--nord10);
+    color: var(--nord6);
+    cursor: pointer;
+    opacity: 0;
+    transition: all 0.3s ease;
+    margin-left: 4px;
+}
+
+.sync-button:hover {
+    background: var(--nord8);
+    transform: scale(1.1);
+}
+
+.sync-button:active {
+    transform: scale(0.95);
+}
+
+.sync-button svg {
+    width: 12px;
+    height: 12px;
+}
+
+/* Extension des styles d'horloge pour les états de synchronisation */
+.clock-time.drift {
+    color: var(--nord13);
+}
+
+.clock-time.error {
+    color: var(--nord11);
+}
+
+.clock-time.synced {
+    color: var(--nord8);
+}
+
+/* Indicateur de connexion MQTT (optionnel) */
+.connection-status {
+    position: absolute;
+    bottom: 8px;
+    right: 8px;
+    width: 4px;
+    height: 4px;
+    border-radius: 50%;
+    background: var(--nord11);
+    transition: all 0.3s ease;
+    opacity: 0.6;
+}
+
+.connection-status.connected {
+    background: var(--nord14);
+}
+
+/* Animations */
+@keyframes pulse-warning {
+    0%, 100% { opacity: 1; }
+    50% { opacity: 0.5; }
+}
+
+@keyframes pulse-error {
+    0%, 100% { opacity: 1; }
+    50% { opacity: 0.3; }
+}
+
+@keyframes rotate {
+    from { transform: rotate(0deg); }
+    to { transform: rotate(360deg); }
+}
+
+.sync-button.syncing svg {
+    animation: rotate 1s linear infinite;
+}
+
+/* États avancés pour le conteneur */
+.clock-container.needs-sync {
+    border-left: 2px solid var(--nord13);
+}
+
+.clock-container.sync-error {
+    border-left: 2px solid var(--nord11);
+}
+
+.clock-container.synced {
+    border-left: 2px solid var(--nord14);
+}
+
+/* Responsive - ajustements pour petits écrans */
+@media (max-width: 768px) {
+    .sync-button {
+        width: 18px;
+        height: 18px;
+    }
+    
+    .sync-button svg {
+        width: 10px;
+        height: 10px;
+    }
+    
+    .sync-indicator {
+        width: 5px;
+        height: 5px;
+    }
+}
+
+/* Mode compact - réduction de l'espacement */
+.widget.compact .sync-button {
+    width: 16px;
+    height: 16px;
+}
+
+.widget.compact .sync-button svg {
+    width: 8px;
+    height: 8px;
+}
+
+.widget.compact .sync-indicator {
+    width: 4px;
+    height: 4px;
+}
+</style>
