@@ -23,10 +23,10 @@
     "time_source": false,
     "description": ""
   },
-  "00:00:00:00:00:02": {
+  "9e:07:1d:55:c6:08": {
     "name": "Smartphone Franck",
     "icon": "assets/icons/phone.svg",
-    "time_source": false,
+    "time_source": true,
     "description": ""
   },
   "00:00:00:00:00:03": {
