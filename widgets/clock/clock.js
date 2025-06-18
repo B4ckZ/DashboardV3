@@ -1,5 +1,5 @@
 // ===============================================================================
-// CLOCK WIDGET V4 - INDICATEUR COHÉRENT AVEC WIFISTATS/MQTTSTATS
+// CLOCK WIDGET V4 - CORRECTION DU BUG "INVALID DATE"
 // widgets/clock/clock.js
 // ===============================================================================
 
@@ -68,15 +68,47 @@ window.clock = (function() {
     }
     
     function updateClock() {
-        // Afficher l'heure du serveur si disponible, sinon heure locale
-        const displayTime = syncState.serverTime || new Date();
-        
-        if (elements.time) {
-            elements.time.textContent = displayTime.toLocaleTimeString('fr-FR');
-        }
-        
-        if (elements.date) {
-            elements.date.textContent = displayTime.toLocaleDateString('fr-FR');
+        try {
+            // CORRECTION : Vérifier la validité de serverTime avant utilisation
+            let displayTime;
+            
+            if (syncState.serverTime && !isNaN(syncState.serverTime.getTime())) {
+                // Utiliser l'heure du serveur si elle est valide
+                displayTime = new Date(syncState.serverTime.getTime());
+                
+                // Ajuster l'heure en fonction du temps écoulé depuis la dernière synchro
+                if (syncState.lastSyncCheck) {
+                    const elapsed = Date.now() - syncState.lastSyncCheck.getTime();
+                    displayTime.setTime(displayTime.getTime() + elapsed);
+                }
+            } else {
+                // Utiliser l'heure locale si pas d'heure serveur valide
+                displayTime = new Date();
+            }
+            
+            // Vérifier que displayTime est valide avant affichage
+            if (!displayTime || isNaN(displayTime.getTime())) {
+                console.error('Heure invalide détectée, utilisation de l\'heure locale');
+                displayTime = new Date();
+            }
+            
+            if (elements.time) {
+                elements.time.textContent = displayTime.toLocaleTimeString('fr-FR');
+            }
+            
+            if (elements.date) {
+                elements.date.textContent = displayTime.toLocaleDateString('fr-FR');
+            }
+        } catch (error) {
+            console.error('Erreur dans updateClock:', error);
+            // En cas d'erreur, afficher l'heure locale
+            const fallbackTime = new Date();
+            if (elements.time) {
+                elements.time.textContent = fallbackTime.toLocaleTimeString('fr-FR');
+            }
+            if (elements.date) {
+                elements.date.textContent = fallbackTime.toLocaleDateString('fr-FR');
+            }
         }
     }
     
@@ -106,20 +138,49 @@ window.clock = (function() {
     }
     
     function handleServerTime(data) {
-        if (data.timestamp) {
-            // Convertir le timestamp Unix en Date
-            syncState.serverTime = new Date(data.timestamp * 1000);
-            syncState.lastSyncCheck = new Date();
-            
-            // Mettre à jour l'affichage immédiatement
-            updateClock();
-            
-            console.log('Heure serveur reçue:', syncState.serverTime.toLocaleString());
+        try {
+            if (data && data.timestamp) {
+                // CORRECTION : Validation du timestamp avant conversion
+                const timestamp = parseFloat(data.timestamp);
+                
+                if (isNaN(timestamp) || timestamp <= 0) {
+                    console.error('Timestamp invalide reçu:', data.timestamp);
+                    return;
+                }
+                
+                // Convertir le timestamp Unix en Date
+                const newServerTime = new Date(timestamp * 1000);
+                
+                // Vérifier que la date est valide
+                if (isNaN(newServerTime.getTime())) {
+                    console.error('Date invalide après conversion:', timestamp);
+                    return;
+                }
+                
+                // Vérifier que la date est raisonnable (pas dans le passé lointain ou futur)
+                const now = new Date();
+                const yearDiff = Math.abs(newServerTime.getFullYear() - now.getFullYear());
+                if (yearDiff > 10) {
+                    console.error('Date suspecte (écart > 10 ans):', newServerTime);
+                    return;
+                }
+                
+                syncState.serverTime = newServerTime;
+                syncState.lastSyncCheck = new Date();
+                
+                // Mettre à jour l'affichage immédiatement
+                updateClock();
+                
+                console.log('Heure serveur reçue:', syncState.serverTime.toLocaleString());
+            }
+        } catch (error) {
+            console.error('Erreur dans handleServerTime:', error);
+            // Ne pas modifier syncState.serverTime en cas d'erreur
         }
     }
     
     function handleWifiClients(data) {
-        if (!data.clients) return;
+        if (!data || !data.clients) return;
         
         // Charger la base de données des devices et identifier les sources de temps
         loadDeviceDatabase().then(deviceDb => {
@@ -167,9 +228,17 @@ window.clock = (function() {
         evaluateSystemStatus();
         
         // Si sources disponibles et décalage détecté, synchroniser automatiquement
-        if (syncState.connectedTimeSources.length > 0 && syncState.serverTime) {
+        if (syncState.connectedTimeSources.length > 0 && syncState.serverTime && !isNaN(syncState.serverTime.getTime())) {
             const now = new Date();
-            const driftMs = Math.abs(now.getTime() - syncState.serverTime.getTime());
+            const serverTimeAdjusted = new Date(syncState.serverTime.getTime());
+            
+            // Ajuster l'heure serveur en fonction du temps écoulé
+            if (syncState.lastSyncCheck) {
+                const elapsed = now.getTime() - syncState.lastSyncCheck.getTime();
+                serverTimeAdjusted.setTime(serverTimeAdjusted.getTime() + elapsed);
+            }
+            
+            const driftMs = Math.abs(now.getTime() - serverTimeAdjusted.getTime());
             const driftSeconds = Math.round(driftMs / 1000);
             
             console.log(`Vérification sync - Décalage: ${driftSeconds}s`);
@@ -187,8 +256,8 @@ window.clock = (function() {
         // Déterminer le statut du système
         if (syncState.connectedTimeSources.length === 0) {
             // Aucune source de temps connectée
-            if (syncState.serverTime) {
-                // On a quand même une heure serveur (RTC), donc OK
+            if (syncState.serverTime && !isNaN(syncState.serverTime.getTime())) {
+                // On a quand même une heure serveur valide (RTC), donc OK
                 newStatus = 'ok';
             } else {
                 // Pas de source de temps du tout
@@ -196,9 +265,17 @@ window.clock = (function() {
             }
         } else {
             // Au moins une source de temps connectée
-            if (syncState.serverTime) {
+            if (syncState.serverTime && !isNaN(syncState.serverTime.getTime())) {
                 const now = new Date();
-                const driftMs = Math.abs(now.getTime() - syncState.serverTime.getTime());
+                const serverTimeAdjusted = new Date(syncState.serverTime.getTime());
+                
+                // Ajuster l'heure serveur en fonction du temps écoulé
+                if (syncState.lastSyncCheck) {
+                    const elapsed = now.getTime() - syncState.lastSyncCheck.getTime();
+                    serverTimeAdjusted.setTime(serverTimeAdjusted.getTime() + elapsed);
+                }
+                
+                const driftMs = Math.abs(now.getTime() - serverTimeAdjusted.getTime());
                 const driftSeconds = Math.round(driftMs / 1000);
                 
                 if (driftSeconds <= config.maxDriftSeconds) {
