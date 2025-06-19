@@ -1,7 +1,7 @@
 // js/orchestrator.js - Orchestrateur Central MaxLink V3
 // =====================================================
 
-import { MQTT_CONFIG, TOPIC_MAPPING, DATA_FORMATS } from '../config/variables.js';
+import { MQTT_CONFIG, TOPIC_MAPPING, DATA_FORMATS, APP_CONFIG } from '../config/variables.js';
 
 class Orchestrator {
     constructor() {
@@ -12,7 +12,9 @@ class Orchestrator {
     }
     
     init() {
-        console.log('Orchestrator V3 starting...');
+        if (APP_CONFIG.debug) {
+            console.log('Orchestrator V3 starting...');
+        }
         this.connect();
     }
     
@@ -88,7 +90,9 @@ class Orchestrator {
             const internalTopic = this.mapTopic(topic);
             
             if (!internalTopic) {
-                console.warn(`Unknown topic: ${topic}`);
+                if (APP_CONFIG.debug) {
+                    console.warn(`Unknown topic: ${topic}`);
+                }
                 return;
             }
             
@@ -97,12 +101,16 @@ class Orchestrator {
             
         } catch (error) {
             console.error(`Error handling message for topic ${topic}:`, error);
-            console.error('Payload was:', payload);
+            if (APP_CONFIG.debug) {
+                console.error('Payload was:', payload);
+            }
         }
     }
     
     handleSystemTopic(topic, data) {
-        console.log(`System topic: ${topic}`, data);
+        if (APP_CONFIG.debug) {
+            console.log(`System topic: ${topic}`, data);
+        }
         
         // Normaliser le topic pour la distribution
         let normalizedTopic = topic;
@@ -125,8 +133,9 @@ class Orchestrator {
         // Distribuer aux widgets
         this.distribute(normalizedTopic, formattedData);
         
-        // Log pour debug
-        console.log(`Distributed ${normalizedTopic} to widgets:`, formattedData);
+        if (APP_CONFIG.debug) {
+            console.log(`Distributed ${normalizedTopic} to widgets`);
+        }
     }
     
     mapTopic(mqttTopic) {
@@ -146,9 +155,6 @@ class Orchestrator {
         
         // Gérer les cas où data.value n'existe pas
         const value = data.value !== undefined ? data.value : data;
-        
-        // NE PAS ajouter de timestamp formaté ici pour éviter la confusion
-        // Le widget clock gère lui-même la conversion du timestamp
         
         if (topic.includes('uptime')) {
             const seconds = parseInt(value) || 0;
@@ -177,7 +183,9 @@ class Orchestrator {
         else if (topic.includes('frequency')) {
             const numValue = parseFloat(value) || 0;
             
-            console.log(`Frequency topic: ${topic}, raw value: ${numValue}`);
+            if (APP_CONFIG.debug) {
+                console.log(`Frequency topic: ${topic}, raw value: ${numValue}`);
+            }
             
             // Si c'est pour le CPU, la valeur du collecteur est déjà en GHz
             if (topic.includes('cpu')) {
@@ -189,12 +197,8 @@ class Orchestrator {
                 formatted.raw = numValue;
             }
         }
-        // CORRECTION : Gestion des topics de temps système
+        // Gestion des topics de temps système
         else if (topic === 'system.time' || topic.includes('time')) {
-            // IMPORTANT : Le timestamp reçu est en SECONDES Unix
-            // Le widget clock s'attend à recevoir le timestamp en secondes
-            // et fera lui-même la conversion en millisecondes
-            
             if (data.timestamp) {
                 // Garder le timestamp original en secondes
                 formatted.timestamp = data.timestamp;
@@ -224,14 +228,12 @@ class Orchestrator {
         else if (topic === 'network.wifi.clients' || topic === 'network.wifi.status') {
             // Pour les données WiFi, retourner la structure complète
             if (data.timestamp) {
-                // Pour ces topics, timestamp peut être en format ISO
                 try {
                     formatted.timestamp = new Date(data.timestamp).toLocaleString('fr-FR');
                 } catch (e) {
                     formatted.timestamp = data.timestamp;
                 }
             }
-            // Pas besoin de réassigner, juste retourner formatted qui contient déjà toutes les données
             return formatted;
         }
         else if (topic.includes('mqtt')) {
@@ -271,7 +273,9 @@ class Orchestrator {
     }
     
     registerWidget(id, widget, subscribes = []) {
-        console.log(`Registering widget: ${id}`);
+        if (APP_CONFIG.debug) {
+            console.log(`Registering widget: ${id}`);
+        }
         this.widgets.set(id, widget);
         this.subscriptions.set(id, subscribes);
     }

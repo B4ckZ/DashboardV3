@@ -1,5 +1,5 @@
 // ===============================================================================
-// CLOCK WIDGET V5 - SYNCHRONISATION INTELLIGENTE AVEC TIME_SOURCE
+// CLOCK WIDGET V6 - VERSION SIMPLIFIÉE FINALE
 // widgets/clock/clock.js
 // ===============================================================================
 
@@ -20,9 +20,8 @@ window.clock = (function() {
         serverTime: null,
         connectedTimeSources: [],
         lastSyncCheck: null,
-        systemStatus: 'unknown', // 'ok', 'error', 'unknown'
-        currentDeviceIsTimeSource: false, // NOUVEAU: flag pour le device actuel
-        currentDeviceMac: null // NOUVEAU: MAC address du device actuel
+        systemStatus: 'ok', // 'ok', 'syncing', 'error'
+        isSyncing: false
     };
     
     function init(element) {
@@ -39,7 +38,7 @@ window.clock = (function() {
                 elements.date = widgetElement.querySelector('.clock-date');
                 elements.statusIndicator = widgetElement.querySelector('#sync-status-indicator');
                 
-                // Ajouter les classes de stabilité existantes
+                // Ajouter les classes de stabilité
                 if (elements.time) {
                     elements.time.classList.add('clock-time-stable');
                 }
@@ -50,9 +49,6 @@ window.clock = (function() {
                 
                 // Démarrer la vérification de synchronisation
                 startTimeCheck();
-                
-                // Détecter le device actuel
-                detectCurrentDevice();
                 
                 // Enregistrer pour recevoir les données via l'orchestrateur
                 if (window.orchestrator) {
@@ -65,64 +61,42 @@ window.clock = (function() {
                     ]);
                 }
                 
-                console.log('Clock widget V5 avec détection time_source initialisé');
+                // Démarrer avec indicateur vert (état normal)
+                updateStatusIndicator();
+                
+                if (APP_CONFIG && APP_CONFIG.debug) {
+                    console.log('Clock widget V6 simplifié initialisé');
+                }
             })
             .catch(error => {
                 console.error('Erreur chargement Clock widget:', error);
             });
     }
     
-    // NOUVEAU: Détecter si le device actuel est configuré comme time_source
-    async function detectCurrentDevice() {
-        try {
-            // Méthode 1: Essayer de récupérer l'adresse MAC locale (ne fonctionne pas dans tous les navigateurs)
-            // Pour l'instant, on utilise une approche basée sur la détection des clients connectés
-            
-            // Charger la base de données des devices
-            const deviceDb = await loadDeviceDatabase();
-            
-            // Attendre que la liste des clients soit disponible
-            setTimeout(() => {
-                if (syncState.connectedTimeSources.length > 0) {
-                    // Pour l'instant, on considère que si au moins un time_source est connecté
-                    // et que nous sommes sur le réseau local, nous pouvons synchroniser
-                    console.log('Time sources détectées, synchronisation possible');
-                    
-                    // Dans une version future, on pourrait identifier spécifiquement 
-                    // quel client consulte le dashboard via WebRTC ou autre méthode
-                }
-            }, 5000);
-            
-        } catch (error) {
-            console.error('Erreur détection device actuel:', error);
-        }
-    }
-    
     function updateClock() {
         try {
-            // CORRECTION : Vérifier la validité de serverTime avant utilisation
             let displayTime;
             
             if (syncState.serverTime && !isNaN(syncState.serverTime.getTime())) {
-                // Utiliser l'heure du serveur si elle est valide
+                // Utiliser l'heure du serveur
                 displayTime = new Date(syncState.serverTime.getTime());
                 
-                // Ajuster l'heure en fonction du temps écoulé depuis la dernière synchro
+                // Ajuster en fonction du temps écoulé
                 if (syncState.lastSyncCheck) {
                     const elapsed = Date.now() - syncState.lastSyncCheck.getTime();
                     displayTime.setTime(displayTime.getTime() + elapsed);
                 }
             } else {
-                // Utiliser l'heure locale si pas d'heure serveur valide
+                // Utiliser l'heure locale si pas d'heure serveur
                 displayTime = new Date();
             }
             
-            // Vérifier que displayTime est valide avant affichage
+            // Vérifier la validité
             if (!displayTime || isNaN(displayTime.getTime())) {
-                console.error('Heure invalide détectée, utilisation de l\'heure locale');
                 displayTime = new Date();
             }
             
+            // Afficher l'heure
             if (elements.time) {
                 elements.time.textContent = displayTime.toLocaleTimeString('fr-FR');
             }
@@ -132,7 +106,6 @@ window.clock = (function() {
             }
         } catch (error) {
             console.error('Erreur dans updateClock:', error);
-            // En cas d'erreur, afficher l'heure locale
             const fallbackTime = new Date();
             if (elements.time) {
                 elements.time.textContent = fallbackTime.toLocaleTimeString('fr-FR');
@@ -155,7 +128,9 @@ window.clock = (function() {
     }
     
     function handleUpdate(topic, data) {
-        console.log('Clock update:', topic, data);
+        if (APP_CONFIG && APP_CONFIG.debug) {
+            console.log('Clock update:', topic, data);
+        }
         
         if (topic === 'system.time') {
             handleServerTime(data);
@@ -171,87 +146,74 @@ window.clock = (function() {
     function handleServerTime(data) {
         try {
             if (data && data.timestamp) {
-                // CORRECTION : Validation du timestamp avant conversion
                 const timestamp = parseFloat(data.timestamp);
                 
                 if (isNaN(timestamp) || timestamp <= 0) {
-                    console.error('Timestamp invalide reçu:', data.timestamp);
                     return;
                 }
                 
                 // Convertir le timestamp Unix en Date
                 const newServerTime = new Date(timestamp * 1000);
                 
-                // Vérifier que la date est valide
+                // Vérifier la validité
                 if (isNaN(newServerTime.getTime())) {
-                    console.error('Date invalide après conversion:', timestamp);
                     return;
                 }
                 
-                // Vérifier que la date est raisonnable (pas dans le passé lointain ou futur)
+                // Vérifier que la date est raisonnable
                 const now = new Date();
                 const yearDiff = Math.abs(newServerTime.getFullYear() - now.getFullYear());
                 if (yearDiff > 10) {
-                    console.error('Date suspecte (écart > 10 ans):', newServerTime);
                     return;
                 }
                 
                 syncState.serverTime = newServerTime;
                 syncState.lastSyncCheck = new Date();
                 
-                // Mettre à jour l'affichage immédiatement
+                // Mettre à jour l'affichage
                 updateClock();
-                
-                console.log('Heure serveur reçue:', syncState.serverTime.toLocaleString());
             }
         } catch (error) {
             console.error('Erreur dans handleServerTime:', error);
-            // Ne pas modifier syncState.serverTime en cas d'erreur
         }
     }
     
     function handleWifiClients(data) {
         if (!data || !data.clients) return;
         
-        // Charger la base de données des devices et identifier les sources de temps
+        // Charger la base de données des devices
         loadDeviceDatabase().then(deviceDb => {
             syncState.connectedTimeSources = data.clients.filter(client => {
                 const mac = client.mac.toLowerCase();
                 return deviceDb[mac] && deviceDb[mac].time_source === true;
             });
             
-            console.log('Sources de temps connectées:', syncState.connectedTimeSources.length);
-            
-            // NOUVEAU: Afficher les time sources dans la console pour debug
-            if (syncState.connectedTimeSources.length > 0) {
-                console.log('Time sources disponibles:');
-                syncState.connectedTimeSources.forEach(source => {
-                    const device = deviceDb[source.mac.toLowerCase()];
-                    console.log(`- ${device.name} (${source.mac})`);
-                });
+            if (APP_CONFIG && APP_CONFIG.debug && syncState.connectedTimeSources.length > 0) {
+                console.log(`${syncState.connectedTimeSources.length} source(s) de temps connectée(s)`);
             }
-            
-            // Vérifier le statut système
-            evaluateSystemStatus();
         });
     }
     
     function handleSyncResult(data) {
-        if (data.status === 'success' || data.status === 'skipped') {
-            console.log('Synchronisation OK:', data.status);
-            syncState.systemStatus = 'ok';
-        } else {
-            console.error('Synchronisation échouée:', data.message);
-            syncState.systemStatus = 'error';
-        }
-        
-        // Mettre à jour l'indicateur
-        updateStatusIndicator();
-        
-        // Forcer une mise à jour de l'heure serveur si succès
         if (data.status === 'success') {
-            setTimeout(requestServerTime, 2000);
+            if (APP_CONFIG && APP_CONFIG.debug) {
+                console.log('Synchronisation réussie:', data.message);
+            }
+            syncState.systemStatus = 'ok';
+            syncState.isSyncing = false;
+            
+            // Demander une mise à jour de l'heure
+            setTimeout(requestServerTime, 1000);
+        } else if (data.status === 'skipped') {
+            syncState.systemStatus = 'ok';
+            syncState.isSyncing = false;
+        } else if (data.status === 'error') {
+            console.error('Erreur synchronisation:', data.message);
+            syncState.systemStatus = 'error';
+            syncState.isSyncing = false;
         }
+        
+        updateStatusIndicator();
     }
     
     async function loadDeviceDatabase() {
@@ -265,14 +227,19 @@ window.clock = (function() {
     }
     
     function checkTimeSync() {
-        evaluateSystemStatus();
+        // Si pas de source de temps connectée, tout va bien (indicateur vert)
+        if (syncState.connectedTimeSources.length === 0) {
+            syncState.systemStatus = 'ok';
+            updateStatusIndicator();
+            return;
+        }
         
-        // MODIFICATION: Ne synchroniser que si on a des time_sources connectées
-        if (syncState.connectedTimeSources.length > 0 && syncState.serverTime && !isNaN(syncState.serverTime.getTime())) {
+        // Si on a une source de temps ET l'heure serveur
+        if (syncState.serverTime && !isNaN(syncState.serverTime.getTime())) {
             const now = new Date();
             const serverTimeAdjusted = new Date(syncState.serverTime.getTime());
             
-            // Ajuster l'heure serveur en fonction du temps écoulé
+            // Ajuster l'heure serveur
             if (syncState.lastSyncCheck) {
                 const elapsed = now.getTime() - syncState.lastSyncCheck.getTime();
                 serverTimeAdjusted.setTime(serverTimeAdjusted.getTime() + elapsed);
@@ -281,154 +248,90 @@ window.clock = (function() {
             const driftMs = Math.abs(now.getTime() - serverTimeAdjusted.getTime());
             const driftSeconds = Math.round(driftMs / 1000);
             
-            console.log(`Vérification sync - Décalage: ${driftSeconds}s`);
+            if (APP_CONFIG && APP_CONFIG.debug && driftSeconds > 10) {
+                console.log(`Décalage temps: ${driftSeconds}s`);
+            }
             
-            if (driftSeconds > config.maxDriftSeconds) {
-                console.log(`Décalage important détecté: ${driftSeconds}s`);
-                
-                // NOUVEAU: Demander confirmation avant synchronisation automatique
-                // Cela permet de s'assurer qu'on est bien sur un PC time_source
-                if (shouldAutoSync()) {
-                    console.log(`Synchronisation automatique déclenchée`);
-                    performAutoSync();
-                } else {
-                    console.log('Synchronisation automatique désactivée - pas un time_source confirmé');
-                }
-            }
-        }
-    }
-    
-    // NOUVEAU: Logique pour déterminer si on doit synchroniser automatiquement
-    function shouldAutoSync() {
-        // Pour l'instant, on synchronise si:
-        // 1. Au moins un time_source est connecté
-        // 2. Le décalage est important
-        // 
-        // Dans une version future, on pourrait:
-        // - Identifier spécifiquement si le PC actuel est un time_source
-        // - Demander confirmation à l'utilisateur
-        // - Vérifier que l'heure locale semble correcte (pas 1970, pas dans le futur, etc.)
-        
-        const localTime = new Date();
-        const currentYear = localTime.getFullYear();
-        
-        // Vérifier que l'heure locale semble valide
-        if (currentYear < 2020 || currentYear > 2030) {
-            console.warn('Heure locale suspecte, pas de synchronisation automatique');
-            return false;
-        }
-        
-        // Si on a des time_sources connectées, on peut synchroniser
-        return syncState.connectedTimeSources.length > 0;
-    }
-    
-    function evaluateSystemStatus() {
-        let newStatus = 'unknown';
-        
-        // Déterminer le statut du système
-        if (syncState.connectedTimeSources.length === 0) {
-            // Aucune source de temps connectée
-            if (syncState.serverTime && !isNaN(syncState.serverTime.getTime())) {
-                // On a quand même une heure serveur valide (RTC), donc OK
-                newStatus = 'ok';
+            // Si décalage > 3 minutes et pas déjà en train de synchroniser
+            if (driftSeconds > config.maxDriftSeconds && !syncState.isSyncing) {
+                console.log(`Synchronisation automatique requise - Décalage: ${driftSeconds}s`);
+                performAutoSync();
             } else {
-                // Pas de source de temps du tout
-                newStatus = 'error';
+                // Tout va bien
+                syncState.systemStatus = 'ok';
+                updateStatusIndicator();
             }
-        } else {
-            // Au moins une source de temps connectée
-            if (syncState.serverTime && !isNaN(syncState.serverTime.getTime())) {
-                const now = new Date();
-                const serverTimeAdjusted = new Date(syncState.serverTime.getTime());
-                
-                // Ajuster l'heure serveur en fonction du temps écoulé
-                if (syncState.lastSyncCheck) {
-                    const elapsed = now.getTime() - syncState.lastSyncCheck.getTime();
-                    serverTimeAdjusted.setTime(serverTimeAdjusted.getTime() + elapsed);
-                }
-                
-                const driftMs = Math.abs(now.getTime() - serverTimeAdjusted.getTime());
-                const driftSeconds = Math.round(driftMs / 1000);
-                
-                if (driftSeconds <= config.maxDriftSeconds) {
-                    newStatus = 'ok';
-                } else {
-                    // Décalage important détecté
-                    newStatus = 'error';
-                }
-            } else {
-                // Pas encore d'heure serveur reçue
-                newStatus = 'unknown';
-            }
-        }
-        
-        // Mettre à jour le statut si changement
-        if (newStatus !== syncState.systemStatus) {
-            syncState.systemStatus = newStatus;
-            updateStatusIndicator();
-            console.log('Statut système mis à jour:', newStatus);
         }
     }
     
     function updateStatusIndicator() {
         if (!elements.statusIndicator) return;
         
-        // UTILISER LES MÊMES CLASSES QUE WIFISTATS/MQTTSTATS
-        elements.statusIndicator.classList.remove('status-ok', 'status-error');
+        elements.statusIndicator.classList.remove('status-ok', 'status-error', 'status-syncing');
         
-        // Ajouter la classe appropriée
         switch (syncState.systemStatus) {
             case 'ok':
                 elements.statusIndicator.classList.add('status-ok');
-                elements.statusIndicator.title = 'Temps synchronisé';
+                elements.statusIndicator.title = 'Heure synchronisée';
                 break;
+            
+            case 'syncing':
+                elements.statusIndicator.classList.add('status-syncing');
+                elements.statusIndicator.title = 'Synchronisation en cours...';
+                break;
+            
             case 'error':
-            case 'unknown':
-            default:
                 elements.statusIndicator.classList.add('status-error');
-                elements.statusIndicator.title = 'Problème de synchronisation';
+                elements.statusIndicator.title = 'Erreur de synchronisation';
+                // Repasser en OK après 5 secondes
+                setTimeout(() => {
+                    if (syncState.systemStatus === 'error') {
+                        syncState.systemStatus = 'ok';
+                        updateStatusIndicator();
+                    }
+                }, 5000);
                 break;
         }
     }
     
     function performAutoSync() {
-        if (syncState.connectedTimeSources.length === 0) {
-            console.warn('Aucune source de temps connectée pour la synchronisation automatique');
+        if (syncState.connectedTimeSources.length === 0 || syncState.isSyncing) {
             return;
         }
         
-        // Prendre la première source de temps connectée
+        // Marquer comme en cours de synchronisation
+        syncState.isSyncing = true;
+        syncState.systemStatus = 'syncing';
+        updateStatusIndicator();
+        
+        // Utiliser la première source de temps disponible
         const timeSource = syncState.connectedTimeSources[0];
         const clientTime = new Date(); // Heure du PC qui consulte le dashboard
         
-        console.log('Synchronisation automatique en cours...');
-        console.log(`Heure locale du PC: ${clientTime.toLocaleString()}`);
-        console.log(`Source utilisée: ${timeSource.mac}`);
+        console.log(`Synchronisation avec l'heure du client: ${clientTime.toLocaleString()}`);
         
-        // Préparer la commande de synchronisation
+        // Préparer la commande
         const syncCommand = {
             action: 'set_time',
-            timestamp: Math.floor(clientTime.getTime() / 1000), // Heure du PC en secondes Unix
+            timestamp: Math.floor(clientTime.getTime() / 1000),
             timezone: Intl.DateTimeFormat().resolvedOptions().timeZone,
             source_mac: timeSource.mac,
             source: 'dashboard_auto',
-            source_device: navigator.userAgent, // Info sur le navigateur/PC
             request_id: generateRequestId()
         };
         
         // Envoyer via MQTT
         if (window.orchestrator && window.orchestrator.connected) {
             window.orchestrator.publish('system/time/sync/command', syncCommand);
-            console.log('Commande de synchronisation automatique envoyée:', syncCommand);
         } else {
-            console.error('MQTT non connecté - synchronisation automatique impossible');
+            console.error('MQTT non connecté');
             syncState.systemStatus = 'error';
+            syncState.isSyncing = false;
             updateStatusIndicator();
         }
     }
     
     function requestServerTime() {
-        // Demander une mise à jour de l'heure serveur
         if (window.orchestrator && window.orchestrator.connected) {
             window.orchestrator.publish('system/time/request', {
                 request_id: generateRequestId(),
@@ -456,7 +359,7 @@ window.clock = (function() {
     return {
         init: init,
         destroy: destroy,
-        // NOUVEAU: Exposer des méthodes pour le debug
+        // Méthodes exposées pour debug
         getState: () => syncState,
         forceSync: performAutoSync,
         checkSync: checkTimeSync
