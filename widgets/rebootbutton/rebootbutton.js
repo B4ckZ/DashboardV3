@@ -126,10 +126,18 @@ window.rebootbutton = (function() {
         }
     }
     
+    function normalizeText(text) {
+        // Normaliser le texte en retirant les accents
+        return text.normalize('NFD')
+            .replace(/[\u0300-\u036f]/g, '') // Retirer les accents
+            .toUpperCase();
+    }
+    
     function validateInput() {
         const inputValue = elements.input.value.trim();
-        // Accepter "REDEMARRER" ou "redémarrer" (insensible à la casse)
-        const isValid = inputValue.toUpperCase() === 'REDEMARRER';
+        // Accepter "REDEMARRER" ou "REDÉMARRER" (avec ou sans accent, insensible à la casse)
+        const normalizedInput = normalizeText(inputValue);
+        const isValid = normalizedInput === 'REDEMARRER';
         
         elements.confirmBtn.disabled = !isValid;
         
