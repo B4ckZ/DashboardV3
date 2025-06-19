@@ -127,8 +127,9 @@ window.rebootbutton = (function() {
     }
     
     function validateInput() {
-        const inputValue = elements.input.value.toLowerCase().trim();
-        const isValid = inputValue === 'redémarrer';
+        const inputValue = elements.input.value.trim();
+        // Accepter "REDEMARRER" ou "redémarrer" (insensible à la casse)
+        const isValid = inputValue.toUpperCase() === 'REDEMARRER';
         
         elements.confirmBtn.disabled = !isValid;
         
@@ -180,14 +181,18 @@ window.rebootbutton = (function() {
         
         // Envoyer la commande de reboot via l'orchestrateur
         if (window.orchestrator && window.orchestrator.publish) {
+            // Envoyer exactement ce que l'utilisateur a tapé
+            const userInput = elements.input.value.trim();
+            
             window.orchestrator.publish('maxlink/system/reboot', {
                 command: 'reboot',
                 timestamp: new Date().toISOString(),
                 confirmed: true,
-                user_confirmation: 'redémarrer'
+                user_confirmation: userInput
             });
             
             console.log('Commande de redémarrage envoyée via MQTT');
+            console.log('Confirmation utilisateur:', userInput);
         } else {
             console.error('Orchestrateur non disponible pour envoyer la commande');
         }
