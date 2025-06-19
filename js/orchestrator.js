@@ -306,3 +306,6 @@ export default orchestrator;
 
 // Compatibilité globale pour les widgets existants
 window.orchestrator = orchestrator;
+
+// Exposer APP_CONFIG globalement pour les widgets
+window.APP_CONFIG = APP_CONFIG;

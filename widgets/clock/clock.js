@@ -64,7 +64,7 @@ window.clock = (function() {
                 // Démarrer avec indicateur vert (état normal)
                 updateStatusIndicator();
                 
-                if (APP_CONFIG && APP_CONFIG.debug) {
+                if (window.APP_CONFIG && window.APP_CONFIG.debug) {
                     console.log('Clock widget V6 simplifié initialisé');
                 }
             })
@@ -128,7 +128,7 @@ window.clock = (function() {
     }
     
     function handleUpdate(topic, data) {
-        if (APP_CONFIG && APP_CONFIG.debug) {
+        if (window.APP_CONFIG && window.APP_CONFIG.debug) {
             console.log('Clock update:', topic, data);
         }
         
@@ -188,7 +188,7 @@ window.clock = (function() {
                 return deviceDb[mac] && deviceDb[mac].time_source === true;
             });
             
-            if (APP_CONFIG && APP_CONFIG.debug && syncState.connectedTimeSources.length > 0) {
+            if (window.APP_CONFIG && window.APP_CONFIG.debug && syncState.connectedTimeSources.length > 0) {
                 console.log(`${syncState.connectedTimeSources.length} source(s) de temps connectée(s)`);
             }
         });
@@ -196,7 +196,7 @@ window.clock = (function() {
     
     function handleSyncResult(data) {
         if (data.status === 'success') {
-            if (APP_CONFIG && APP_CONFIG.debug) {
+            if (window.APP_CONFIG && window.APP_CONFIG.debug) {
                 console.log('Synchronisation réussie:', data.message);
             }
             syncState.systemStatus = 'ok';
@@ -248,7 +248,7 @@ window.clock = (function() {
             const driftMs = Math.abs(now.getTime() - serverTimeAdjusted.getTime());
             const driftSeconds = Math.round(driftMs / 1000);
             
-            if (APP_CONFIG && APP_CONFIG.debug && driftSeconds > 10) {
+            if (window.APP_CONFIG && window.APP_CONFIG.debug && driftSeconds > 10) {
                 console.log(`Décalage temps: ${driftSeconds}s`);
             }
             
