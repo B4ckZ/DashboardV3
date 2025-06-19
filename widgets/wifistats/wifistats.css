@@ -63,7 +63,7 @@
 .wifi-client {
     display: flex;
     align-items: center;
-    padding: 16px 18px;
+    padding: 10px 18px;
     margin-bottom: 8px;
     border-radius: calc(var(--border-radius) - 4px);
     background-color: var(--nord2);
@@ -144,22 +144,6 @@
 .client-uptime {
     color: var(--nord5);
     font-weight: 500;
-}
-
-/* Placeholder quand aucun client */
-.wifi-placeholder {
-    text-align: center;
-    color: var(--nord4);
-    font-style: italic;
-    padding: 40px 20px;
-    background-color: var(--nord0);
-    border-radius: calc(var(--border-radius) - 4px);
-    margin: 20px 0;
-}
-
-.wifi-placeholder p {
-    margin: 0;
-    font-size: 16px;
 }
 
 /* Animations pour l'ajout/suppression */

@@ -70,11 +70,7 @@ window.wifistats = (function() {
         
         // Si aucun client
         if (clients.length === 0) {
-            elements.clientsContainer.innerHTML = `
-                <div class="wifi-placeholder">
-                    <p>Aucun client connecté</p>
-                </div>
-            `;
+            elements.clientsContainer.innerHTML = '';
             updateStatusIndicator(false);
             return;
         }
