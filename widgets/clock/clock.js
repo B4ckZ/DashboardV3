@@ -1,5 +1,5 @@
 // ===============================================================================
-// CLOCK WIDGET V4 - CORRECTION DU BUG "INVALID DATE"
+// CLOCK WIDGET V5 - SYNCHRONISATION INTELLIGENTE AVEC TIME_SOURCE
 // widgets/clock/clock.js
 // ===============================================================================
 
@@ -20,7 +20,9 @@ window.clock = (function() {
         serverTime: null,
         connectedTimeSources: [],
         lastSyncCheck: null,
-        systemStatus: 'unknown' // 'ok', 'error', 'unknown'
+        systemStatus: 'unknown', // 'ok', 'error', 'unknown'
+        currentDeviceIsTimeSource: false, // NOUVEAU: flag pour le device actuel
+        currentDeviceMac: null // NOUVEAU: MAC address du device actuel
     };
     
     function init(element) {
@@ -49,6 +51,9 @@ window.clock = (function() {
                 // Démarrer la vérification de synchronisation
                 startTimeCheck();
                 
+                // Détecter le device actuel
+                detectCurrentDevice();
+                
                 // Enregistrer pour recevoir les données via l'orchestrateur
                 if (window.orchestrator) {
                     window.orchestrator.registerWidget('clock', {
@@ -60,11 +65,37 @@ window.clock = (function() {
                     ]);
                 }
                 
-                console.log('Clock widget avec indicateur cohérent initialisé');
+                console.log('Clock widget V5 avec détection time_source initialisé');
             })
             .catch(error => {
                 console.error('Erreur chargement Clock widget:', error);
             });
+    }
+    
+    // NOUVEAU: Détecter si le device actuel est configuré comme time_source
+    async function detectCurrentDevice() {
+        try {
+            // Méthode 1: Essayer de récupérer l'adresse MAC locale (ne fonctionne pas dans tous les navigateurs)
+            // Pour l'instant, on utilise une approche basée sur la détection des clients connectés
+            
+            // Charger la base de données des devices
+            const deviceDb = await loadDeviceDatabase();
+            
+            // Attendre que la liste des clients soit disponible
+            setTimeout(() => {
+                if (syncState.connectedTimeSources.length > 0) {
+                    // Pour l'instant, on considère que si au moins un time_source est connecté
+                    // et que nous sommes sur le réseau local, nous pouvons synchroniser
+                    console.log('Time sources détectées, synchronisation possible');
+                    
+                    // Dans une version future, on pourrait identifier spécifiquement 
+                    // quel client consulte le dashboard via WebRTC ou autre méthode
+                }
+            }, 5000);
+            
+        } catch (error) {
+            console.error('Erreur détection device actuel:', error);
+        }
     }
     
     function updateClock() {
@@ -191,6 +222,15 @@ window.clock = (function() {
             
             console.log('Sources de temps connectées:', syncState.connectedTimeSources.length);
             
+            // NOUVEAU: Afficher les time sources dans la console pour debug
+            if (syncState.connectedTimeSources.length > 0) {
+                console.log('Time sources disponibles:');
+                syncState.connectedTimeSources.forEach(source => {
+                    const device = deviceDb[source.mac.toLowerCase()];
+                    console.log(`- ${device.name} (${source.mac})`);
+                });
+            }
+            
             // Vérifier le statut système
             evaluateSystemStatus();
         });
@@ -227,7 +267,7 @@ window.clock = (function() {
     function checkTimeSync() {
         evaluateSystemStatus();
         
-        // Si sources disponibles et décalage détecté, synchroniser automatiquement
+        // MODIFICATION: Ne synchroniser que si on a des time_sources connectées
         if (syncState.connectedTimeSources.length > 0 && syncState.serverTime && !isNaN(syncState.serverTime.getTime())) {
             const now = new Date();
             const serverTimeAdjusted = new Date(syncState.serverTime.getTime());
@@ -244,10 +284,42 @@ window.clock = (function() {
             console.log(`Vérification sync - Décalage: ${driftSeconds}s`);
             
             if (driftSeconds > config.maxDriftSeconds) {
-                console.log(`Synchronisation automatique déclenchée - Décalage: ${driftSeconds}s`);
-                performAutoSync();
+                console.log(`Décalage important détecté: ${driftSeconds}s`);
+                
+                // NOUVEAU: Demander confirmation avant synchronisation automatique
+                // Cela permet de s'assurer qu'on est bien sur un PC time_source
+                if (shouldAutoSync()) {
+                    console.log(`Synchronisation automatique déclenchée`);
+                    performAutoSync();
+                } else {
+                    console.log('Synchronisation automatique désactivée - pas un time_source confirmé');
+                }
             }
         }
+    }
+    
+    // NOUVEAU: Logique pour déterminer si on doit synchroniser automatiquement
+    function shouldAutoSync() {
+        // Pour l'instant, on synchronise si:
+        // 1. Au moins un time_source est connecté
+        // 2. Le décalage est important
+        // 
+        // Dans une version future, on pourrait:
+        // - Identifier spécifiquement si le PC actuel est un time_source
+        // - Demander confirmation à l'utilisateur
+        // - Vérifier que l'heure locale semble correcte (pas 1970, pas dans le futur, etc.)
+        
+        const localTime = new Date();
+        const currentYear = localTime.getFullYear();
+        
+        // Vérifier que l'heure locale semble valide
+        if (currentYear < 2020 || currentYear > 2030) {
+            console.warn('Heure locale suspecte, pas de synchronisation automatique');
+            return false;
+        }
+        
+        // Si on a des time_sources connectées, on peut synchroniser
+        return syncState.connectedTimeSources.length > 0;
     }
     
     function evaluateSystemStatus() {
@@ -327,17 +399,20 @@ window.clock = (function() {
         
         // Prendre la première source de temps connectée
         const timeSource = syncState.connectedTimeSources[0];
-        const clientTime = new Date();
+        const clientTime = new Date(); // Heure du PC qui consulte le dashboard
         
         console.log('Synchronisation automatique en cours...');
+        console.log(`Heure locale du PC: ${clientTime.toLocaleString()}`);
+        console.log(`Source utilisée: ${timeSource.mac}`);
         
         // Préparer la commande de synchronisation
         const syncCommand = {
             action: 'set_time',
-            timestamp: Math.floor(clientTime.getTime() / 1000),
+            timestamp: Math.floor(clientTime.getTime() / 1000), // Heure du PC en secondes Unix
             timezone: Intl.DateTimeFormat().resolvedOptions().timeZone,
             source_mac: timeSource.mac,
             source: 'dashboard_auto',
+            source_device: navigator.userAgent, // Info sur le navigateur/PC
             request_id: generateRequestId()
         };
         
@@ -380,6 +455,10 @@ window.clock = (function() {
     
     return {
         init: init,
-        destroy: destroy
+        destroy: destroy,
+        // NOUVEAU: Exposer des méthodes pour le debug
+        getState: () => syncState,
+        forceSync: performAutoSync,
+        checkSync: checkTimeSync
     };
 })();

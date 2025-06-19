@@ -147,10 +147,8 @@ class Orchestrator {
         // Gérer les cas où data.value n'existe pas
         const value = data.value !== undefined ? data.value : data;
         
-        // Ajouter timestamp formaté si disponible
-        if (data.timestamp) {
-            formatted.timestamp = new Date(data.timestamp).toLocaleString('fr-FR');
-        }
+        // NE PAS ajouter de timestamp formaté ici pour éviter la confusion
+        // Le widget clock gère lui-même la conversion du timestamp
         
         if (topic.includes('uptime')) {
             const seconds = parseInt(value) || 0;
@@ -191,10 +189,17 @@ class Orchestrator {
                 formatted.raw = numValue;
             }
         }
-        // NOUVEAU : Gestion des topics de temps système
+        // CORRECTION : Gestion des topics de temps système
         else if (topic === 'system.time' || topic.includes('time')) {
+            // IMPORTANT : Le timestamp reçu est en SECONDES Unix
+            // Le widget clock s'attend à recevoir le timestamp en secondes
+            // et fera lui-même la conversion en millisecondes
+            
             if (data.timestamp) {
-                // Convertir timestamp Unix en Date JavaScript
+                // Garder le timestamp original en secondes
+                formatted.timestamp = data.timestamp;
+                
+                // Pour l'affichage dans l'orchestrateur uniquement
                 const serverTime = new Date(data.timestamp * 1000);
                 formatted.serverTime = serverTime;
                 formatted.formatted = serverTime.toLocaleString('fr-FR');
@@ -219,7 +224,12 @@ class Orchestrator {
         else if (topic === 'network.wifi.clients' || topic === 'network.wifi.status') {
             // Pour les données WiFi, retourner la structure complète
             if (data.timestamp) {
-                formatted.timestamp = new Date(data.timestamp).toLocaleString('fr-FR');
+                // Pour ces topics, timestamp peut être en format ISO
+                try {
+                    formatted.timestamp = new Date(data.timestamp).toLocaleString('fr-FR');
+                } catch (e) {
+                    formatted.timestamp = data.timestamp;
+                }
             }
             // Pas besoin de réassigner, juste retourner formatted qui contient déjà toutes les données
             return formatted;
