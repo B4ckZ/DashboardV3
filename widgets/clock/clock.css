@@ -21,27 +21,41 @@
         inset -2px -2px 4px var(--highlight-color);
 }
 
-/* Styles pour l'heure */
-.clock-time {
-    font-size: 18px;
-    font-weight: 600;
-    color: var(--nord8);
-    letter-spacing: 2px;
+/* Conteneur pour date et heure sur une ligne */
+.clock-datetime {
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    gap: 12px;
+    width: 100%;
+    padding: 0 20px;
 }
 
-/* Stabilité de l'affichage */
-.clock-time-stable {
+/* Styles pour l'heure */
+.clock-time {
+    font-size: 20px;
+    font-weight: 500;
+    color: var(--nord8);
+    letter-spacing: 2px;
     font-family: 'Roboto Mono', monospace;
-    width: 160px;
-    text-align: center;
     white-space: nowrap;
+}
+
+/* Séparateur entre heure et date */
+.clock-separator {
+    color: var(--nord4);
+    font-size: 16px;
+    opacity: 0.6;
 }
 
 /* Styles pour la date */
 .clock-date {
-    font-size: 14px;
-    color: var(--nord4);
-    letter-spacing: 1px;
+    font-size: 18px;
+    font-weight: 500;
+    color: var(--nord8);
+    letter-spacing: 2px;
+    font-family: 'Roboto Mono', monospace;
+    white-space: nowrap;
 }
 
 /* =============================================================================== */
@@ -131,12 +145,21 @@
         height: 10px;
     }
     
+    .clock-datetime {
+        gap: 8px;
+        padding: 0 15px;
+    }
+    
     .clock-time {
         font-size: 16px;
     }
     
     .clock-date {
         font-size: 12px;
+    }
+    
+    .clock-separator {
+        font-size: 14px;
     }
 }
 
@@ -145,12 +168,34 @@
         width: 8px;
         height: 8px;
     }
+    
+    .clock-datetime {
+        gap: 6px;
+        padding: 0 10px;
+    }
+    
+    .clock-time {
+        font-size: 14px;
+        letter-spacing: 1px;
+    }
+    
+    .clock-date {
+        font-size: 11px;
+    }
+    
+    .clock-separator {
+        font-size: 12px;
+    }
 }
 
 /* Mode compact */
 .widget.compact .status-indicator {
     width: 10px;
     height: 10px;
+}
+
+.widget.compact .clock-datetime {
+    gap: 8px;
 }
 
 .widget.compact .clock-time {

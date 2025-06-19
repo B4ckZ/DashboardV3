@@ -77,6 +77,14 @@
     z-index: 5 !important; /* Z-INDEX CONTRÔLÉ */
 }
 
+#downloadinfo {
+    bottom: calc(var(--base-h) + 675px) !important;
+    left: calc(var(--base-d) + 570px) !important;
+    width: 340px !important;
+    height: 65px !important;
+    z-index: 5 !important; /* Z-INDEX CONTRÔLÉ */
+}
+
 #servermonitoring {
     bottom: calc(var(--base-h) + 445px) !important;
     left: calc(var(--base-d) + 40px) !important;

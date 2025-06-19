@@ -40,14 +40,14 @@
     display: flex;
     align-items: center;
     margin-bottom: 16px;
-    font-size: 18px;
+    font-size: 20px;
     font-weight: 600;
     color: var(--nord9);
 }
 
 .widget-icon {
-    width: 24px;
-    height: 24px;
+    width: 25px;
+    height: 25px;
     margin-right: 12px;
 }
 

@@ -1,9 +1,9 @@
 /**
- * Widget Uptime - Version optimisée
+ * Widget DownloadInfo - Basé sur le style du widget Uptime
  */
 
 /* Cadre enfoncé avec marges personnalisables */
-.uptime-inset {
+.downloadinfo-inset {
     /* Positionnement avec les marges définies */
     position: absolute;
     top: 10px;
@@ -24,16 +24,16 @@
         inset -2px -2px 4px var(--highlight-color);
 }
 
-/* Icône d'activité */
-.uptime-icon {
+/* Icône */
+.downloadinfo-icon {
     width: 25px;
     height: 25px;
     margin-right: 10px;
     color: var(--nord8);
 }
 
-/* Valeur d'uptime */
-.uptime-value {
+/* Valeur de date */
+.downloadinfo-value {
     font-size: 18px;
     font-weight: 500;
     color: var(--nord8);
@@ -43,6 +43,6 @@
 }
 
 /* Classe pour la stabilité numérique avec police monospace */
-.uptime-value-stable {
+.downloadinfo-value-stable {
     font-family: 'Roboto Mono', monospace;
 }

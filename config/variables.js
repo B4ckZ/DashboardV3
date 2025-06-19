@@ -115,6 +115,7 @@ export const WIDGETS = [
     'uptime',
     'rebootbutton',
     'downloadbutton',
+	'downloadinfo',
     'servermonitoring',
     'mqttlogs509511',
     'wifistats',
