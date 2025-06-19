@@ -12,7 +12,7 @@ window.clock = (function() {
     // Configuration
     let config = {
         maxDriftSeconds: 180,  // 3 minutes
-        checkIntervalMs: 500 // Vérification toutes les 30 secondes
+        checkIntervalMs: 30000 // Vérification toutes les 30 secondes
     };
     
     // État de synchronisation
