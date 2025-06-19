@@ -107,3 +107,16 @@ export const LAYOUT_CONFIG = {
         rows: 'auto'
     }
 };
+
+// Liste des widgets à charger
+export const WIDGETS = [
+    'logo',
+    'clock',
+    'uptime',
+    'rebootbutton',
+    'downloadbutton',
+    'servermonitoring',
+    'mqttlogs509511',
+    'wifistats',
+    'mqttstats'
+];
