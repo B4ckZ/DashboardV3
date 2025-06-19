@@ -1,6 +1,6 @@
 {
   "38:fc:98:ef:77:75": {
-    "name": "PC Admin Max",
+    "name": "PC fix Max",
     "icon": "assets/icons/user-check.svg",
     "time_source": true,
     "description": ""
@@ -26,7 +26,7 @@
   "9e:07:1d:55:c6:08": {
     "name": "Smartphone Franck",
     "icon": "assets/icons/phone.svg",
-    "time_source": true,
+    "time_source": false,
     "description": ""
   },
   "00:00:00:00:00:03": {
