@@ -1,0 +1,127 @@
+/**
+ * Widget Test - Styles pour la fenêtre de log MQTT
+ */
+
+/* Conteneur principal avec effet enfoncé */
+.test-log-inset {
+    position: absolute;
+    top: 60px;
+    left: 20px;
+    right: 20px;
+    bottom: 20px;
+    background-color: var(--nord0);
+    border-radius: calc(var(--border-radius) - 4px);
+    box-shadow: 
+        inset 4px 4px 8px var(--shadow-color),
+        inset -4px -4px 8px var(--highlight-color);
+    padding: 12px;
+    overflow: hidden;
+}
+
+/* Conteneur des logs avec scroll */
+.test-log-content {
+    height: 100%;
+    overflow-y: auto;
+    font-family: 'Roboto Mono', monospace;
+    font-size: 11px;
+    line-height: 1.5;
+    color: var(--nord8);
+    padding-right: 8px;
+}
+
+/* Entrée de log individuelle */
+.test-log-entry {
+    margin: 3px 0;
+    padding: 2px 0;
+    animation: fadeIn 0.3s ease-in;
+}
+
+/* Animation d'apparition */
+@keyframes fadeIn {
+    from {
+        opacity: 0;
+        transform: translateY(-5px);
+    }
+    to {
+        opacity: 1;
+        transform: translateY(0);
+    }
+}
+
+/* Classes pour différents types de messages */
+.test-log-entry.info {
+    color: var(--nord8);
+}
+
+.test-log-entry.success {
+    color: var(--nord14);
+}
+
+.test-log-entry.warning {
+    color: var(--nord13);
+}
+
+.test-log-entry.error {
+    color: var(--nord11);
+}
+
+/* Timestamp */
+.test-log-timestamp {
+    color: var(--nord3);
+    margin-right: 8px;
+}
+
+/* Topic MQTT */
+.test-log-topic {
+    color: var(--nord9);
+    font-weight: 500;
+}
+
+/* Valeur */
+.test-log-value {
+    color: var(--nord6);
+}
+
+/* Scrollbar personnalisée - Cachée par défaut */
+.test-log-content::-webkit-scrollbar {
+    width: 6px;
+    opacity: 0;
+    transition: opacity 0.3s ease;
+}
+
+.test-log-content::-webkit-scrollbar-track {
+    background: transparent;
+    margin: 4px 0;
+}
+
+.test-log-content::-webkit-scrollbar-thumb {
+    background-color: var(--nord2);
+    border-radius: 10px;
+    transition: all 0.3s ease;
+    box-shadow: 
+        inset 1px 1px 2px var(--shadow-color),
+        inset -1px -1px 2px var(--highlight-color);
+    opacity: 0;
+}
+
+/* Afficher la scrollbar uniquement au survol du conteneur */
+.test-log-inset:hover .test-log-content::-webkit-scrollbar-thumb {
+    opacity: 1;
+}
+
+.test-log-content::-webkit-scrollbar-thumb:hover {
+    background-color: var(--nord8);
+    opacity: 1;
+}
+
+/* Support Firefox - Toujours cachée */
+.test-log-content {
+    scrollbar-width: none; /* Complètement cachée sur Firefox */
+    -ms-overflow-style: none; /* IE and Edge */
+}
+
+/* Alternative pour Firefox - scrollbar fine au survol */
+.test-log-inset:hover .test-log-content {
+    scrollbar-width: thin;
+    scrollbar-color: var(--nord2) transparent;
+}
