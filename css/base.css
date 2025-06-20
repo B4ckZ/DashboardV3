@@ -1,0 +1,129 @@
+/**
+ * Styles de base pour le dashboard MAXLINK
+ */
+
+/* Variables de design */
+:root {
+    /* Variables de design */
+    --border-radius: 16px;
+    --widget-padding: 20px;
+    --transition-speed: 0.3s;
+    --widget-gap: 16px;
+    
+    /* Effets neumorphiques - Mode sombre */
+    --shadow-color: rgba(0, 0, 0, 0.2);
+    --highlight-color: rgba(255, 255, 255, 0.05);
+    
+    /* Centre de l'écran pour positionnement */
+    --centre-h: 50vh; /* H = hauteur (verticale) */
+    --centre-d: 50vw; /* D = droite (horizontale) */
+    
+    /* Variables pour les scrollbars */
+    --scrollbar-width: 6px;
+    --scrollbar-thumb-color: var(--nord2);
+    --scrollbar-thumb-hover-color: var(--nord8);
+    --scrollbar-margin-right: 3px;
+    --scrollbar-padding-right: 8px;
+}
+
+/* Styles globaux */
+* {
+    margin: 0;
+    padding: 0;
+    box-sizing: border-box;
+    transition: background-color var(--transition-speed) ease, 
+                color var(--transition-speed) ease,
+                box-shadow var(--transition-speed) ease;
+}
+
+html, body {
+    height: 100%;
+    overflow: hidden;
+    font-family: 'Inter', sans-serif;
+}
+
+/* Style de base */
+body {
+    background-color: var(--nord0);
+    color: var(--nord6);
+    line-height: 1.6;
+    font-weight: 400;
+}
+
+/* Styles Neumorphiques */
+.neumorphic {
+    background-color: var(--nord1);
+    border-radius: var(--border-radius);
+    box-shadow: 
+        8px 8px 16px var(--shadow-color),
+        -8px -8px 16px var(--highlight-color);
+}
+
+.neumorphic-inset {
+    background-color: var(--nord0);
+    border-radius: calc(var(--border-radius) - 4px);
+    box-shadow: 
+        inset 4px 4px 8px var(--shadow-color),
+        inset -4px -4px 8px var(--highlight-color);
+}
+
+/* Scrollbar Styling - Style unifié et optimisé */
+::-webkit-scrollbar {
+    width: var(--scrollbar-width);
+    height: var(--scrollbar-width);
+}
+
+::-webkit-scrollbar-track {
+    background: transparent;
+    margin: 4px 0;
+    margin-right: var(--scrollbar-margin-right);
+}
+
+::-webkit-scrollbar-thumb {
+    background-color: var(--scrollbar-thumb-color);
+    border-radius: 10px;
+    transition: all 0.3s ease;
+    box-shadow: 
+        inset 1px 1px 2px var(--shadow-color),
+        inset -1px -1px 2px var(--highlight-color);
+}
+
+::-webkit-scrollbar-thumb:hover {
+    background-color: var(--scrollbar-thumb-hover-color);
+}
+
+::-webkit-scrollbar-corner {
+    background: transparent;
+}
+
+/* Support Firefox */
+* {
+    scrollbar-width: thin;
+    scrollbar-color: var(--scrollbar-thumb-color) transparent;
+}
+
+/* Sélecteurs pour les éléments avec scrollbars - CORRIGÉ pour exclure .widget-container */
+[class*="content"],
+.scrollable-content,
+.mqtt-topics,
+.logs-container,
+.clients-container,
+div[style*="overflow: auto"],
+div[style*="overflow-y: auto"] {
+    /* Configuration des scrollbars */
+    scrollbar-width: thin;
+    scrollbar-color: var(--scrollbar-thumb-color) transparent;
+    
+    /* Espacement pour éviter les chevauchements */
+    scrollbar-gutter: stable;
+    padding-right: var(--scrollbar-padding-right) !important;
+    
+    /* Assurer le calcul correct des dimensions */
+    box-sizing: border-box;
+}
+
+/* Assurer que les widget-container conservent leurs coins arrondis */
+.widget-container {
+    border-radius: var(--border-radius) !important;
+    overflow: hidden !important;
+}

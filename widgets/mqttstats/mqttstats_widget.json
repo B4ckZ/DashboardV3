@@ -1,0 +1,92 @@
+{
+  "widget": {
+    "id": "mqttstats",
+    "name": "MQTT Statistics",
+    "version": "3.0.0",
+    "description": "Collecte et affiche les statistiques du broker MQTT avec surveillance ciblée des topics SOUFFLAGE",
+    "author": "MaxLink Team",
+    "dashboard_compatibility": "1.0+"
+  },
+  "mqtt": {
+    "required": true,
+    "broker": {
+      "host": "localhost",
+      "port": 1883,
+      "username": "mosquitto",
+      "password": "mqtt"
+    },
+    "topics": {
+      "publish": [
+        {
+          "topic": "rpi/network/mqtt/stats",
+          "description": "Statistiques principales du broker MQTT",
+          "format": "json",
+          "example": "{\"timestamp\": \"2025-05-27T10:00:00Z\", \"messages_received\": 15234, \"messages_sent\": 8712, \"clients_connected\": 5, \"uptime_seconds\": 86400, \"latency_ms\": 12}"
+        },
+        {
+          "topic": "rpi/network/mqtt/topics",
+          "description": "Liste des topics MQTT actifs surveillés",
+          "format": "json",
+          "example": "{\"timestamp\": \"2025-05-27T10:00:00Z\", \"topics\": [\"SOUFFLAGE/509/ESP32/status\", \"SOUFFLAGE/511/ESP32/data\"], \"count\": 2}"
+        }
+      ],
+      "subscribe": [
+        {
+          "topic": "$SYS/broker/clients/connected",
+          "description": "Nombre de clients connectés",
+          "format": "integer"
+        },
+        {
+          "topic": "$SYS/broker/messages/received",
+          "description": "Nombre total de messages reçus",
+          "format": "integer"
+        },
+        {
+          "topic": "$SYS/broker/messages/sent",
+          "description": "Nombre total de messages envoyés",
+          "format": "integer"
+        },
+        {
+          "topic": "$SYS/broker/uptime",
+          "description": "Temps de fonctionnement du broker",
+          "format": "string",
+          "example": "365420 seconds"
+        },
+        {
+          "topic": "$SYS/broker/version",
+          "description": "Version du broker Mosquitto",
+          "format": "string"
+        }
+      ],
+      "monitored_patterns": [
+        {
+          "pattern": "SOUFFLAGE/509/ESP32/#",
+          "description": "Machine 509 - Tous les sous-topics"
+        },
+        {
+          "pattern": "SOUFFLAGE/511/ESP32/#",
+          "description": "Machine 511 - Tous les sous-topics"
+        },
+        {
+          "pattern": "SOUFFLAGE/999/ESP32/#",
+          "description": "Machine 999 - Tous les sous-topics"
+        }
+      ]
+    }
+  },
+  "collector": {
+    "enabled": true,
+    "script": "mqttstats_collector.py",
+    "service_name": "maxlink-widget-mqttstats",
+    "service_description": "MaxLink MQTT Statistics Collector - Surveillance ciblée",
+    "topic_config_file": "topic_config.json"
+  },
+  "dependencies": {
+    "python_packages": [
+      "paho-mqtt"
+    ],
+    "system_packages": [],
+    "services": ["mosquitto"],
+    "python_version": ">=3.7"
+  }
+}

@@ -1,0 +1,58 @@
+/**
+ * Widget Reboot Button - Style identique au widget uptime
+ * Avec icône parfaitement centrée
+ */
+
+/* Cadre enfoncé - reprend exactement le style de uptime-inset */
+.reboot-inset {
+    position: absolute;
+    top: 10px;
+    left: 10px;
+    width: calc(100% - 20px);
+    height: calc(100% - 20px);
+    
+    border-radius: calc(var(--border-radius) - 4px);
+    
+    background-color: var(--nord0);
+    /* Flexbox pour assurer le centrage parfait */
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    box-shadow: 
+        inset 2px 2px 4px var(--shadow-color),
+        inset -2px -2px 4px var(--highlight-color);
+}
+
+/* Bouton de redémarrage simple avec centrage parfait */
+.reboot-button {
+    /* Enlever toutes les marges et rembourrages qui pourraient affecter le centrage */
+    background: none;
+    border: none;
+    padding: 0;
+    margin: 0;
+    cursor: pointer;
+    
+    /* Assurer que le bouton lui-même est dimensionné correctement */
+
+    /* Flexbox pour centrer l'icône à l'intérieur du bouton */
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    
+    /* Transition pour l'effet de pression */
+    transition: transform 0.1s ease;
+}
+
+/* Effet de pression du bouton */
+.reboot-button:active {
+    transform: scale(0.85);
+}
+
+/* Style de l'icône - taille exacte et pas de marges */
+.reboot-button .widget-icon {
+    width: 25px;
+    height: 25px;
+	margin-right: 0px; /* important pour le centrage des icone de widget type button*/
+    /* Assurer qu'il n'y a pas de marges internes sur l'icône */
+    display: block;
+}
