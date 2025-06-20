@@ -53,6 +53,14 @@
     z-index: 5 !important; /* Z-INDEX CONTRÔLÉ */
 }
 
+#esp32stats {
+    bottom: calc(var(--base-h) + 675px) !important;
+    left: calc(var(--base-d) + 930px) !important;
+    width: 425px !important;
+    height: 220px !important;
+    z-index: 5 !important; /* Z-INDEX CONTRÔLÉ */
+}
+
 #test {
     bottom: calc(var(--base-h) + 675px) !important;
     left: calc(var(--base-d) + 930px) !important;

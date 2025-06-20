@@ -112,6 +112,7 @@ export const LAYOUT_CONFIG = {
 export const WIDGETS = [
     'logo',
     'clock',
+    'esp32stats',
 	'test',
 	'rebootbutton',
     'uptime',
