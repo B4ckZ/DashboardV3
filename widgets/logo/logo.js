@@ -3,10 +3,9 @@
 
 window.logo = (function() {
     let widgetElement;
-    let isToggled = false;
     
     /**
-     * Bascule entre les widgets esp32stats et test
+     * Bascule l'affichage entre esp32stats et test
      */
     function toggleWidgets() {
         const esp32Widget = document.getElementById('esp32stats');
@@ -17,26 +16,36 @@ window.logo = (function() {
             return;
         }
         
-        if (!isToggled) {
-            // Afficher test, cacher esp32stats
+        // Animation de fadeOut/fadeIn
+        esp32Widget.style.transition = 'opacity 0.3s ease-out';
+        testWidget.style.transition = 'opacity 0.3s ease-out';
+        
+        // Cacher esp32stats avec animation
+        esp32Widget.style.opacity = '0';
+        
+        setTimeout(() => {
             esp32Widget.style.display = 'none';
             testWidget.style.display = 'flex';
-            console.log('[logo] Basculé vers widget TEST');
-        } else {
-            // Afficher esp32stats, cacher test
-            testWidget.style.display = 'none';
-            esp32Widget.style.display = 'flex';
-            console.log('[logo] Basculé vers widget ESP32STATS');
-        }
+            testWidget.style.opacity = '0';
+            
+            // Forcer le reflow pour l'animation
+            void testWidget.offsetWidth;
+            
+            // Afficher test avec animation
+            testWidget.style.opacity = '1';
+        }, 300);
         
-        isToggled = !isToggled;
+        console.log('[logo] Basculé vers widget TEST');
         
-        // Ajouter un effet visuel au logo pour indiquer l'état
+        // Effet visuel sur le logo lors du clic
         if (widgetElement) {
             const logoImg = widgetElement.querySelector('.logo-image');
             if (logoImg) {
-                logoImg.style.transition = 'transform 0.3s ease';
-                logoImg.style.transform = isToggled ? 'scale(0.95)' : 'scale(1)';
+                logoImg.style.transition = 'transform 0.2s ease';
+                logoImg.style.transform = 'scale(0.95)';
+                setTimeout(() => {
+                    logoImg.style.transform = 'scale(1)';
+                }, 200);
             }
         }
     }
@@ -61,6 +70,7 @@ window.logo = (function() {
                     const testWidget = document.getElementById('test');
                     if (testWidget) {
                         testWidget.style.display = 'none';
+                        testWidget.style.opacity = '0';
                     }
                 }, 100);
                 
@@ -77,7 +87,6 @@ window.logo = (function() {
     
     return {
         init: init,
-        destroy: destroy,
-        toggleWidgets: toggleWidgets // Exposer la fonction pour un usage externe si nécessaire
+        destroy: destroy
     };
 })();

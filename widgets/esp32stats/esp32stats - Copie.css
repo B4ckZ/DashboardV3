@@ -1,14 +1,12 @@
 /**
  * Widget ESP32 Stats - Styles pour le monitoring des cartes ESP32
- * Version sans titre pour maximiser l'espace
  */
 
-/* Onglets de navigation - Positionnés directement en haut */
+/* Onglets de navigation */
 .esp32-tabs {
     display: flex;
     gap: 8px;
     margin-bottom: 12px;
-    /* Pas de margin-top pour coller au haut du widget */
 }
 
 .esp32-tab {
@@ -33,15 +31,15 @@
     box-shadow: 0 2px 8px rgba(94, 129, 172, 0.3);
 }
 
-/* Conteneur du contenu - Ajusté pour utiliser tout l'espace disponible */
+/* Conteneur du contenu */
 .esp32-tab-content {
-    height: calc(100% - 44px); /* Réduit de 80px à 44px (tabs + margin) */
+    height: calc(100% - 80px);
     background-color: var(--nord0);
     border-radius: 10px;
     padding: 12px;
     box-shadow: 
         inset 2px 2px 4px var(--shadow-color),
-        -2px -2px 4px var(--highlight-color);
+        inset -2px -2px 4px var(--highlight-color);
     overflow-y: auto;
 }
 
