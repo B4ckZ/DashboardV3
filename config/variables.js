@@ -120,6 +120,6 @@ export const WIDGETS = [
     'servermonitoring',
 	'wifistats',
 	'mqttstats',
-	'mqttlogs999',
+	'mqttlogspochetest',
     'mqttlogs509511'
 ];
