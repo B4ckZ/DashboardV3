@@ -53,11 +53,11 @@
     z-index: 5 !important; /* Z-INDEX CONTRÔLÉ */
 }
 
-#uptime {
+#test {
     bottom: calc(var(--base-h) + 675px) !important;
-    left: calc(var(--base-d) + 125px) !important;
-    width: 340px !important;
-    height: 65px !important;
+    left: calc(var(--base-d) + 930px) !important;
+    width: 425px !important;
+    height: 220px !important;
     z-index: 5 !important; /* Z-INDEX CONTRÔLÉ */
 }
 
@@ -67,6 +67,14 @@
     width: 65px !important;
     height: 65px !important;
     z-index: 10 !important; /* Z-INDEX CONTRÔLÉ */
+}
+
+#uptime {
+    bottom: calc(var(--base-h) + 675px) !important;
+    left: calc(var(--base-d) + 125px) !important;
+    width: 340px !important;
+    height: 65px !important;
+    z-index: 5 !important; /* Z-INDEX CONTRÔLÉ */
 }
 
 #downloadbutton {

@@ -112,12 +112,14 @@ export const LAYOUT_CONFIG = {
 export const WIDGETS = [
     'logo',
     'clock',
+	'test',
+	'rebootbutton',
     'uptime',
-    'rebootbutton',
     'downloadbutton',
 	'downloadinfo',
     'servermonitoring',
-    'mqttlogs509511',
-    'wifistats',
-    'mqttstats'
+	'wifistats',
+	'mqttstats',
+	'mqttlogs999',
+    'mqttlogs509511'
 ];
