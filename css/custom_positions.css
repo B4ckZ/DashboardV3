@@ -58,7 +58,7 @@
     left: calc(var(--base-d) + 930px) !important;
     width: 425px !important;
     height: 220px !important;
-    z-index: 5 !important; /* Z-INDEX CONTRÔLÉ */
+    z-index: 6 !important; /* Z-INDEX CONTRÔLÉ */
 }
 
 #test {

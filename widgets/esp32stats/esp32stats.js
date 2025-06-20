@@ -1,13 +1,14 @@
 /**
  * Widget ESP32 Stats - Monitoring des cartes ESP32
+ * Version simplifiée avec 4 métriques essentielles
  */
 window.esp32stats = (function() {
     'use strict';
     
     const widgetId = 'esp32stats';
     let widgetElement = null;
-    let contentElement = null;
     let currentTab = 'node1';
+    let valueElements = {};
     
     // Données simulées pour les ESP32
     const esp32Data = {
@@ -16,12 +17,9 @@ window.esp32stats = (function() {
             status: 'online',
             metrics: {
                 cpu: { value: 45, unit: '%' },
-                ram: { used: 128, total: 320, unit: 'KB' },
-                temperature: { value: 42, unit: '°C' },
-                uptime: { value: '2d 14h 32m' },
-                wifi: { rssi: -45, unit: 'dBm' },
-                tasks: { value: 12 },
-                heap: { free: 192, unit: 'KB' }
+                ram: { value: 40, unit: '%' }, // En pourcentage
+                temperature: { value: 42.5, unit: '°C' },
+                uptime: { value: '2d 14h 32m' }
             }
         },
         node2: {
@@ -29,122 +27,71 @@ window.esp32stats = (function() {
             status: 'online',
             metrics: {
                 cpu: { value: 38, unit: '%' },
-                ram: { used: 156, total: 320, unit: 'KB' },
-                temperature: { value: 39, unit: '°C' },
-                uptime: { value: '5d 8h 16m' },
-                wifi: { rssi: -52, unit: 'dBm' },
-                tasks: { value: 15 },
-                heap: { free: 164, unit: 'KB' }
+                ram: { value: 48, unit: '%' }, // En pourcentage
+                temperature: { value: 39.2, unit: '°C' },
+                uptime: { value: '5d 8h 16m' }
             }
         }
     };
     
     /**
-     * Crée le contenu HTML pour un nœud ESP32
+     * Met à jour les valeurs affichées sans recharger le DOM
      */
-    function createNodeContent(nodeData) {
+    function updateDisplayedValues() {
+        const nodeData = esp32Data[currentTab];
+        if (!nodeData || !valueElements) return;
+        
         const metrics = nodeData.metrics;
-        const ramPercent = Math.round((metrics.ram.used / metrics.ram.total) * 100);
         
-        return `
-            <div class="esp32-metric-row">
-                <span class="esp32-metric-label">Utilisation CPU</span>
-                <span class="esp32-metric-value">${metrics.cpu.value}${metrics.cpu.unit}</span>
-            </div>
-            <div class="esp32-metric-row">
-                <span class="esp32-metric-label">RAM Utilisée</span>
-                <span class="esp32-metric-value">${metrics.ram.used}${metrics.ram.unit} / ${metrics.ram.total}${metrics.ram.unit}</span>
-            </div>
-            <div class="esp32-metric-row">
-                <span class="esp32-metric-label">Température</span>
-                <span class="esp32-metric-value ${metrics.temperature.value > 50 ? 'warning' : ''}">${metrics.temperature.value}${metrics.temperature.unit}</span>
-            </div>
-            <div class="esp32-metric-row">
-                <span class="esp32-metric-label">Uptime</span>
-                <span class="esp32-metric-value">${metrics.uptime.value}</span>
-            </div>
-            <div class="esp32-metric-row">
-                <span class="esp32-metric-label">Signal WiFi</span>
-                <span class="esp32-metric-value">${metrics.wifi.rssi}${metrics.wifi.unit}</span>
-            </div>
-            <div class="esp32-metric-row">
-                <span class="esp32-metric-label">Tâches actives</span>
-                <span class="esp32-metric-value">${metrics.tasks.value}</span>
-            </div>
-            <div class="esp32-metric-row">
-                <span class="esp32-metric-label">Heap libre</span>
-                <span class="esp32-metric-value">${metrics.heap.free}${metrics.heap.unit}</span>
-            </div>
-        `;
-    }
-    
-    /**
-     * Crée le contenu du résumé
-     */
-    function createSummaryContent() {
-        const node1 = esp32Data.node1.metrics;
-        const node2 = esp32Data.node2.metrics;
-        
-        const avgCpu = Math.round((node1.cpu.value + node2.cpu.value) / 2);
-        const totalRam = node1.ram.used + node2.ram.used;
-        const avgTemp = ((node1.temperature.value + node2.temperature.value) / 2).toFixed(1);
-        
-        return `
-            <div class="esp32-metric-row">
-                <span class="esp32-metric-label">Devices en ligne</span>
-                <span class="esp32-metric-value success">2/2</span>
-            </div>
-            <div class="esp32-metric-row">
-                <span class="esp32-metric-label">CPU moyen</span>
-                <span class="esp32-metric-value">${avgCpu}%</span>
-            </div>
-            <div class="esp32-metric-row">
-                <span class="esp32-metric-label">RAM totale utilisée</span>
-                <span class="esp32-metric-value">${totalRam}KB</span>
-            </div>
-            <div class="esp32-metric-row">
-                <span class="esp32-metric-label">Température moyenne</span>
-                <span class="esp32-metric-value">${avgTemp}°C</span>
-            </div>
-            <div class="esp32-metric-row">
-                <span class="esp32-metric-label">Signal WiFi min</span>
-                <span class="esp32-metric-value">${Math.min(node1.wifi.rssi, node2.wifi.rssi)}dBm</span>
-            </div>
-            <div class="esp32-metric-row">
-                <span class="esp32-metric-label">Alertes actives</span>
-                <span class="esp32-metric-value success">0</span>
-            </div>
-        `;
-    }
-    
-    /**
-     * Met à jour le contenu selon l'onglet actif
-     */
-    function updateContent() {
-        if (!contentElement) return;
-        
-        let content = '';
-        switch(currentTab) {
-            case 'node1':
-                content = createNodeContent(esp32Data.node1);
-                break;
-            case 'node2':
-                content = createNodeContent(esp32Data.node2);
-                break;
-            case 'summary':
-                content = createSummaryContent();
-                break;
+        // Mise à jour CPU
+        if (valueElements.cpu) {
+            valueElements.cpu.textContent = `${metrics.cpu.value}${metrics.cpu.unit}`;
+            valueElements.cpu.className = 'esp32-metric-value';
+            if (metrics.cpu.value > 80) {
+                valueElements.cpu.classList.add('warning');
+            } else if (metrics.cpu.value > 90) {
+                valueElements.cpu.classList.add('error');
+            }
         }
         
-        contentElement.innerHTML = content;
+        // Mise à jour RAM
+        if (valueElements.ram) {
+            valueElements.ram.textContent = `${metrics.ram.value}${metrics.ram.unit}`;
+            valueElements.ram.className = 'esp32-metric-value';
+            if (metrics.ram.value > 80) {
+                valueElements.ram.classList.add('warning');
+            } else if (metrics.ram.value > 90) {
+                valueElements.ram.classList.add('error');
+            }
+        }
+        
+        // Mise à jour Température
+        if (valueElements.temp) {
+            valueElements.temp.textContent = `${metrics.temperature.value}${metrics.temperature.unit}`;
+            valueElements.temp.className = 'esp32-metric-value';
+            if (metrics.temperature.value > 60) {
+                valueElements.temp.classList.add('warning');
+            } else if (metrics.temperature.value > 70) {
+                valueElements.temp.classList.add('error');
+            }
+        }
+        
+        // Mise à jour Uptime
+        if (valueElements.uptime) {
+            valueElements.uptime.textContent = metrics.uptime.value;
+            valueElements.uptime.className = 'esp32-metric-value success';
+        }
     }
     
     /**
      * Gère le clic sur les onglets
      */
     function handleTabClick(event) {
-        const tab = event.target.closest('.esp32-tab');
-        if (!tab) return;
+        const tab = event.target;
+        if (!tab.classList.contains('esp32-tab')) return;
+        
+        // Éviter de recharger si c'est déjà l'onglet actif
+        if (tab.dataset.tab === currentTab) return;
         
         // Retirer la classe active de tous les onglets
         widgetElement.querySelectorAll('.esp32-tab').forEach(t => {
@@ -154,9 +101,9 @@ window.esp32stats = (function() {
         // Ajouter la classe active à l'onglet cliqué
         tab.classList.add('active');
         
-        // Mettre à jour le contenu
+        // Mettre à jour l'onglet courant et rafraîchir les valeurs
         currentTab = tab.dataset.tab;
-        updateContent();
+        updateDisplayedValues();
     }
     
     /**
@@ -164,7 +111,6 @@ window.esp32stats = (function() {
      */
     function updateData(topic, data) {
         // Parser le topic pour identifier le nœud et la métrique
-        // Format attendu: esp32/node1/cpu, esp32/node2/temperature, etc.
         const parts = topic.split('/');
         if (parts.length < 3) return;
         
@@ -178,11 +124,47 @@ window.esp32stats = (function() {
                 esp32Data[nodeId].metrics[metric].value = data;
             }
             
-            // Mettre à jour l'affichage si on est sur le bon onglet
-            if (currentTab === nodeId || currentTab === 'summary') {
-                updateContent();
+            // Mettre à jour l'affichage uniquement si on est sur le bon onglet
+            if (currentTab === nodeId) {
+                updateDisplayedValues();
             }
         }
+    }
+    
+    /**
+     * Simulation de mise à jour des données
+     */
+    function simulateDataUpdate() {
+        // Variation aléatoire des valeurs pour node1
+        esp32Data.node1.metrics.cpu.value = Math.round(Math.min(100, Math.max(0, 
+            esp32Data.node1.metrics.cpu.value + (Math.random() - 0.5) * 10)));
+        esp32Data.node1.metrics.ram.value = Math.round(Math.min(100, Math.max(0, 
+            esp32Data.node1.metrics.ram.value + (Math.random() - 0.5) * 5)));
+        esp32Data.node1.metrics.temperature.value = parseFloat(Math.min(80, Math.max(20, 
+            esp32Data.node1.metrics.temperature.value + (Math.random() - 0.5) * 2)).toFixed(1));
+        
+        // Variation aléatoire des valeurs pour node2
+        esp32Data.node2.metrics.cpu.value = Math.round(Math.min(100, Math.max(0, 
+            esp32Data.node2.metrics.cpu.value + (Math.random() - 0.5) * 10)));
+        esp32Data.node2.metrics.ram.value = Math.round(Math.min(100, Math.max(0, 
+            esp32Data.node2.metrics.ram.value + (Math.random() - 0.5) * 5)));
+        esp32Data.node2.metrics.temperature.value = parseFloat(Math.min(80, Math.max(20, 
+            esp32Data.node2.metrics.temperature.value + (Math.random() - 0.5) * 2)).toFixed(1));
+        
+        // Simulation d'incrémentation de l'uptime
+        updateUptime();
+        
+        // Mettre à jour l'affichage
+        updateDisplayedValues();
+    }
+    
+    /**
+     * Simule l'incrémentation de l'uptime
+     */
+    function updateUptime() {
+        // Cette fonction pourrait parser et incrémenter l'uptime
+        // Pour l'instant on garde les valeurs statiques
+        // Dans un cas réel, l'uptime viendrait de l'ESP32
     }
     
     /**
@@ -198,32 +180,31 @@ window.esp32stats = (function() {
             .then(html => {
                 widgetElement.innerHTML = html;
                 
-                // Récupérer les éléments
-                contentElement = widgetElement.querySelector('#esp32-content');
+                // Récupérer les références aux éléments de valeur
+                valueElements = {
+                    cpu: widgetElement.querySelector('[data-metric="cpu"]'),
+                    ram: widgetElement.querySelector('[data-metric="ram"]'),
+                    temp: widgetElement.querySelector('[data-metric="temp"]'),
+                    uptime: widgetElement.querySelector('[data-metric="uptime"]')
+                };
                 
                 // Ajouter les event listeners pour les onglets
-                widgetElement.querySelector('.esp32-tabs').addEventListener('click', handleTabClick);
+                const tabs = widgetElement.querySelectorAll('.esp32-tab');
+                tabs.forEach(tab => {
+                    tab.addEventListener('click', handleTabClick);
+                });
                 
-                // Afficher le contenu initial
-                updateContent();
+                // Afficher les valeurs initiales
+                updateDisplayedValues();
                 
                 // S'abonner aux topics MQTT si disponible
                 if (window.orchestrator && window.orchestrator.subscribeToTopic) {
-                    // S'abonner aux métriques des ESP32
                     window.orchestrator.subscribeToTopic('esp32/+/+', updateData);
                     console.log(`[${widgetId}] Abonné aux topics MQTT esp32/+/+`);
                 }
                 
-                // Simuler des mises à jour pour la démo
-                setInterval(() => {
-                    // Variation aléatoire des valeurs
-                    esp32Data.node1.metrics.cpu.value = Math.min(100, Math.max(0, esp32Data.node1.metrics.cpu.value + (Math.random() - 0.5) * 10));
-                    esp32Data.node2.metrics.cpu.value = Math.min(100, Math.max(0, esp32Data.node2.metrics.cpu.value + (Math.random() - 0.5) * 10));
-                    esp32Data.node1.metrics.temperature.value = Math.min(80, Math.max(20, esp32Data.node1.metrics.temperature.value + (Math.random() - 0.5) * 2));
-                    esp32Data.node2.metrics.temperature.value = Math.min(80, Math.max(20, esp32Data.node2.metrics.temperature.value + (Math.random() - 0.5) * 2));
-                    
-                    updateContent();
-                }, 5000);
+                // Simuler des mises à jour toutes les 5 secondes
+                setInterval(simulateDataUpdate, 5000);
             })
             .catch(error => {
                 console.error(`[${widgetId}] Erreur lors du chargement du HTML:`, error);

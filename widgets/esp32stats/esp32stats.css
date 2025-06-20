@@ -1,5 +1,5 @@
 /**
- * Widget ESP32 Stats - Styles pour le monitoring des cartes ESP32
+ * Widget ESP32 Stats - Styles optimisés pour 4 métriques
  * Version sans titre pour maximiser l'espace
  */
 
@@ -8,7 +8,6 @@
     display: flex;
     gap: 8px;
     margin-bottom: 12px;
-    /* Pas de margin-top pour coller au haut du widget */
 }
 
 .esp32-tab {
@@ -33,25 +32,30 @@
     box-shadow: 0 2px 8px rgba(94, 129, 172, 0.3);
 }
 
-/* Conteneur du contenu - Ajusté pour utiliser tout l'espace disponible */
+
 .esp32-tab-content {
-    height: calc(100% - 44px); /* Réduit de 80px à 44px (tabs + margin) */
+    height: calc(100% - 44px);
     background-color: var(--nord0);
     border-radius: 10px;
-    padding: 12px;
+    padding: 16px;
     box-shadow: 
         inset 2px 2px 4px var(--shadow-color),
         -2px -2px 4px var(--highlight-color);
     overflow-y: auto;
+    
+    /* Centrage vertical du contenu */
+    display: flex;
+    flex-direction: column;
+    justify-content: space-evenly;
 }
 
-/* Lignes de métriques */
+/* Lignes de métriques - Optimisées pour 4 métriques */
 .esp32-metric-row {
     display: flex;
     justify-content: space-between;
     align-items: center;
-    padding: 6px 0;
-    font-size: 12px;
+    padding: 1px 0;
+    font-size: 14px;
     border-bottom: 1px solid rgba(129, 161, 193, 0.1);
 }
 
@@ -67,7 +71,9 @@
 .esp32-metric-value {
     color: var(--nord14);
     font-family: 'Roboto Mono', monospace;
-    font-weight: 500;
+    font-weight: 600;
+    font-size: 14px;
+    transition: color 0.3s ease;
 }
 
 /* Classes de couleur pour les valeurs */
@@ -83,7 +89,7 @@
     color: var(--nord14);
 }
 
-/* Animation de transition */
+/* Animation de transition douce */
 @keyframes fadeIn {
     from {
         opacity: 0;
@@ -95,30 +101,23 @@
     }
 }
 
+/* Animation uniquement au changement d'onglet */
 .esp32-tab-content > * {
     animation: fadeIn 0.3s ease-out;
 }
 
-/* Scrollbar personnalisée */
+/* Scrollbar personnalisée - Plus discrète */
 .esp32-tab-content::-webkit-scrollbar {
-    width: 6px;
-    opacity: 0;
-    transition: opacity 0.3s ease;
+    width: 4px;
 }
 
 .esp32-tab-content::-webkit-scrollbar-track {
     background: transparent;
-    margin: 4px 0;
 }
 
 .esp32-tab-content::-webkit-scrollbar-thumb {
     background-color: var(--nord2);
     border-radius: 10px;
-    opacity: 0;
-}
-
-.esp32-tab-content:hover::-webkit-scrollbar-thumb {
-    opacity: 1;
 }
 
 .esp32-tab-content::-webkit-scrollbar-thumb:hover {
@@ -127,10 +126,6 @@
 
 /* Support Firefox */
 .esp32-tab-content {
-    scrollbar-width: none;
-}
-
-.esp32-tab-content:hover {
     scrollbar-width: thin;
     scrollbar-color: var(--nord2) transparent;
 }

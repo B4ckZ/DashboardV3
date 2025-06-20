@@ -1,9 +1,24 @@
-<!-- Widget ESP32 Stats - Version sans titre -->
+<!-- Widget ESP32 Stats - Version simplifiée avec 4 métriques -->
 <div class="esp32-tabs">
-    <div class="esp32-tab active" data-tab="node1">NODE-01</div>
-    <div class="esp32-tab" data-tab="node2">NODE-02</div>
-    <div class="esp32-tab" data-tab="summary">Résumé</div>
+    <div class="esp32-tab active" data-tab="node1">ESP32 509</div>
+    <div class="esp32-tab" data-tab="node2">ESP32 511</div>
 </div>
 <div class="esp32-tab-content" id="esp32-content">
-    <!-- Le contenu sera généré dynamiquement par JavaScript -->
+    <!-- Structure fixe pour éviter les rechargements -->
+    <div class="esp32-metric-row">
+        <span class="esp32-metric-label">Processeur</span>
+        <span class="esp32-metric-value" data-metric="cpu">--</span>
+    </div>
+    <div class="esp32-metric-row">
+        <span class="esp32-metric-label">Mémoire</span>
+        <span class="esp32-metric-value" data-metric="ram">--</span>
+    </div>
+    <div class="esp32-metric-row">
+        <span class="esp32-metric-label">Température</span>
+        <span class="esp32-metric-value" data-metric="temp">--</span>
+    </div>
+    <div class="esp32-metric-row">
+        <span class="esp32-metric-label">Fonctionnement</span>
+        <span class="esp32-metric-value" data-metric="uptime">--</span>
+    </div>
 </div>
