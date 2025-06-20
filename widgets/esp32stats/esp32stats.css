@@ -37,10 +37,10 @@
     height: calc(100% - 44px);
     background-color: var(--nord0);
     border-radius: 10px;
-    padding: 16px;
+    padding: 10px;
     box-shadow: 
         inset 2px 2px 4px var(--shadow-color),
-        -2px -2px 4px var(--highlight-color);
+        inset -2px -2px 4px var(--highlight-color);
     overflow-y: auto;
     
     /* Centrage vertical du contenu */
@@ -69,7 +69,7 @@
 }
 
 .esp32-metric-value {
-    color: var(--nord14);
+    color: var(--nord8);
     font-family: 'Roboto Mono', monospace;
     font-weight: 600;
     font-size: 14px;

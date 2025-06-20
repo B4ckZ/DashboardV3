@@ -12,9 +12,9 @@
     background-color: var(--nord0);
     border-radius: calc(var(--border-radius) - 4px);
     box-shadow: 
-        inset 4px 4px 8px var(--shadow-color),
-        inset -4px -4px 8px var(--highlight-color);
-    padding: 12px;
+        inset 2px 2px 4px var(--shadow-color),
+        inset -2px -2px 4px var(--highlight-color);
+    padding: 10px;
     overflow: hidden;
 }
 
@@ -23,7 +23,7 @@
     height: 100%;
     overflow-y: auto;
     font-family: 'Roboto Mono', monospace;
-    font-size: 11px;
+    font-size: 14px;
     line-height: 1.5;
     color: var(--nord8);
     padding-right: 8px;
