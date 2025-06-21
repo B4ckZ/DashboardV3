@@ -74,6 +74,11 @@ window.servermonitoring = (function() {
                         row: widgetElement.querySelector('[data-metric="memory-disk"]'),
                         bar: null,
                         value: null
+                    },
+                    'memory-usb': {
+                        row: widgetElement.querySelector('[data-metric="memory-usb"]'),
+                        bar: null,
+                        value: null
                     }
                 };
                 
@@ -126,19 +131,18 @@ window.servermonitoring = (function() {
         }
         // GPU Frequency
         else if (topic === 'system.gpu.frequency') {
-            console.log('GPU Frequency update:', data);
-            // La fréquence GPU est en MHz
-            const freqMHz = data.raw;
-            // Pour le Pi 5, max GPU est 910 MHz
-            const freqPercent = (freqMHz / 910) * 100;
+            // Pour le Pi 5, max GPU est ~900 MHz
+            const freqPercent = (data.raw / 900) * 100;
             updateProgressBar('freq-gpu', freqPercent, data.formatted);
         }
         // Températures
         else if (topic === 'system.temp.cpu') {
-            updateProgressBar('temp-cpu', (data.raw / 100) * 100, data.formatted); // 100°C max
+            const tempPercent = (data.raw / 85) * 100; // Max 85°C
+            updateProgressBar('temp-cpu', tempPercent, data.formatted);
         }
         else if (topic === 'system.temp.gpu') {
-            updateProgressBar('temp-gpu', (data.raw / 100) * 100, data.formatted); // 100°C max
+            const tempPercent = (data.raw / 85) * 100; // Max 85°C
+            updateProgressBar('temp-gpu', tempPercent, data.formatted);
         }
         // Mémoire
         else if (topic === 'system.memory.ram') {
@@ -150,44 +154,54 @@ window.servermonitoring = (function() {
         else if (topic === 'system.memory.disk') {
             updateProgressBar('memory-disk', data.raw, data.formatted);
         }
-    }
-    
-    function updateProgressBar(metric, percentage, formattedValue) {
-        const element = elements[metric];
-        if (!element || !element.row) return;
-        
-        // Limiter le pourcentage entre 0 et 100
-        percentage = Math.max(0, Math.min(100, percentage));
-        
-        // Mettre à jour la barre de progression
-        if (element.bar) {
-            element.bar.style.width = percentage + '%';
-            
-            // Ajouter des classes de couleur selon la valeur
-            element.bar.classList.remove('low', 'medium', 'high');
-            if (percentage < 50) {
-                element.bar.classList.add('low');
-            } else if (percentage < 80) {
-                element.bar.classList.add('medium');
+        else if (topic === 'system.memory.usb') {
+            // Gestion spéciale pour USB
+            if (data.raw === -1) {
+                // Clé USB non trouvée
+                updateProgressBar('memory-usb', 0, 'N/A', false);
             } else {
-                element.bar.classList.add('high');
+                updateProgressBar('memory-usb', data.raw, data.formatted, true);
             }
         }
-        
-        // Mettre à jour la valeur affichée
-        if (element.value) {
-            element.value.textContent = formattedValue;
+    }
+    
+    function updateProgressBar(metric, value, formattedValue, isAvailable = true) {
+        if (elements[metric] && elements[metric].bar && elements[metric].value) {
+            if (isAvailable) {
+                // Limiter la valeur entre 0 et 100
+                const clampedValue = Math.max(0, Math.min(100, value));
+                
+                // Mettre à jour la largeur de la barre
+                elements[metric].bar.style.width = clampedValue + '%';
+                
+                // Appliquer les classes de couleur
+                elements[metric].bar.classList.remove('low', 'medium', 'high', 'critical');
+                
+                if (clampedValue < 50) {
+                    elements[metric].bar.classList.add('low');
+                } else if (clampedValue < 70) {
+                    elements[metric].bar.classList.add('medium');
+                } else if (clampedValue < 85) {
+                    elements[metric].bar.classList.add('high');
+                } else {
+                    elements[metric].bar.classList.add('critical');
+                }
+                
+                // Retirer la classe unavailable si elle existe
+                elements[metric].bar.classList.remove('unavailable');
+            } else {
+                // USB non disponible
+                elements[metric].bar.style.width = '0%';
+                elements[metric].bar.classList.add('unavailable');
+            }
+            
+            // Mettre à jour la valeur textuelle
+            elements[metric].value.textContent = formattedValue;
         }
     }
     
-    function destroy() {
-        if (window.orchestrator) {
-            window.orchestrator.unregisterWidget('servermonitoring');
-        }
-    }
-    
+    // API publique
     return {
-        init: init,
-        destroy: destroy
+        init: init
     };
 })();
