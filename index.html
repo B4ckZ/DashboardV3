@@ -16,8 +16,131 @@
     
     <!-- Paho MQTT Client LOCAL -->
     <script src="js/libs/paho-mqtt.min.js"></script>
+    
+    <style>
+        /* ===== LOADER STYLES ===== */
+        :root {
+            --loader-duration: 5s;
+        }
+        
+        /* Overlay du loader */
+        .loader-overlay {
+            position: fixed;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            background: var(--nord0);
+            z-index: 100000;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            opacity: 1;
+            transition: opacity 0.5s ease-out;
+        }
+        
+        .loader-overlay.fade-out {
+            opacity: 0;
+            pointer-events: none;
+        }
+        
+        /* Container du loader */
+        .loader-content {
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            gap: 30px;
+        }
+        
+        /* Logo SVG du loader */
+        .loader-logo {
+            width: 110%; /* Taille modifiable */
+            height: 110%; /* Taille modifiable */
+            margin-bottom: 10px;
+        }
+        
+        .loader-logo img {
+            width: 100%;
+            height: 100%;
+            object-fit: contain;
+            filter: drop-shadow(0 4px 8px rgba(0, 0, 0, 0.2));
+        }
+        
+        /* Texte du loader */
+        .loader-text {
+            font-size: 22px;
+            font-weight: 300;
+            color: var(--nord5);
+            letter-spacing: 0.5px;
+        }
+        
+        /* Barre de progression */
+        .progress-loader {
+            width: 300px;
+            height: 8px;
+            background: var(--nord1);
+            border-radius: 4px;
+            box-shadow: 
+                inset 2px 2px 4px var(--shadow-color),
+                inset -2px -2px 4px var(--highlight-color);
+            overflow: hidden;
+            position: relative;
+        }
+
+        .progress-loader::after {
+            content: '';
+            position: absolute;
+            top: 0;
+            left: 0;
+            height: 100%;
+            width: 100%;
+            background: linear-gradient(90deg, var(--nord13), var(--nord17));
+            border-radius: 4px;
+            transform: scaleX(0);
+            transform-origin: left;
+            animation: progress var(--loader-duration) ease-out forwards;
+        }
+
+        @keyframes progress {
+            to { transform: scaleX(1); }
+        }
+        
+        /* Copyright */
+        .loader-copyright {
+            position: absolute;
+            bottom: 20px;
+            left: 50%;
+            transform: translateX(-50%);
+            font-size: 12px;
+            color: var(--nord3);
+            text-align: center;
+        }
+        
+        /* Cache le dashboard pendant le chargement */
+        body.loading #dashboard-container {
+            opacity: 0;
+        }
+        
+        #dashboard-container {
+            transition: opacity 0.5s ease-in;
+        }
+    </style>
 </head>
-<body>
+<body class="loading">
+    <!-- Loader Overlay -->
+    <div class="loader-overlay" id="loader-overlay">
+        <div class="loader-content">
+            <div class="loader-logo">
+                <img src="assets/img/werit.svg" alt="MaxLink Logo">
+            </div>
+            <div class="loader-text">Initialisation du système MaxLink...</div>
+            <div class="progress-loader"></div>
+        </div>
+        <div class="loader-copyright">
+            © 2025 WERIT Kunststoffwerke W. Schneider GmbH & Co.
+        </div>
+    </div>
+    
     <!-- Dashboard Container (structure identique à V1) -->
     <div id="dashboard-container" class="dashboard">
         <!-- Les widgets seront chargés ici dynamiquement -->
@@ -27,6 +150,10 @@
     <script type="module">
         import orchestrator from './js/orchestrator.js';
         import { WIDGETS } from './config/variables.js';
+        
+        // Configuration du loader
+        const LOADER_DURATION = parseFloat(getComputedStyle(document.documentElement)
+            .getPropertyValue('--loader-duration')) * 1000; // Conversion en millisecondes
         
         // Exposer l'orchestrateur globalement pour les widgets
         window.orchestrator = orchestrator;
@@ -69,15 +196,42 @@
             }
         };
         
+        // Fonction pour masquer le loader
+        function hideLoader() {
+            const loader = document.getElementById('loader-overlay');
+            const body = document.body;
+            
+            // Ajouter la classe de fade out au loader
+            loader.classList.add('fade-out');
+            
+            // Retirer la classe loading du body pour afficher le dashboard
+            body.classList.remove('loading');
+            
+            // Supprimer complètement le loader après la transition
+            setTimeout(() => {
+                loader.remove();
+            }, 500);
+        }
+        
         // Initialisation
         document.addEventListener('DOMContentLoaded', () => {
             console.log('MaxLink Dashboard V3 starting...');
+            
+            // Timer pour masquer le loader après la durée configurée
+            const loaderTimer = setTimeout(hideLoader, LOADER_DURATION);
             
             // Initialiser l'orchestrateur
             orchestrator.init();
             
             // Charger tous les widgets
-            widgetManager.loadAllWidgets();
+            widgetManager.loadAllWidgets().then(() => {
+                console.log('All widgets loaded');
+                
+                // Si tous les widgets sont chargés avant la fin du timer,
+                // on peut choisir de masquer le loader immédiatement
+                // ou d'attendre le timer. Ici on attend le timer pour
+                // garantir une durée minimale d'affichage
+            });
         });
         
         // Gestion du resize
