@@ -43,6 +43,7 @@ export const TOPIC_MAPPING = {
     'rpi/system/memory/ram': 'system.memory.ram',        // RAM en %
     'rpi/system/memory/swap': 'system.memory.swap',      // Swap en %
     'rpi/system/memory/disk': 'system.memory.disk',      // Disque en %
+	'rpi/system/memory/usb': 'system.memory.usb',        // USB en %
 
     // Disque (détails - non utilisés actuellement)
     'rpi/system/disk/total': 'system.disk.total',
