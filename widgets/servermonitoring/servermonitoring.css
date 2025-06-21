@@ -1,3 +1,6 @@
+/* widgets/servermonitoring/servermonitoring.css - Widget Server Monitoring V3 */
+/* =========================================================================== */
+
 /* Barres de progression */
 .progress-row {
     display: flex;
@@ -60,6 +63,10 @@
     background: linear-gradient(to right, var(--nord12), var(--nord11));
 }
 
+.progress-bar.critical {
+    background: linear-gradient(to right, var(--nord11), #ff6b6b);
+}
+
 /* CPU Cores - style unifié pour tous les cœurs */
 [data-metric^="cpu-core"] .progress-bar {
     background: linear-gradient(to right, var(--nord14), var(--nord10));
@@ -78,6 +85,23 @@
 /* Mémoire - Dégradé de violet à bleu-vert */
 [data-metric^="memory-"] .progress-bar {
     background: linear-gradient(to right, var(--nord15), var(--nord10), var(--nord7));
+}
+
+/* Style pour la barre de progression USB non disponible */
+.progress-bar.unavailable {
+    background: linear-gradient(135deg, #606060 0%, #505050 100%);
+    opacity: 0.5;
+    width: 0% !important;
+}
+
+/* Style pour griser la valeur quand USB non disponible */
+.progress-row[data-metric="memory-usb"] .progress-value {
+    transition: color 0.3s ease;
+}
+
+.progress-row[data-metric="memory-usb"]:has(.progress-bar.unavailable) .progress-value {
+    color: #808080;
+    font-style: italic;
 }
 
 .progress-value {
@@ -112,4 +136,67 @@
         transparent);
     margin: 0 var(--widget-gap);
     flex: 0 0 2px;
+}
+
+/* Ajustement pour les colonnes avec séparateurs */
+.columns-with-separators {
+    gap: 0; /* Reset le gap car on gère l'espacement avec les séparateurs */
+}
+
+.columns-with-separators .column {
+    padding: 0 5px; /* Petit padding interne */
+}
+
+/* Titre du widget avec icône */
+.widget-title {
+    display: flex;
+    align-items: center;
+    margin-bottom: 12px;
+    font-size: 14px;
+    font-weight: 600;
+    color: var(--nord4);
+}
+
+.widget-icon {
+    width: 20px;
+    height: 20px;
+    margin-right: 8px;
+    filter: brightness(0.8);
+}
+
+/* Animation pour les changements de valeur */
+@keyframes pulse {
+    0% { opacity: 1; }
+    50% { opacity: 0.6; }
+    100% { opacity: 1; }
+}
+
+.progress-value.updating {
+    animation: pulse 0.3s ease-in-out;
+}
+
+/* Media queries pour les petits écrans */
+@media (max-width: 768px) {
+    .columns {
+        flex-direction: column;
+    }
+    
+    .separator {
+        display: none;
+    }
+    
+    .column {
+        margin-bottom: 20px;
+    }
+    
+    .progress-label,
+    .progress-label-wide,
+    .progress-label-short {
+        font-size: 12px;
+    }
+    
+    .progress-value {
+        font-size: 12px;
+        width: 80px;
+    }
 }
