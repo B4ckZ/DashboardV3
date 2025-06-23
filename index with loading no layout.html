@@ -116,21 +116,13 @@
             text-align: center;
         }
         
-        /* 🔧 CORRECTION : Utilisation de visibility au lieu d'opacity */
-        /* Cache le dashboard pendant le chargement sans interférer avec le CSS */
+        /* Cache le dashboard pendant le chargement */
         body.loading #dashboard-container {
-            visibility: hidden;
+            opacity: 0;
         }
         
         #dashboard-container {
-            transition: visibility 0.5s ease-in;
-        }
-        
-        /* 🔧 AMÉLIORATION : Assurer que les styles de layout.css s'appliquent correctement */
-        body:not(.loading) .widget-title {
-            color: var(--nord9);
-            font-size: 18px;
-            font-weight: 600;
+            transition: opacity 0.5s ease-in;
         }
     </style>
 </head>
@@ -214,17 +206,6 @@
             
             // Retirer la classe loading du body pour afficher le dashboard
             body.classList.remove('loading');
-            
-            // 🔧 AMÉLIORATION : Petit délai pour assurer l'application des styles
-            setTimeout(() => {
-                // Forcer le re-calcul des styles pour les titres de widgets
-                const widgetTitles = document.querySelectorAll('.widget-title');
-                widgetTitles.forEach(title => {
-                    title.style.display = 'none';
-                    title.offsetHeight; // Force reflow
-                    title.style.display = '';
-                });
-            }, 100);
             
             // Supprimer complètement le loader après la transition
             setTimeout(() => {
