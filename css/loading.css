@@ -1,9 +1,3 @@
-/**
- * MAXLINK LOADING ANIMATION
- * Fichier CSS séparé pour l'animation de chargement
- * Évite les conflits avec layout.css
- */
-
 /* ===== VARIABLES DE CONFIGURATION ===== */
 :root {
     --loader-duration: 3s;
@@ -35,7 +29,7 @@
     display: flex;
     flex-direction: column;
     align-items: center;
-    gap: 30px;
+    gap: 22px;
 }
 
 /* ===== LOGO SVG DU LOADER ===== */
@@ -49,7 +43,7 @@
     width: 100%;
     height: 100%;
     object-fit: contain;
-    filter: drop-shadow(0 4px 8px rgba(0, 0, 0, 0.2));
+    filter: drop-shadow(0 4px 8px rgba(0, 0, 0, 0.0));
 }
 
 /* ===== TEXTE DU LOADER ===== */
