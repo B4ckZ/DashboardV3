@@ -147,22 +147,6 @@
     padding: 0 5px; /* Petit padding interne */
 }
 
-/* Titre du widget avec icône */
-.widget-title {
-    display: flex;
-    align-items: center;
-    margin-bottom: 12px;
-    font-size: 14px;
-    font-weight: 600;
-    color: var(--nord4);
-}
-
-.widget-icon {
-    width: 20px;
-    height: 20px;
-    margin-right: 8px;
-    filter: brightness(0.8);
-}
 
 /* Animation pour les changements de valeur */
 @keyframes pulse {

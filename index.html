@@ -8,131 +8,15 @@
     <!-- Favicon -->
     <link rel="icon" type="image/x-icon" href="assets/img/favicon.ico">
     
-    <!-- CSS (identique à V1) -->
+    <!-- CSS - Ordre important pour éviter les conflits -->
     <link rel="stylesheet" href="css/base.css">
     <link rel="stylesheet" href="css/layout.css">
     <link rel="stylesheet" href="css/custom_positions.css">
     <link rel="stylesheet" href="css/nord_theme.css">
+    <link rel="stylesheet" href="css/loading.css">
     
     <!-- Paho MQTT Client LOCAL -->
     <script src="js/libs/paho-mqtt.min.js"></script>
-    
-    <style>
-        /* ===== LOADER STYLES ===== */
-        :root {
-            --loader-duration: 3s;
-        }
-        
-        /* Overlay du loader */
-        .loader-overlay {
-            position: fixed;
-            top: 0;
-            left: 0;
-            width: 100%;
-            height: 100%;
-            background: var(--nord0);
-            z-index: 100000;
-            display: flex;
-            align-items: center;
-            justify-content: center;
-            opacity: 1;
-            transition: opacity 0.5s ease-out;
-        }
-        
-        .loader-overlay.fade-out {
-            opacity: 0;
-            pointer-events: none;
-        }
-        
-        /* Container du loader */
-        .loader-content {
-            display: flex;
-            flex-direction: column;
-            align-items: center;
-            gap: 30px;
-        }
-        
-        /* Logo SVG du loader */
-        .loader-logo {
-            width: 100%; /* Taille modifiable */
-            height: 100%; /* Taille modifiable */
-            margin-bottom: 5px;
-        }
-        
-        .loader-logo img {
-            width: 100%;
-            height: 100%;
-            object-fit: contain;
-            filter: drop-shadow(0 4px 8px rgba(0, 0, 0, 0.2));
-        }
-        
-        /* Texte du loader */
-        .loader-text {
-            font-size: 30px;
-            font-weight: 300;
-            color: var(--nord5);
-            letter-spacing: 0.5px;
-        }
-        
-        /* Barre de progression */
-        .progress-loader {
-            width: 550px;
-            height: 8px;
-            background: var(--nord1);
-            border-radius: 4px;
-            box-shadow: 
-                inset 2px 2px 4px var(--shadow-color),
-                inset -2px -2px 4px var(--highlight-color);
-            overflow: hidden;
-            position: relative;
-        }
-
-        .progress-loader::after {
-            content: '';
-            position: absolute;
-            top: 0;
-            left: 0;
-            height: 100%;
-            width: 100%;
-            background: linear-gradient(90deg, var(--nord13), var(--nord17));
-            border-radius: 4px;
-            transform: scaleX(0);
-            transform-origin: left;
-            animation: progress var(--loader-duration) ease-out forwards;
-        }
-
-        @keyframes progress {
-            to { transform: scaleX(1); }
-        }
-        
-        /* Copyright */
-        .loader-copyright {
-            position: absolute;
-            bottom: 20px;
-            left: 50%;
-            transform: translateX(-50%);
-            font-size: 12px;
-            color: var(--nord3);
-            text-align: center;
-        }
-        
-        /* 🔧 CORRECTION : Utilisation de visibility au lieu d'opacity */
-        /* Cache le dashboard pendant le chargement sans interférer avec le CSS */
-        body.loading #dashboard-container {
-            visibility: hidden;
-        }
-        
-        #dashboard-container {
-            transition: visibility 0.5s ease-in;
-        }
-        
-        /* 🔧 AMÉLIORATION : Assurer que les styles de layout.css s'appliquent correctement */
-        body:not(.loading) .widget-title {
-            color: var(--nord9);
-            font-size: 18px;
-            font-weight: 600;
-        }
-    </style>
 </head>
 <body class="loading">
     <!-- Loader Overlay -->
@@ -159,9 +43,9 @@
         import orchestrator from './js/orchestrator.js';
         import { WIDGETS } from './config/variables.js';
         
-        // Configuration du loader
+        // Configuration du loader depuis les variables CSS
         const LOADER_DURATION = parseFloat(getComputedStyle(document.documentElement)
-            .getPropertyValue('--loader-duration')) * 1000; // Conversion en millisecondes
+            .getPropertyValue('--loader-duration')) * 1000;
         
         // Exposer l'orchestrateur globalement pour les widgets
         window.orchestrator = orchestrator;
@@ -215,17 +99,6 @@
             // Retirer la classe loading du body pour afficher le dashboard
             body.classList.remove('loading');
             
-            // 🔧 AMÉLIORATION : Petit délai pour assurer l'application des styles
-            setTimeout(() => {
-                // Forcer le re-calcul des styles pour les titres de widgets
-                const widgetTitles = document.querySelectorAll('.widget-title');
-                widgetTitles.forEach(title => {
-                    title.style.display = 'none';
-                    title.offsetHeight; // Force reflow
-                    title.style.display = '';
-                });
-            }, 100);
-            
             // Supprimer complètement le loader après la transition
             setTimeout(() => {
                 loader.remove();
@@ -237,7 +110,7 @@
             console.log('MaxLink Dashboard V3 starting...');
             
             // Timer pour masquer le loader après la durée configurée
-            const loaderTimer = setTimeout(hideLoader, LOADER_DURATION);
+            setTimeout(hideLoader, LOADER_DURATION);
             
             // Initialiser l'orchestrateur
             orchestrator.init();
@@ -245,11 +118,6 @@
             // Charger tous les widgets
             widgetManager.loadAllWidgets().then(() => {
                 console.log('All widgets loaded');
-                
-                // Si tous les widgets sont chargés avant la fin du timer,
-                // on peut choisir de masquer le loader immédiatement
-                // ou d'attendre le timer. Ici on attend le timer pour
-                // garantir une durée minimale d'affichage
             });
         });
         
