@@ -11,10 +11,10 @@
 }
 
 .esp32-tab {
-    padding: 6px 16px;
+    padding: 2px 14px;
     background-color: var(--nord2);
     border-radius: 8px;
-    font-size: 12px;
+    font-size: 18px;
     color: var(--nord4);
     cursor: pointer;
     transition: all 0.3s ease;
@@ -54,7 +54,7 @@
     display: flex;
     justify-content: space-between;
     align-items: center;
-    padding: 1px 0;
+    padding: 2px 0;
     font-size: 14px;
     border-bottom: 1px solid rgba(129, 161, 193, 0.1);
 }
