@@ -1,59 +1,97 @@
-// widgets/mqttlogs509511/mqttlogs509511.js - Widget MQTT Logs V3
+// widgets/mqttlogs509511/mqttlogs509511.js - Widget MQTT Logs V4
+// Version modifiée pour afficher uniquement les résultats confirmés
 // ==============================================================
 
 window.mqttlogs509511 = (function() {
-    let widgetElement;
-    let elements = {};
-    let logs = [];
-    const MAX_LOGS = 100;
+    'use strict';
     
+    const widgetId = 'mqttlogs509511';
+    let widgetElement = null;
+    let logsContainer = null;
+    let logs = [];
+    const MAX_LOGS = 50;
+    const MACHINES = ['509', '511'];
+    
+    /**
+     * Initialise le widget
+     */
     function init(element) {
+        console.log(`[${widgetId}] Initialisation`);
         widgetElement = element;
         
-        // Charger le HTML du widget
+        // Charger le HTML
         fetch('widgets/mqttlogs509511/mqttlogs509511.html')
             .then(response => response.text())
             .then(html => {
                 widgetElement.innerHTML = html;
+                logsContainer = widgetElement.querySelector('.logs-container');
                 
-                elements.logContainer = widgetElement.querySelector('.mqtt-logs-container');
-                elements.logCount = widgetElement.querySelector('.log-count');
-                elements.clearButton = widgetElement.querySelector('.clear-logs-button');
-                elements.filterButtons = widgetElement.querySelectorAll('.filter-button');
-                
-                // Événements
-                if (elements.clearButton) {
-                    elements.clearButton.addEventListener('click', clearLogs);
+                if (!logsContainer) {
+                    console.error(`[${widgetId}] Container des logs non trouvé`);
+                    return;
                 }
                 
-                if (elements.filterButtons) {
-                    elements.filterButtons.forEach(btn => {
-                        btn.addEventListener('click', () => filterLogs(btn.dataset.filter));
+                // Message initial
+                addSystemMessage("En attente des résultats confirmés...");
+                
+                // S'abonner aux topics de confirmation MQTT
+                if (window.orchestrator && window.orchestrator.subscribeToTopic) {
+                    // S'abonner aux résultats confirmés pour les machines 509 et 511
+                    MACHINES.forEach(machine => {
+                        const topic = `SOUFFLAGE/${machine}/ESP32/result/confirmed`;
+                        window.orchestrator.subscribeToTopic(topic, handleConfirmedResult);
+                        console.log(`[${widgetId}] Abonné au topic: ${topic}`);
                     });
+                } else {
+                    console.error(`[${widgetId}] Orchestrateur non disponible`);
+                    addSystemMessage("Erreur: Système MQTT non disponible", 'error');
                 }
-                
-                // Enregistrer auprès de l'orchestrateur
-                if (window.orchestrator) {
-                    window.orchestrator.registerWidget('mqttlogs509511', {
-                        update: addLog
-                    }, ['test.result']);
-                }
+            })
+            .catch(error => {
+                console.error(`[${widgetId}] Erreur lors du chargement:`, error);
             });
     }
     
-    function addLog(topic, data) {
-        if (topic !== 'test.result') return;
+    /**
+     * Gère la réception d'un résultat confirmé
+     */
+    function handleConfirmedResult(topic, data) {
+        console.log(`[${widgetId}] Résultat confirmé reçu:`, topic, data);
         
-        // Créer l'entrée de log
-        const logEntry = {
-            timestamp: new Date(),
-            team: data.team || 'Unknown',
-            barcode: data.barcode || 'N/A',
-            result: data.result || 'Unknown',
-            raw: data.raw || data
-        };
-        
-        // Ajouter au début du tableau
+        try {
+            // Extraire l'ID de la machine du topic
+            const topicParts = topic.split('/');
+            const machineId = topicParts[1];
+            
+            // Vérifier que c'est bien une de nos machines
+            if (!MACHINES.includes(machineId)) {
+                return;
+            }
+            
+            // Créer l'entrée de log
+            const logEntry = {
+                id: Date.now(),
+                timestamp: data.timestamp || new Date().toISOString(),
+                machine: machineId,
+                team: data.team || '?',
+                barcode: data.barcode || 'Non scanné',
+                result: data.result || 'Inconnu',
+                confirmed: true
+            };
+            
+            // Ajouter le log
+            addLog(logEntry);
+            
+        } catch (error) {
+            console.error(`[${widgetId}] Erreur lors du traitement:`, error);
+        }
+    }
+    
+    /**
+     * Ajoute un log à l'affichage
+     */
+    function addLog(logEntry) {
+        // Ajouter au début de la liste
         logs.unshift(logEntry);
         
         // Limiter le nombre de logs
@@ -61,103 +99,164 @@ window.mqttlogs509511 = (function() {
             logs = logs.slice(0, MAX_LOGS);
         }
         
-        // Mettre à jour l'affichage
-        updateDisplay();
-    }
-    
-    function updateDisplay() {
-        if (!elements.logContainer) return;
+        // Créer l'élément HTML
+        const logElement = createLogElement(logEntry);
         
-        // Mettre à jour le compteur
-        if (elements.logCount) {
-            elements.logCount.textContent = logs.length;
+        // Retirer le message initial s'il existe
+        const systemMsg = logsContainer.querySelector('.system-message');
+        if (systemMsg) {
+            systemMsg.remove();
         }
         
-        // Reconstruire l'affichage des logs
-        elements.logContainer.innerHTML = '';
+        // Ajouter au début du container
+        if (logsContainer.firstChild) {
+            logsContainer.insertBefore(logElement, logsContainer.firstChild);
+        } else {
+            logsContainer.appendChild(logElement);
+        }
         
-        logs.forEach(log => {
-            const logElement = createLogElement(log);
-            elements.logContainer.appendChild(logElement);
-        });
+        // Retirer les anciens logs si nécessaire
+        while (logsContainer.children.length > MAX_LOGS) {
+            logsContainer.removeChild(logsContainer.lastChild);
+        }
+        
+        // Animation d'entrée
+        setTimeout(() => {
+            logElement.classList.add('show');
+        }, 10);
     }
     
+    /**
+     * Crée l'élément HTML pour un log
+     */
     function createLogElement(log) {
         const div = document.createElement('div');
-        div.className = `log-entry log-${getResultClass(log.result)}`;
+        div.className = 'log-line';
+        div.classList.add(getResultClass(log.result));
         
-        const time = log.timestamp.toLocaleTimeString('fr-FR');
-        const date = log.timestamp.toLocaleDateString('fr-FR');
+        // Formater la date et l'heure
+        const [date, time] = formatTimestamp(log.timestamp);
         
+        // Créer le contenu HTML
         div.innerHTML = `
-            <div class="log-header">
-                <span class="log-time">${time}</span>
-                <span class="log-date">${date}</span>
-                <span class="log-team">Équipe ${log.team}</span>
-            </div>
-            <div class="log-body">
-                <span class="log-barcode">${log.barcode}</span>
-                <span class="log-result ${getResultClass(log.result)}">${getResultText(log.result)}</span>
-            </div>
+            <span class="log-date">${date}</span>
+            <span class="log-time">${time}</span>
+            <span class="log-device">${log.machine}</span>
+            <span class="log-id">${log.barcode}</span>
+            <div class="status-indicator ${getStatusClass(log.result)}">${getStatusText(log.result)}</div>
         `;
         
         return div;
     }
     
+    /**
+     * Formate le timestamp
+     */
+    function formatTimestamp(timestamp) {
+        try {
+            // Le timestamp est au format "DD-MM-YYYYTHH:mm:ss"
+            const [datePart, timePart] = timestamp.split('T');
+            const time = timePart ? timePart.substring(0, 5) : '00:00';
+            return [datePart, time];
+        } catch (e) {
+            return ['--/--/----', '--:--'];
+        }
+    }
+    
+    /**
+     * Retourne la classe CSS pour le résultat
+     */
     function getResultClass(result) {
-        switch(result) {
-            case '1':
+        switch (result.toUpperCase()) {
             case 'OK':
-                return 'success';
-            case '2':
+            case 'POCHE OK':
+                return '';
+            case 'FUITE VANNE':
             case 'FV':
-                return 'warning';
-            case '3':
+                return 'log-fuite-vanne';
+            case 'FUITE POCHE':
             case 'FP':
-                return 'error';
+                return 'log-fuite-poche';
             default:
-                return 'unknown';
+                return 'log-unknown';
         }
     }
     
-    function getResultText(result) {
-        switch(result) {
-            case '1':
+    /**
+     * Retourne la classe CSS pour l'indicateur de statut
+     */
+    function getStatusClass(result) {
+        switch (result.toUpperCase()) {
             case 'OK':
-                return '✓ OK';
-            case '2':
+            case 'POCHE OK':
+                return 'status-ok';
+            case 'FUITE VANNE':
             case 'FV':
-                return '⚠ Fuite Vanne';
-            case '3':
+                return 'status-fuite-vanne';
+            case 'FUITE POCHE':
             case 'FP':
-                return '✗ Fuite Poche';
+                return 'status-fuite-poche';
             default:
-                return '? Inconnu';
+                return 'status-unknown';
         }
     }
     
-    function clearLogs() {
-        logs = [];
-        updateDisplay();
+    /**
+     * Retourne le texte court pour le statut
+     */
+    function getStatusText(result) {
+        switch (result.toUpperCase()) {
+            case 'OK':
+            case 'POCHE OK':
+                return 'OK';
+            case 'FUITE VANNE':
+            case 'FV':
+                return 'FV';
+            case 'FUITE POCHE':
+            case 'FP':
+                return 'FP';
+            default:
+                return '?';
+        }
     }
     
-    function filterLogs(filter) {
-        // Mettre à jour les boutons actifs
-        elements.filterButtons.forEach(btn => {
-            btn.classList.toggle('active', btn.dataset.filter === filter);
-        });
+    /**
+     * Ajoute un message système
+     */
+    function addSystemMessage(message, type = 'info') {
+        const div = document.createElement('div');
+        div.className = `system-message ${type}`;
+        div.textContent = message;
         
-        // Appliquer le filtre (à implémenter selon les besoins)
-        // Pour l'instant, on affiche tous les logs
-        updateDisplay();
-    }
-    
-    function destroy() {
-        if (window.orchestrator) {
-            window.orchestrator.unregisterWidget('mqttlogs509511');
+        if (logsContainer) {
+            logsContainer.innerHTML = '';
+            logsContainer.appendChild(div);
         }
     }
     
+    /**
+     * Destruction du widget
+     */
+    function destroy() {
+        console.log(`[${widgetId}] Destruction`);
+        
+        if (window.orchestrator) {
+            MACHINES.forEach(machine => {
+                const topic = `SOUFFLAGE/${machine}/ESP32/result/confirmed`;
+                // Note: unsubscribe si la méthode existe
+                if (window.orchestrator.unsubscribeFromTopic) {
+                    window.orchestrator.unsubscribeFromTopic(topic);
+                }
+            });
+        }
+        
+        logs = [];
+        if (logsContainer) {
+            logsContainer.innerHTML = '';
+        }
+    }
+    
+    // API publique
     return {
         init: init,
         destroy: destroy
