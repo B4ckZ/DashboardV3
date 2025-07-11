@@ -35,7 +35,7 @@
     "time_source": false,
     "description": ""
   },
-  "00:00:00:00:00:04": {
+  "74:4d:bd:a1:43:40": {
     "name": "ESP32 511",
     "icon": "assets/icons/cpu.svg",
     "time_source": false,
