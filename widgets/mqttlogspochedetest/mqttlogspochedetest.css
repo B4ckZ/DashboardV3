@@ -1,5 +1,5 @@
 /**
- * Widget MQTT Logs 509/511 - Version avec date/heure verticale
+ * Widget MQTT Logs Poche de Test (998/999) - Version avec date/heure verticale
  * Optimisé pour écran PC 1920x1080
  * Gain d'espace horizontal pour code-barres
  */
@@ -50,12 +50,12 @@
 .log-line {
     display: flex;
     align-items: center;
-    padding: 10px 14px;
+    padding: 10px 10px;
     border-radius: 8px;
-    margin-bottom: 8px;
+    margin-bottom: 10px;
     background-color: var(--nord1);
     transition: all 0.3s ease;
-    gap: 5px;
+    gap: 12px;
 }
 
 .log-line:hover {
@@ -73,7 +73,6 @@
     justify-content: center;
     flex: 0 1 80px;
     gap: 2px;
-	margin-right: 10px;  /* ← AJOUTEZ CETTE LIGNE */
 }
 
 .log-date {

@@ -125,7 +125,7 @@
     z-index: 5 !important; /* Z-INDEX CONTRÔLÉ */
 }
 
-#mqttlogspochetest {
+#mqttlogspochedetest {
     bottom: calc(var(--base-h) + 25px) !important;
     left: calc(var(--base-d) + 930px) !important;
     width: 425px !important;
