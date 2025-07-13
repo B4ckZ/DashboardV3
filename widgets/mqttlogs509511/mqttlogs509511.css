@@ -1,9 +1,7 @@
 /**
- * Styles pour le widget MQTT Logs
- * Utilisation directe des variables Nord
+ * Widget MQTT Logs - Style avec espacement uniforme et carrés bleus
  */
 
-/* Widget Logs */
 .logs-container {
     flex: 1;
     overflow-y: auto;
@@ -22,86 +20,98 @@
 .log-line {
     display: flex;
     align-items: center;
-    padding: 8px 10px;
+    padding: 12px 16px;
     border-radius: 8px;
-    margin-bottom: 8px;
+    margin-bottom: 10px;
     background-color: var(--nord1);
     transition: transform 0.2s ease;
+    gap: 20px;
 }
 
 .log-line:hover {
     transform: translateX(4px);
 }
 
-.log-date, .log-time, .log-device {
-    margin-right: 16px;
-    font-size: 12px;
-    font-weight: 500;
-    color: var(--nord4);
-    flex-shrink: 0;
-}
-
-.log-date {
-    width: 70px;
-}
-
-.log-time {
-    width: 50px;
-}
-
-.log-device {
-    width: 24px;
-    height: 24px;
-    display: flex;
-    justify-content: center;
-    align-items: center;
-    border-radius: 50%;
-    background-color: var(--nord2);
-    color: var(--nord6);
-}
-
-.log-id {
-    flex: 1;
-    font-family: 'Roboto Mono', monospace;
-    font-size: 12px;
+.log-date, .log-time {
+    font-size: 14px;
     color: var(--nord5);
-    margin-right: 8px;
-}
-
-/* Styles pour les différents types d'erreurs */
-.log-fuite-vanne {
-    background-color: rgba(208, 135, 112, 0.15); /* Teinte orangée légère */
-}
-
-.log-fuite-poche {
-    background-color: rgba(191, 97, 106, 0.15); /* Teinte rouge légère */
-}
-
-/* Indicateurs de statut */
-.status-indicator {
-    width: 24px;
-    height: 24px;
-    border-radius: 50%;
+    font-weight: 500;
+    min-width: 120px;
+    text-align: center;
     flex-shrink: 0;
-    display: flex;
-    justify-content: center;
-    align-items: center;
-    font-size: 10px;
+}
+
+.log-barcode {
+    font-family: 'Roboto Mono', monospace;
+    font-size: 13px;
+    color: var(--nord5);
+    min-width: 180px;
+    text-align: center;
+    flex-shrink: 0;
+}
+
+.blue-badge {
+    background-color: var(--nord10);
+    color: var(--nord6);
+    padding: 4px 8px;
+    border-radius: 4px;
+    font-size: 12px;
     font-weight: bold;
-    color: var(--nord0);
+    min-width: 40px;
+    text-align: center;
+    box-shadow: 0 2px 4px rgba(94, 129, 172, 0.3);
+    flex-shrink: 0;
 }
 
-.status-ok {
-    background-color: var(--nord14); /* Vert - #A3BE8C */
-    box-shadow: 0 0 8px var(--nord14);
+.log-line.show {
+    animation: slideInFromTop 0.3s ease-out;
 }
 
-.status-fuite-vanne {
-    background-color: var(--nord12); /* Orange - #D08770 */
-    box-shadow: 0 0 8px var(--nord12);
+@keyframes slideInFromTop {
+    from {
+        opacity: 0;
+        transform: translateY(-10px);
+    }
+    to {
+        opacity: 1;
+        transform: translateY(0);
+    }
 }
 
-.status-fuite-poche {
-    background-color: var(--nord11); /* Rouge - #BF616A */
-    box-shadow: 0 0 8px var(--nord11);
+.system-message {
+    padding: 20px;
+    text-align: center;
+    color: var(--nord4);
+    font-style: italic;
+    font-size: 14px;
+}
+
+.system-message.error {
+    color: var(--nord11);
+}
+
+.system-message.success {
+    color: var(--nord14);
+}
+
+.logs-container::-webkit-scrollbar {
+    width: 6px;
+}
+
+.logs-container::-webkit-scrollbar-track {
+    background: transparent;
+}
+
+.logs-container::-webkit-scrollbar-thumb {
+    background-color: var(--nord2);
+    border-radius: 3px;
+}
+
+.logs-container::-webkit-scrollbar-thumb:hover {
+    background-color: var(--nord3);
+}
+
+.logs-container {
+    scrollbar-width: thin;
+    scrollbar-color: var(--nord2) transparent;
 }
