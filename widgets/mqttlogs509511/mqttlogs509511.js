@@ -1,5 +1,6 @@
-// widgets/mqttlogs509511/mqttlogs509511.js - Widget MQTT Logs V4
-// Version modifiée pour afficher uniquement les résultats confirmés
+// widgets/mqttlogs509511/mqttlogs509511.js - Widget MQTT Logs V5
+// Version modifiée pour lire depuis les fichiers CSV persistés
+// Topic unique : SOUFFLAGE/ESP32/RTP/CONFIRMED
 // ==============================================================
 
 window.mqttlogs509511 = (function() {
@@ -10,13 +11,13 @@ window.mqttlogs509511 = (function() {
     let logsContainer = null;
     let logs = [];
     const MAX_LOGS = 50;
-    const MACHINES = ['509', '511'];
+    const TARGET_MACHINES = ['509', '511']; // Machines à afficher
     
     /**
      * Initialise le widget
      */
     function init(element) {
-        console.log(`[${widgetId}] Initialisation`);
+        console.log(`[${widgetId}] Initialisation - Version CSV sécurisée`);
         widgetElement = element;
         
         // Charger le HTML
@@ -32,16 +33,15 @@ window.mqttlogs509511 = (function() {
                 }
                 
                 // Message initial
-                addSystemMessage("En attente des résultats confirmés...");
+                addSystemMessage("En attente des résultats confirmés et persistés...");
                 
-                // S'abonner aux topics de confirmation MQTT
+                // S'abonner au topic unique de confirmation CSV
                 if (window.orchestrator && window.orchestrator.subscribeToTopic) {
-                    // S'abonner aux résultats confirmés pour les machines 509 et 511
-                    MACHINES.forEach(machine => {
-                        const topic = `SOUFFLAGE/${machine}/ESP32/result/confirmed`;
-                        window.orchestrator.subscribeToTopic(topic, handleConfirmedResult);
-                        console.log(`[${widgetId}] Abonné au topic: ${topic}`);
-                    });
+                    // NOUVEAU: Topic unique pour toutes les machines
+                    const topic = "SOUFFLAGE/ESP32/RTP/CONFIRMED";
+                    window.orchestrator.subscribeToTopic(topic, handleConfirmedResult);
+                    console.log(`[${widgetId}] Abonné au topic unique: ${topic}`);
+                    console.log(`[${widgetId}] Filtrage pour machines: ${TARGET_MACHINES.join(', ')}`);
                 } else {
                     console.error(`[${widgetId}] Orchestrateur non disponible`);
                     addSystemMessage("Erreur: Système MQTT non disponible", 'error');
@@ -53,31 +53,56 @@ window.mqttlogs509511 = (function() {
     }
     
     /**
-     * Gère la réception d'un résultat confirmé
+     * Gère la réception d'un résultat confirmé et persisté
      */
     function handleConfirmedResult(topic, data) {
         console.log(`[${widgetId}] Résultat confirmé reçu:`, topic, data);
         
         try {
-            // Extraire l'ID de la machine du topic
-            const topicParts = topic.split('/');
-            const machineId = topicParts[1];
+            // Les données arrivent directement en format CSV string
+            const csv_line = typeof data === 'string' ? data.trim() : data.toString().trim();
+            console.log(`[${widgetId}] Ligne CSV reçue: "${csv_line}"`);
             
-            // Vérifier que c'est bien une de nos machines
-            if (!MACHINES.includes(machineId)) {
+            // Parser la ligne CSV: date,heure,équipe,codebarre,résultat
+            const csv_fields = csv_line.split(',');
+            
+            if (csv_fields.length !== 5) {
+                console.error(`[${widgetId}] Format CSV invalide: ${csv_fields.length} champs au lieu de 5`);
                 return;
             }
             
-            // Créer l'entrée de log
+            const [date, heure, equipe, codebarre, resultat] = csv_fields;
+            
+            // NOUVEAU: Extraire l'ID machine du code-barres (positions 7,8,9)
+            if (codebarre.length < 9) {
+                console.error(`[${widgetId}] Code-barres trop court: ${codebarre}`);
+                return;
+            }
+            
+            const machineId = codebarre.substring(6, 9); // Positions 7,8,9 (indices 6,7,8)
+            console.log(`[${widgetId}] Machine extraite du code-barres: "${machineId}"`);
+            
+            // NOUVEAU: Filtrer uniquement les machines 509 et 511
+            if (!TARGET_MACHINES.includes(machineId)) {
+                console.log(`[${widgetId}] Machine ${machineId} filtrée (non ciblée)`);
+                return;
+            }
+            
+            // Convertir le résultat numérique en texte
+            const resultText = getResultText(resultat);
+            
+            // Créer l'entrée de log avec timestamp formaté
             const logEntry = {
                 id: Date.now(),
-                timestamp: data.timestamp || new Date().toISOString(),
+                timestamp: formatTimestamp(date, heure),
                 machine: machineId,
-                team: data.team || '?',
-                barcode: data.barcode || 'Non scanné',
-                result: data.result || 'Inconnu',
+                team: equipe || '?',
+                barcode: codebarre,
+                result: resultText,
                 confirmed: true
             };
+            
+            console.log(`[${widgetId}] Entrée de log créée:`, logEntry);
             
             // Ajouter le log
             addLog(logEntry);
@@ -85,6 +110,43 @@ window.mqttlogs509511 = (function() {
         } catch (error) {
             console.error(`[${widgetId}] Erreur lors du traitement:`, error);
         }
+    }
+    
+    /**
+     * Convertit le résultat numérique en texte
+     */
+    function getResultText(resultat) {
+        switch (resultat.toString().trim()) {
+            case '0':
+                return 'OK';
+            case '1':
+                return 'FUITE VANNE';
+            case '2':
+                return 'FUITE POCHE';
+            default:
+                return resultat; // Garder tel quel si pas reconnu
+        }
+    }
+    
+    /**
+     * Formate le timestamp à partir de date et heure CSV
+     */
+    function formatTimestamp(date, heure) {
+        // Format attendu: date="08/07/2025", heure="14H46"
+        // Convertir en format pour affichage: "08-07-2025T14:46:00"
+        try {
+            const dateParts = date.split('/');
+            if (dateParts.length === 3) {
+                const [day, month, year] = dateParts;
+                const timePart = heure.replace('H', ':') + ':00';
+                return `${day}-${month}-${year}T${timePart}`;
+            }
+        } catch (e) {
+            console.warn(`[${widgetId}] Erreur formatage timestamp:`, e);
+        }
+        
+        // Fallback
+        return `${date}T${heure}`;
     }
     
     /**
@@ -134,8 +196,8 @@ window.mqttlogs509511 = (function() {
         div.className = 'log-line';
         div.classList.add(getResultClass(log.result));
         
-        // Formater la date et l'heure
-        const [date, time] = formatTimestamp(log.timestamp);
+        // Formater la date et l'heure pour affichage
+        const [date, time] = formatTimestampForDisplay(log.timestamp);
         
         // Créer le contenu HTML
         div.innerHTML = `
@@ -150,9 +212,9 @@ window.mqttlogs509511 = (function() {
     }
     
     /**
-     * Formate le timestamp
+     * Formate le timestamp pour l'affichage
      */
-    function formatTimestamp(timestamp) {
+    function formatTimestampForDisplay(timestamp) {
         try {
             // Le timestamp est au format "DD-MM-YYYYTHH:mm:ss"
             const [datePart, timePart] = timestamp.split('T');
@@ -241,13 +303,12 @@ window.mqttlogs509511 = (function() {
         console.log(`[${widgetId}] Destruction`);
         
         if (window.orchestrator) {
-            MACHINES.forEach(machine => {
-                const topic = `SOUFFLAGE/${machine}/ESP32/result/confirmed`;
-                // Note: unsubscribe si la méthode existe
-                if (window.orchestrator.unsubscribeFromTopic) {
-                    window.orchestrator.unsubscribeFromTopic(topic);
-                }
-            });
+            // Se désabonner du topic unique
+            const topic = "SOUFFLAGE/ESP32/RTP/CONFIRMED";
+            // Note: unsubscribe si la méthode existe
+            if (window.orchestrator.unsubscribeFromTopic) {
+                window.orchestrator.unsubscribeFromTopic(topic);
+            }
         }
         
         logs = [];
