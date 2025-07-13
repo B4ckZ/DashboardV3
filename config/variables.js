@@ -55,6 +55,9 @@ export const TOPIC_MAPPING = {
     'rpi/network/wifi/status': 'network.wifi.status',
     'rpi/network/mqtt/stats': 'network.mqtt.stats',
     'rpi/network/mqtt/topics': 'network.mqtt.topics',
+	
+	// Topic CSV confirmé
+    'SOUFFLAGE/ESP32/RTP/CONFIRMED': 'test.confirmed',
     
     // Test
     'test/result': 'test.result'

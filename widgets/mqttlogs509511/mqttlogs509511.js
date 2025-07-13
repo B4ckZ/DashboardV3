@@ -1,6 +1,5 @@
 // widgets/mqttlogs509511/mqttlogs509511.js - Widget MQTT Logs V5
-// Version modifiée pour lire depuis les fichiers CSV persistés
-// Topic unique : SOUFFLAGE/ESP32/RTP/CONFIRMED
+// Version corrigée suivant le pattern des autres widgets + fix erreur DOM
 // ==============================================================
 
 window.mqttlogs509511 = (function() {
@@ -11,7 +10,7 @@ window.mqttlogs509511 = (function() {
     let logsContainer = null;
     let logs = [];
     const MAX_LOGS = 50;
-    const TARGET_MACHINES = ['509', '511']; // Machines à afficher
+    const TARGET_MACHINES = ['509', '511'];
     
     /**
      * Initialise le widget
@@ -35,12 +34,13 @@ window.mqttlogs509511 = (function() {
                 // Message initial
                 addSystemMessage("En attente des résultats confirmés et persistés...");
                 
-                // S'abonner au topic unique de confirmation CSV
-                if (window.orchestrator && window.orchestrator.subscribeToTopic) {
-                    // NOUVEAU: Topic unique pour toutes les machines
-                    const topic = "SOUFFLAGE/ESP32/RTP/CONFIRMED";
-                    window.orchestrator.subscribeToTopic(topic, handleConfirmedResult);
-                    console.log(`[${widgetId}] Abonné au topic unique: ${topic}`);
+                // CORRECTION : Utiliser le pattern standard registerWidget
+                if (window.orchestrator) {
+                    window.orchestrator.registerWidget('mqttlogs509511', {
+                        update: handleConfirmedResult
+                    }, ['SOUFFLAGE/ESP32/RTP/CONFIRMED']);
+                    
+                    console.log(`[${widgetId}] Widget enregistré avec topic: SOUFFLAGE/ESP32/RTP/CONFIRMED`);
                     console.log(`[${widgetId}] Filtrage pour machines: ${TARGET_MACHINES.join(', ')}`);
                 } else {
                     console.error(`[${widgetId}] Orchestrateur non disponible`);
@@ -54,6 +54,7 @@ window.mqttlogs509511 = (function() {
     
     /**
      * Gère la réception d'un résultat confirmé et persisté
+     * Cette fonction est appelée par l'orchestrateur avec (topic, data)
      */
     function handleConfirmedResult(topic, data) {
         console.log(`[${widgetId}] Résultat confirmé reçu:`, topic, data);
@@ -73,7 +74,7 @@ window.mqttlogs509511 = (function() {
             
             const [date, heure, equipe, codebarre, resultat] = csv_fields;
             
-            // NOUVEAU: Extraire l'ID machine du code-barres (positions 7,8,9)
+            // Extraire l'ID machine du code-barres (positions 7,8,9)
             if (codebarre.length < 9) {
                 console.error(`[${widgetId}] Code-barres trop court: ${codebarre}`);
                 return;
@@ -82,7 +83,7 @@ window.mqttlogs509511 = (function() {
             const machineId = codebarre.substring(6, 9); // Positions 7,8,9 (indices 6,7,8)
             console.log(`[${widgetId}] Machine extraite du code-barres: "${machineId}"`);
             
-            // NOUVEAU: Filtrer uniquement les machines 509 et 511
+            // Filtrer uniquement les machines 509 et 511
             if (!TARGET_MACHINES.includes(machineId)) {
                 console.log(`[${widgetId}] Machine ${machineId} filtrée (non ciblée)`);
                 return;
@@ -117,14 +118,14 @@ window.mqttlogs509511 = (function() {
      */
     function getResultText(resultat) {
         switch (resultat.toString().trim()) {
-            case '0':
-                return 'OK';
             case '1':
-                return 'FUITE VANNE';
+                return 'POCHE OK';
             case '2':
+                return 'FUITE VANNE';
+            case '3':
                 return 'FUITE POCHE';
             default:
-                return resultat; // Garder tel quel si pas reconnu
+                return resultat; // Garder la valeur originale si inconnue
         }
     }
     
@@ -132,8 +133,6 @@ window.mqttlogs509511 = (function() {
      * Formate le timestamp à partir de date et heure CSV
      */
     function formatTimestamp(date, heure) {
-        // Format attendu: date="08/07/2025", heure="14H46"
-        // Convertir en format pour affichage: "08-07-2025T14:46:00"
         try {
             const dateParts = date.split('/');
             if (dateParts.length === 3) {
@@ -145,7 +144,6 @@ window.mqttlogs509511 = (function() {
             console.warn(`[${widgetId}] Erreur formatage timestamp:`, e);
         }
         
-        // Fallback
         return `${date}T${heure}`;
     }
     
@@ -189,12 +187,17 @@ window.mqttlogs509511 = (function() {
     }
     
     /**
-     * Crée l'élément HTML pour un log
+     * Crée l'élément HTML pour un log - VERSION CORRIGÉE
      */
     function createLogElement(log) {
         const div = document.createElement('div');
         div.className = 'log-line';
-        div.classList.add(getResultClass(log.result));
+        
+        // CORRECTION : Ajouter la classe seulement si elle n'est pas vide
+        const resultClass = getResultClass(log.result);
+        if (resultClass) {
+            div.classList.add(resultClass);
+        }
         
         // Formater la date et l'heure pour affichage
         const [date, time] = formatTimestampForDisplay(log.timestamp);
@@ -216,7 +219,6 @@ window.mqttlogs509511 = (function() {
      */
     function formatTimestampForDisplay(timestamp) {
         try {
-            // Le timestamp est au format "DD-MM-YYYYTHH:mm:ss"
             const [datePart, timePart] = timestamp.split('T');
             const time = timePart ? timePart.substring(0, 5) : '00:00';
             return [datePart, time];
@@ -226,13 +228,12 @@ window.mqttlogs509511 = (function() {
     }
     
     /**
-     * Retourne la classe CSS pour le résultat
+     * Retourne la classe CSS pour le résultat - VERSION CORRIGÉE
      */
     function getResultClass(result) {
         switch (result.toUpperCase()) {
-            case 'OK':
             case 'POCHE OK':
-                return '';
+                return null; // CORRECTION : Pas de classe CSS particulière pour POCHE OK
             case 'FUITE VANNE':
             case 'FV':
                 return 'log-fuite-vanne';
@@ -249,7 +250,6 @@ window.mqttlogs509511 = (function() {
      */
     function getStatusClass(result) {
         switch (result.toUpperCase()) {
-            case 'OK':
             case 'POCHE OK':
                 return 'status-ok';
             case 'FUITE VANNE':
@@ -268,9 +268,8 @@ window.mqttlogs509511 = (function() {
      */
     function getStatusText(result) {
         switch (result.toUpperCase()) {
-            case 'OK':
             case 'POCHE OK':
-                return 'OK';
+                return 'OK'; // Texte court pour "POCHE OK"
             case 'FUITE VANNE':
             case 'FV':
                 return 'FV';
@@ -303,12 +302,7 @@ window.mqttlogs509511 = (function() {
         console.log(`[${widgetId}] Destruction`);
         
         if (window.orchestrator) {
-            // Se désabonner du topic unique
-            const topic = "SOUFFLAGE/ESP32/RTP/CONFIRMED";
-            // Note: unsubscribe si la méthode existe
-            if (window.orchestrator.unsubscribeFromTopic) {
-                window.orchestrator.unsubscribeFromTopic(topic);
-            }
+            window.orchestrator.unregisterWidget('mqttlogs509511');
         }
         
         logs = [];
