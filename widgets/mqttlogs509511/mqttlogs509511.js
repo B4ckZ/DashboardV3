@@ -1,7 +1,3 @@
-// widgets/mqttlogs509511/mqttlogs509511.js
-// Widget d'affichage des résultats de tests confirmés pour machines 509 et 511
-// Version finale optimisée : date courte DD/MM/YY + sans badge équipe + couleurs de statut
-
 window.mqttlogs509511 = (function() {
     'use strict';
     
@@ -10,106 +6,30 @@ window.mqttlogs509511 = (function() {
     let logsContainer = null;
     let logs = [];
     const MAX_LOGS = 1000;
-    const MAX_DISPLAY_LOGS = 100; // Limite d'affichage pour les performances
+    const MAX_DISPLAY_LOGS = 100;
     const TARGET_MACHINES = ['509', '511'];
     
-    // Configuration du cache localStorage
     const CACHE_KEY = 'mqttlogs509511_cache';
-    const CACHE_EXPIRY_HOURS = 24; // Cache expire après 24h
+    const CACHE_EXPIRY_HOURS = 24;
     
-    // Fonctions de cache localStorage
-    function saveToCache() {
-        try {
-            const cacheData = {
-                logs: logs.slice(-MAX_LOGS), // Garde les 1000 dernières lignes
-                timestamp: Date.now()
-            };
-            localStorage.setItem(CACHE_KEY, JSON.stringify(cacheData));
-            console.log(`[${widgetId}] Cache sauvegardé: ${logs.length} lignes`);
-        } catch (e) {
-            console.warn(`[${widgetId}] Erreur sauvegarde cache:`, e);
-        }
-    }
-    
-    function displayCachedLogs() {
-        logsContainer.innerHTML = '';
-        
-        // N'affiche que les dernières lignes pour les performances
-        const logsToDisplay = logs.slice(-MAX_DISPLAY_LOGS);
-        
-        logsToDisplay.forEach(log => {
-            const logElement = createLogElement(log);
-            logsContainer.appendChild(logElement);
-            // Pas d'animation pour les logs cachés (affichage immédiat)
-            logElement.classList.add('show');
-        });
-        
-        // Scroll vers le bas pour montrer les plus récents
-        logsContainer.scrollTop = logsContainer.scrollHeight;
-        
-        if (logs.length > MAX_DISPLAY_LOGS) {
-            console.log(`[${widgetId}] Affichage: ${MAX_DISPLAY_LOGS} lignes (${logs.length} en cache)`);
-        }
-    }
-    
-    function loadFromCache() {
-        try {
-            const cached = localStorage.getItem(CACHE_KEY);
-            if (cached) {
-                const cacheData = JSON.parse(cached);
-                
-                // Vérifie que le cache n'est pas expiré
-                const cacheAge = Date.now() - cacheData.timestamp;
-                const maxAge = CACHE_EXPIRY_HOURS * 60 * 60 * 1000;
-                
-                if (cacheAge < maxAge && cacheData.logs) {
-                    console.log(`[${widgetId}] Cache restauré: ${cacheData.logs.length} lignes`);
-                    return cacheData.logs;
-                } else {
-                    console.log(`[${widgetId}] Cache expiré, suppression`);
-                    localStorage.removeItem(CACHE_KEY);
-                }
-            }
-        } catch (e) {
-            console.warn(`[${widgetId}] Erreur chargement cache:`, e);
-            localStorage.removeItem(CACHE_KEY);
-        }
-        return [];
-    }
-    
-    function clearCache() {
-        try {
-            localStorage.removeItem(CACHE_KEY);
-            console.log(`[${widgetId}] Cache vidé`);
-        } catch (e) {
-            console.warn(`[${widgetId}] Erreur vidage cache:`, e);
-        }
-    }
-    
-    function init(element) {
-        widgetElement = element;
+    function init(container) {
+        widgetElement = container;
         
         fetch('widgets/mqttlogs509511/mqttlogs509511.html')
             .then(response => response.text())
             .then(html => {
                 widgetElement.innerHTML = html;
+                
                 logsContainer = widgetElement.querySelector('.logs-container');
                 
                 if (!logsContainer) {
-                    console.error(`[${widgetId}] Container des logs non trouvé`);
+                    console.error(`[${widgetId}] Container des logs non trouvé après injection HTML`);
                     return;
                 }
                 
-                // Charger le cache avant d'afficher le message d'attente
-                const cachedLogs = loadFromCache();
+                console.log(`[${widgetId}] Widget initialisé avec succès`);
                 
-                if (cachedLogs.length > 0) {
-                    logs = cachedLogs;
-                    displayCachedLogs();
-                    console.log(`[${widgetId}] ${cachedLogs.length} lignes restaurées depuis le cache`);
-                } else {
-                    addSystemMessage("En attente des résultats confirmés et persistés...");
-                }
+                loadFromCache();
                 
                 if (window.orchestrator) {
                     window.orchestrator.registerWidget('mqttlogs509511', {
@@ -117,15 +37,54 @@ window.mqttlogs509511 = (function() {
                     }, ['test.confirmed']);
                 } else {
                     console.error(`[${widgetId}] Orchestrateur non disponible`);
-                    addSystemMessage("Erreur: Système MQTT non disponible", 'error');
                 }
             })
             .catch(error => {
-                console.error(`[${widgetId}] Erreur lors du chargement:`, error);
+                console.error(`[${widgetId}] Erreur chargement HTML:`, error);
             });
+        
+        return true;
+    }
+    
+    function loadFromCache() {
+        try {
+            const cached = localStorage.getItem(CACHE_KEY);
+            if (cached) {
+                const cacheData = JSON.parse(cached);
+                const age = Date.now() - cacheData.timestamp;
+                const maxAge = CACHE_EXPIRY_HOURS * 60 * 60 * 1000;
+                
+                if (age < maxAge && cacheData.logs && Array.isArray(cacheData.logs)) {
+                    logs = cacheData.logs;
+                    displayCachedLogs();
+                    return;
+                }
+            }
+        } catch (e) {
+            console.warn(`[${widgetId}] Erreur lecture cache:`, e);
+        }
+        
+        addSystemMessage('En attente des résultats confirmés...', 'info');
+    }
+    
+    function clearCache() {
+        try {
+            localStorage.removeItem(CACHE_KEY);
+            logs = [];
+            if (logsContainer) {
+                logsContainer.innerHTML = '';
+                addSystemMessage('Cache vidé', 'success');
+            }
+        } catch (e) {
+            console.warn(`[${widgetId}] Erreur suppression cache:`, e);
+        }
     }
     
     function handleConfirmedResult(topic, data) {
+        if (topic !== 'test.confirmed') {
+            return;
+        }
+        
         try {
             let csv_line;
             if (typeof data === 'string') {
@@ -200,11 +159,53 @@ window.mqttlogs509511 = (function() {
         return `${date}T${heure}`;
     }
     
+    function saveToCache() {
+        try {
+            const cacheData = {
+                logs: logs.slice(-MAX_LOGS),
+                timestamp: Date.now()
+            };
+            localStorage.setItem(CACHE_KEY, JSON.stringify(cacheData));
+        } catch (e) {
+            console.warn(`[${widgetId}] Erreur sauvegarde cache:`, e);
+        }
+    }
+    
+    function displayCachedLogs() {
+        if (!logsContainer) {
+            console.warn(`[${widgetId}] Container non disponible pour displayCachedLogs`);
+            return;
+        }
+        
+        logsContainer.innerHTML = '';
+        
+        const logsToDisplay = logs.slice(-MAX_DISPLAY_LOGS);
+        
+        logsToDisplay.forEach(log => {
+            const logElement = createLogElement(log);
+            logsContainer.appendChild(logElement);
+            logElement.style.opacity = '1';
+            logElement.style.transform = 'translateX(0)';
+        });
+        
+        logsContainer.scrollTop = logsContainer.scrollHeight;
+        
+        if (logs.length > MAX_DISPLAY_LOGS) {
+            const hiddenCount = logs.length - MAX_DISPLAY_LOGS;
+            console.log(`[${widgetId}] ${hiddenCount} lignes cachées pour performance`);
+        }
+    }
+    
     function addLog(logEntry) {
-        logs.push(logEntry); // Ajoute à la fin du tableau au lieu du début
+        if (!logsContainer) {
+            console.warn(`[${widgetId}] Container non disponible pour addLog`);
+            return;
+        }
+        
+        logs.push(logEntry);
         
         if (logs.length > MAX_LOGS) {
-            logs = logs.slice(-MAX_LOGS); // Garde les 1000 derniers éléments
+            logs = logs.slice(-MAX_LOGS);
         }
         
         const logElement = createLogElement(logEntry);
@@ -214,26 +215,27 @@ window.mqttlogs509511 = (function() {
             systemMsg.remove();
         }
         
-        // Ajoute toujours à la fin
         logsContainer.appendChild(logElement);
         
-        // Supprime les anciens éléments d'affichage si nécessaire (limite visuelle)
         while (logsContainer.children.length > MAX_DISPLAY_LOGS) {
             logsContainer.removeChild(logsContainer.firstChild);
         }
         
-        setTimeout(() => logElement.classList.add('show'), 10);
+        logElement.offsetHeight;
+        logElement.style.opacity = '1';
+        logElement.style.transform = 'translateX(0)';
         
-        // Auto-scroll vers le bas pour voir la nouvelle ligne
         logsContainer.scrollTop = logsContainer.scrollHeight;
         
-        // Sauvegarde dans le cache après chaque nouveau log
         saveToCache();
     }
     
     function createLogElement(log) {
         const div = document.createElement('div');
         div.className = 'log-line';
+        div.style.opacity = '0';
+        div.style.transform = 'translateX(20px)';
+        div.style.transition = 'all 0.3s ease';
         
         const [date, time] = formatTimestampForDisplay(log.timestamp);
         const statusText = getStatusText(log.result);
@@ -307,14 +309,17 @@ window.mqttlogs509511 = (function() {
     }
     
     function addSystemMessage(message, type = 'info') {
+        if (!logsContainer) {
+            console.warn(`[${widgetId}] Container non disponible pour addSystemMessage`);
+            return;
+        }
+        
         const div = document.createElement('div');
         div.className = `system-message ${type}`;
         div.textContent = message;
         
-        if (logsContainer) {
-            logsContainer.innerHTML = '';
-            logsContainer.appendChild(div);
-        }
+        logsContainer.innerHTML = '';
+        logsContainer.appendChild(div);
     }
     
     function destroy() {
@@ -322,7 +327,6 @@ window.mqttlogs509511 = (function() {
             window.orchestrator.unregisterWidget('mqttlogs509511');
         }
         
-        // Sauvegarde finale avant destruction
         if (logs.length > 0) {
             saveToCache();
         }
@@ -336,6 +340,6 @@ window.mqttlogs509511 = (function() {
     return {
         init: init,
         destroy: destroy,
-        clearCache: clearCache // Fonction utilitaire pour vider le cache si nécessaire
+        clearCache: clearCache
     };
 })();
