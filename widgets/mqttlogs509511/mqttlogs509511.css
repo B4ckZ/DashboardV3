@@ -1,7 +1,7 @@
 /**
- * Widget MQTT Logs 509/511 - Version avec variables pour ajustement rapide
- * Style basé sur le widget clock pour la cohérence visuelle
+ * Widget MQTT Logs 509/511 - Version avec date/heure verticale
  * Optimisé pour écran PC 1920x1080
+ * Gain d'espace horizontal pour code-barres
  */
 
 /* =============================================================================== */
@@ -10,14 +10,14 @@
 
 :root {
     /* Tailles des polices */
-    --log-date-size: 14px;          /* Date (style clock) */
-    --log-time-size: 14px;          /* Heure (style clock) */
+    --log-date-size: 14px;          /* Date */
+    --log-time-size: 14px;          /* Heure */
     --log-barcode-size: 14px;       /* Code-barres */
-    --log-badge-size: 15px;         /* Badges machine/statut */
+    --log-badge-size: 14px;         /* Badges machine/statut */
     
     /* Espacement des lettres */
-    --log-letter-spacing: px;      /* Espacement comme clock */
-    --log-barcode-spacing: px;     /* Espacement code-barres */
+    --log-letter-spacing: 1px;      /* Espacement */
+    --log-barcode-spacing: 1px;     /* Espacement code-barres */
     
     /* Poids des polices */
     --log-font-weight: 500;         /* Poids normal */
@@ -52,10 +52,10 @@
     align-items: center;
     padding: 10px 14px;
     border-radius: 8px;
-    margin-bottom: 10px;
+    margin-bottom: 8px;
     background-color: var(--nord1);
     transition: all 0.3s ease;
-    gap: 8px;
+    gap: 5px;
 }
 
 .log-line:hover {
@@ -63,8 +63,18 @@
 }
 
 /* =============================================================================== */
-/* DATE ET HEURE - STYLE CLOCK */
+/* DATE ET HEURE - DISPOSITION VERTICALE */
 /* =============================================================================== */
+
+.datetime-container {
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    justify-content: center;
+    flex: 0 1 80px;
+    gap: 2px;
+	margin-right: 10px;  /* ← AJOUTEZ CETTE LIGNE */
+}
 
 .log-date {
     font-size: var(--log-date-size);
@@ -73,8 +83,8 @@
     color: var(--nord5);
     letter-spacing: var(--log-letter-spacing);
     text-align: center;
-    flex: 0 1 80px;
     white-space: nowrap;
+    line-height: 1;
 }
 
 .log-time {
@@ -84,12 +94,12 @@
     color: var(--nord5);
     letter-spacing: var(--log-letter-spacing);
     text-align: center;
-    flex: 0 1 70px;
     white-space: nowrap;
+    line-height: 1;
 }
 
 /* =============================================================================== */
-/* CODE-BARRES */
+/* CODE-BARRES - PLUS D'ESPACE DISPONIBLE */
 /* =============================================================================== */
 
 .log-barcode {
@@ -99,7 +109,7 @@
     color: var(--nord5);
     letter-spacing: var(--log-barcode-spacing);
     text-align: center;
-    flex: 3 1 250px;
+    flex: 3 1 300px;
     overflow: hidden;
     text-overflow: ellipsis;
     white-space: nowrap;

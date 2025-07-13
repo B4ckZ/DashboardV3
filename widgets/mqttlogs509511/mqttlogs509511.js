@@ -242,8 +242,10 @@ window.mqttlogs509511 = (function() {
         const statusClass = getStatusClass(log.result);
         
         div.innerHTML = `
-            <span class="log-date">${date}</span>
-            <span class="log-time">${time}</span>
+            <div class="datetime-container">
+                <span class="log-date">${date}</span>
+                <span class="log-time">${time}</span>
+            </div>
             <span class="blue-badge machine">${log.machine}</span>
             <span class="log-barcode" title="${log.barcode}">${log.barcode}</span>
             <span class="blue-badge status ${statusClass}">${statusText}</span>
