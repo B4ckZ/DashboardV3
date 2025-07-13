@@ -1,3 +1,33 @@
+/**
+ * Widget MQTT Logs 509/511 - Version avec variables pour ajustement rapide
+ * Style basé sur le widget clock pour la cohérence visuelle
+ * Optimisé pour écran PC 1920x1080
+ */
+
+/* =============================================================================== */
+/* VARIABLES POUR AJUSTEMENT RAPIDE DES TAILLES */
+/* =============================================================================== */
+
+:root {
+    /* Tailles des polices */
+    --log-date-size: 14px;          /* Date (style clock) */
+    --log-time-size: 14px;          /* Heure (style clock) */
+    --log-barcode-size: 14px;       /* Code-barres */
+    --log-badge-size: 15px;         /* Badges machine/statut */
+    
+    /* Espacement des lettres */
+    --log-letter-spacing: px;      /* Espacement comme clock */
+    --log-barcode-spacing: px;     /* Espacement code-barres */
+    
+    /* Poids des polices */
+    --log-font-weight: 500;         /* Poids normal */
+    --log-badge-weight: bold;       /* Poids badges */
+}
+
+/* =============================================================================== */
+/* CONTENEUR PRINCIPAL */
+/* =============================================================================== */
+
 .logs-container {
     flex: 1;
     overflow-y: auto;
@@ -12,6 +42,10 @@
     display: flex;
     flex-direction: column;
 }
+
+/* =============================================================================== */
+/* LIGNE DE LOG */
+/* =============================================================================== */
 
 .log-line {
     display: flex;
@@ -28,75 +62,99 @@
     transform: translateX(4px);
 }
 
+/* =============================================================================== */
+/* DATE ET HEURE - STYLE CLOCK */
+/* =============================================================================== */
+
 .log-date {
-    font-size: 13px;
+    font-size: var(--log-date-size);
+    font-family: 'Roboto Mono', monospace;
+    font-weight: var(--log-font-weight);
     color: var(--nord5);
-    font-weight: 500;
+    letter-spacing: var(--log-letter-spacing);
     text-align: center;
-    flex: 0 1 60px;
+    flex: 0 1 80px;
     white-space: nowrap;
 }
 
 .log-time {
-    font-size: 13px;
+    font-size: var(--log-time-size);
+    font-family: 'Roboto Mono', monospace;
+    font-weight: var(--log-font-weight);
     color: var(--nord5);
-    font-weight: 500;
+    letter-spacing: var(--log-letter-spacing);
     text-align: center;
-    flex: 0 1 50px;
+    flex: 0 1 70px;
     white-space: nowrap;
 }
 
+/* =============================================================================== */
+/* CODE-BARRES */
+/* =============================================================================== */
+
 .log-barcode {
     font-family: 'Roboto Mono', monospace;
-    font-size: 13px;
+    font-size: var(--log-barcode-size);
+    font-weight: var(--log-font-weight);
     color: var(--nord5);
+    letter-spacing: var(--log-barcode-spacing);
     text-align: center;
     flex: 3 1 250px;
     overflow: hidden;
     text-overflow: ellipsis;
     white-space: nowrap;
-    font-weight: 500;
 }
+
+/* =============================================================================== */
+/* BADGES */
+/* =============================================================================== */
 
 .blue-badge {
     background-color: var(--nord10);
     color: var(--nord6);
     padding: 2px 4px;
     border-radius: 3px;
-    font-size: 15px;
-    font-weight: bold;
+    font-size: var(--log-badge-size);
+    font-weight: var(--log-badge-weight);
+    font-family: 'Roboto Mono', monospace;
+    letter-spacing: 1px;
     text-align: center;
     box-shadow: 0 1px 2px rgba(94, 129, 172, 0.3);
     flex: 0 0 auto;
     white-space: nowrap;
-    min-width: 25px;
+    min-width: 20px;
 }
 
 .blue-badge.machine {
-    min-width: 35px;
+    min-width: 20px; 
 }
 
 .blue-badge.status {
     min-width: 30px;
 }
 
+/* Couleurs des statuts */
 .blue-badge.status-ok {
     background-color: var(--nord14);
     color: var(--nord0);
-    box-shadow: 0 1px 2px rgba(94, 129, 172, 0.3);
+    box-shadow: 0 1px 2px rgba(163, 190, 140, 0.3);
 }
 
 .blue-badge.status-fv {
     background-color: var(--nord12);
     color: var(--nord0);
-    box-shadow: 0 1px 2px rgba(94, 129, 172, 0.3);
+    box-shadow: 0 1px 2px rgba(208, 135, 112, 0.3);
 }
 
 .blue-badge.status-fp {
     background-color: var(--nord11);
     color: var(--nord0);
-    box-shadow: 0 1px 2px rgba(94, 129, 172, 0.3);
+    box-shadow: 0 1px 2px rgba(191, 97, 106, 0.3);
 }
+
+/* =============================================================================== */
+/* MESSAGES SYSTÈME */
+/* =============================================================================== */
 
 .system-message {
     padding: 20px;
@@ -104,6 +162,8 @@
     color: var(--nord4);
     font-style: italic;
     font-size: 14px;
+    font-family: 'Roboto Mono', monospace;
+    letter-spacing: 1px;
 }
 
 .system-message.error {
