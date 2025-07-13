@@ -57,10 +57,8 @@ export const TOPIC_MAPPING = {
     'rpi/network/mqtt/topics': 'network.mqtt.topics',
 	
 	// Topic CSV confirmé
-    'SOUFFLAGE/ESP32/RTP/CONFIRMED': 'test.confirmed',
-    
-    // Test
-    'test/result': 'test.result'
+    'SOUFFLAGE/ESP32/RTP/CONFIRMED': 'test.confirmed'
+	
 };
 
 // Formats de données pour validation
