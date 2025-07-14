@@ -103,7 +103,7 @@
     background-color: var(--nord2);
     font-size: 14px;
     font-weight: 500;
-    color: var(--nord8);
+    color: var(--nord5);
     transition: transform 0.2s ease, box-shadow 0.2s ease;
 }
 
