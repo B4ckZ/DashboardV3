@@ -1,7 +1,7 @@
 /**
- * Widget Download Button - Version Ultra-Simplifiée
- * Style exact du widget rebootbutton avec menu déroulant des archives
- * MaxLink Dashboard v3.0 - Simplifié
+ * Widget Download Button - Version Ultra-Simplifiée PHP
+ * Style exact du widget rebootbutton avec backend PHP pur
+ * MaxLink Dashboard v3.0 - Solution PHP ultra-simple
  */
 
 window.downloadbutton = (function() {
@@ -29,7 +29,7 @@ window.downloadbutton = (function() {
                     downloadButton.addEventListener('click', showDownloadPopup);
                 }
                 
-                console.log('Download button widget initialized');
+                console.log('Download button widget initialized (PHP backend)');
             })
             .catch(error => {
                 console.error('Erreur chargement download button widget:', error);
@@ -55,19 +55,20 @@ window.downloadbutton = (function() {
     
     async function loadArchivesList() {
         try {
-            // Scanner directement le dossier Archives via une requête simple
-            const response = await fetch('/archives-list.json?' + Date.now());
+            // Appel direct au script PHP (ultra-simple)
+            const response = await fetch('/archives-list.php?' + Date.now());
             
             if (response.ok) {
                 archivesData = await response.json();
-                console.log('Archives loaded:', archivesData);
+                console.log('Archives loaded from PHP:', archivesData);
             } else {
-                throw new Error('Archives non trouvées');
+                throw new Error('Archives non trouvées (HTTP ' + response.status + ')');
             }
         } catch (error) {
             console.error('Erreur chargement archives:', error);
             // Données de fallback si pas d'archives
             archivesData = {};
+            showNotification('Erreur de chargement des archives', 'warning');
         }
     }
     
@@ -80,6 +81,7 @@ window.downloadbutton = (function() {
         // Créer la nouvelle popup (EXACTEMENT comme rebootbutton)
         popupElement = document.createElement('div');
         popupElement.className = 'reboot-popup-overlay';  // Utilise les mêmes classes CSS !
+        
         popupElement.innerHTML = `
             <div class="reboot-popup">
                 <div class="reboot-popup-content">
@@ -103,9 +105,9 @@ window.downloadbutton = (function() {
     }
     
     function createArchivesSelect() {
-        const archives = Object.keys(archivesData);
+        const years = Object.keys(archivesData);
         
-        if (archives.length === 0) {
+        if (years.length === 0) {
             return `
                 <div class="archive-info">
                     <p>Aucune archive disponible</p>
@@ -116,9 +118,11 @@ window.downloadbutton = (function() {
         // Créer un select avec toutes les semaines disponibles
         let options = '<option value="">-- Sélectionner une semaine --</option>';
         
-        // Trier par année puis semaine (plus récent en premier)
-        archives.sort((a, b) => b - a).forEach(year => {
-            const weeks = archivesData[year].sort((a, b) => b - a);
+        // Trier par année décroissante (plus récent en premier)
+        years.sort((a, b) => b - a).forEach(year => {
+            const weeks = archivesData[year];
+            
+            // Les semaines sont déjà triées par ordre décroissant depuis le PHP
             weeks.forEach(week => {
                 const label = `S${week.toString().padStart(2, '0')} ${year}`;
                 const value = `${year}-${week}`;
@@ -175,7 +179,7 @@ window.downloadbutton = (function() {
         const [year, week] = select.value.split('-');
         const weekPadded = week.padStart(2, '0');
         
-        // URL de téléchargement directe
+        // URL de téléchargement directe vers le script PHP
         const downloadUrl = `/download-archive.php?year=${year}&week=${week}`;
         
         showNotification(`Téléchargement S${weekPadded}/${year}...`, 'info');
@@ -196,65 +200,18 @@ window.downloadbutton = (function() {
     }
     
     function showNotification(message, type = 'info') {
-        // Utiliser le même système de notification que rebootbutton
-        const notification = document.createElement('div');
-        notification.className = `notification notification-${type}`;
-        notification.textContent = message;
-        
-        // Styles inline pour éviter les conflits
-        Object.assign(notification.style, {
-            position: 'fixed',
-            top: '20px',
-            right: '20px',
-            padding: '12px 20px',
-            borderRadius: '8px',
-            color: 'white',
-            fontWeight: '500',
-            zIndex: '2000',
-            transform: 'translateX(100%)',
-            transition: 'transform 0.3s ease'
-        });
-        
-        // Couleurs selon le type
-        const colors = {
-            info: 'linear-gradient(135deg, #5E81AC, #81A1C1)',
-            success: 'linear-gradient(135deg, #A3BE8C, #8FBCBB)',
-            warning: 'linear-gradient(135deg, #EBCB8B, #D08770)',
-            error: 'linear-gradient(135deg, #BF616A, #D08770)'
-        };
-        
-        notification.style.background = colors[type] || colors.info;
-        
-        document.body.appendChild(notification);
-        
-        // Animation d'apparition
-        setTimeout(() => {
-            notification.style.transform = 'translateX(0)';
-        }, 100);
-        
-        // Suppression automatique
-        setTimeout(() => {
-            notification.style.transform = 'translateX(100%)';
-            setTimeout(() => {
-                if (notification.parentNode) {
-                    notification.parentNode.removeChild(notification);
-                }
-            }, 300);
-        }, 3000);
-    }
-    
-    function destroy() {
-        if (popupElement) {
-            popupElement.remove();
-            popupElement = null;
+        // Utilise le système de notifications du dashboard (si disponible)
+        if (window.notifications && typeof window.notifications.show === 'function') {
+            window.notifications.show(message, type);
+        } else {
+            // Fallback console
+            console.log(`[${type.toUpperCase()}] ${message}`);
         }
-        document.body.style.overflow = '';
     }
     
-    // Interface publique (minimal)
+    // API publique
     return {
         init: init,
-        destroy: destroy,
         hidePopup: hidePopup,
         downloadSelected: downloadSelected
     };
