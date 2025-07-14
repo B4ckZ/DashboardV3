@@ -1,18 +1,16 @@
 /**
- * Widget Download Button avec Traçabilité Hebdomadaire
- * Comportement identique au widget rebootbutton : un clic = popup
- * MaxLink Dashboard v3.0 - URL Relative (pas de CORS)
+ * Widget Download Button - Version Ultra-Simplifiée
+ * Style exact du widget rebootbutton avec menu déroulant des archives
+ * MaxLink Dashboard v3.0 - Simplifié
  */
 
 window.downloadbutton = (function() {
     'use strict';
     
-    const API_BASE_URL = '/api';  // URL relative - pas de CORS !
-    
     let widgetElement;
     let downloadButton;
     let popupElement = null;
-    let archivesData = null;
+    let archivesData = {};
     
     function init(element) {
         widgetElement = element;
@@ -26,7 +24,7 @@ window.downloadbutton = (function() {
                 // Récupérer le bouton
                 downloadButton = widgetElement.querySelector('#download-button');
                 
-                // Événement sur le bouton (comme rebootbutton)
+                // Événement sur le bouton (exactement comme rebootbutton)
                 if (downloadButton) {
                     downloadButton.addEventListener('click', showDownloadPopup);
                 }
@@ -41,88 +39,62 @@ window.downloadbutton = (function() {
     async function showDownloadPopup() {
         console.log('Opening download popup...');
         
-        // Effet visuel sur le bouton (comme rebootbutton)
+        // Effet visuel sur le bouton (exactement comme rebootbutton)
         if (downloadButton) {
             downloadButton.classList.add('clicked');
             setTimeout(() => downloadButton.classList.remove('clicked'), 150);
         }
         
-        // Charger les données d'archives
-        await loadArchivesData();
-        const currentWeek = await loadCurrentWeek();
+        // Charger la liste des archives
+        await loadArchivesList();
         
-        // Créer et afficher la popup
-        createDownloadPopup(archivesData, currentWeek);
+        // Créer et afficher la popup (style rebootbutton)
+        createDownloadPopup();
         showPopup();
     }
     
-    async function loadArchivesData() {
+    async function loadArchivesList() {
         try {
-            showNotification('Chargement des archives...', 'info');
+            // Scanner directement le dossier Archives via une requête simple
+            const response = await fetch('/archives-list.json?' + Date.now());
             
-            const response = await fetch(`${API_BASE_URL}/archives`);
-            
-            if (!response.ok) {
-                throw new Error(`HTTP ${response.status}: ${response.statusText}`);
-            }
-            
-            const data = await response.json();
-            
-            if (data.status === 'success') {
-                archivesData = data.archives;
+            if (response.ok) {
+                archivesData = await response.json();
                 console.log('Archives loaded:', archivesData);
             } else {
-                throw new Error(data.message || 'Erreur chargement archives');
+                throw new Error('Archives non trouvées');
             }
         } catch (error) {
             console.error('Erreur chargement archives:', error);
-            showNotification('Erreur de chargement des archives', 'error');
+            // Données de fallback si pas d'archives
             archivesData = {};
         }
     }
     
-    async function loadCurrentWeek() {
-        try {
-            const response = await fetch(`${API_BASE_URL}/current`);
-            
-            if (!response.ok) {
-                throw new Error(`HTTP ${response.status}: ${response.statusText}`);
-            }
-            
-            const data = await response.json();
-            
-            if (data.status === 'success') {
-                return data.current_week;
-            } else {
-                throw new Error(data.message || 'Erreur chargement semaine courante');
-            }
-        } catch (error) {
-            console.error('Erreur chargement semaine courante:', error);
-            return null;
-        }
-    }
-    
-    function createDownloadPopup(archives, currentWeek) {
+    function createDownloadPopup() {
         // Supprimer l'ancienne popup si elle existe
         if (popupElement) {
             popupElement.remove();
         }
         
-        // Créer la nouvelle popup
+        // Créer la nouvelle popup (EXACTEMENT comme rebootbutton)
         popupElement = document.createElement('div');
-        popupElement.className = 'download-popup-overlay';
+        popupElement.className = 'reboot-popup-overlay';  // Utilise les mêmes classes CSS !
         popupElement.innerHTML = `
-            <div class="download-popup">
-                <div class="popup-header">
-                    <h3>Téléchargement Traçabilité</h3>
-                    <button class="popup-close" onclick="downloadbutton.hidePopup()">×</button>
-                </div>
-                <div class="popup-content">
-                    ${createCurrentWeekSection(currentWeek)}
-                    ${createArchivesSection(archives)}
-                </div>
-                <div class="popup-footer">
-                    <button class="btn-cancel" onclick="downloadbutton.hidePopup()">Annuler</button>
+            <div class="reboot-popup">
+                <div class="reboot-popup-content">
+                    <h3>Téléchargement Archives</h3>
+                    <div class="reboot-options">
+                        ${createArchivesSelect()}
+                        <div class="reboot-buttons">
+                            <button class="reboot-btn reboot-btn-cancel" onclick="downloadbutton.hidePopup()">
+                                Annuler
+                            </button>
+                            <button class="reboot-btn reboot-btn-download" onclick="downloadbutton.downloadSelected()">
+                                Télécharger
+                            </button>
+                        </div>
+                    </div>
                 </div>
             </div>
         `;
@@ -130,97 +102,38 @@ window.downloadbutton = (function() {
         document.body.appendChild(popupElement);
     }
     
-    function createCurrentWeekSection(currentWeek) {
-        if (!currentWeek || !currentWeek.files.length) {
+    function createArchivesSelect() {
+        const archives = Object.keys(archivesData);
+        
+        if (archives.length === 0) {
             return `
-                <div class="download-section current-week">
-                    <h4>Semaine Courante</h4>
-                    <p class="no-data">Aucun fichier pour la semaine courante</p>
+                <div class="archive-info">
+                    <p>Aucune archive disponible</p>
                 </div>
             `;
         }
         
-        return `
-            <div class="download-section current-week">
-                <h4>Semaine Courante - ${currentWeek.week_label} ${currentWeek.year}</h4>
-                <div class="download-current">
-                    <div class="files-preview">
-                        ${currentWeek.files.map(file => `
-                            <span class="file-badge">${file.machine}</span>
-                        `).join('')}
-                    </div>
-                    <button class="btn-download current" onclick="downloadbutton.downloadCurrent()">
-                        <svg class="btn-icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
-                            <path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4"/>
-                            <polyline points="7,10 12,15 17,10"/>
-                            <line x1="12" y1="15" x2="12" y2="3"/>
-                        </svg>
-                        Télécharger Semaine Courante
-                    </button>
-                </div>
-            </div>
-        `;
-    }
-    
-    function createArchivesSection(archives) {
-        if (!archives || Object.keys(archives).length === 0) {
-            return `
-                <div class="download-section archives">
-                    <h4>Archives</h4>
-                    <p class="no-data">Aucune archive disponible</p>
-                </div>
-            `;
-        }
+        // Créer un select avec toutes les semaines disponibles
+        let options = '<option value="">-- Sélectionner une semaine --</option>';
         
-        const years = Object.keys(archives).sort((a, b) => b - a);
-        
-        return `
-            <div class="download-section archives">
-                <h4>Archives par Année</h4>
-                <div class="years-list">
-                    ${years.map(year => createYearSection(year, archives[year])).join('')}
-                </div>
-            </div>
-        `;
-    }
-    
-    function createYearSection(year, yearData) {
-        const weeks = Object.keys(yearData).sort((a, b) => {
-            const weekA = parseInt(a.substring(1));
-            const weekB = parseInt(b.substring(1));
-            return weekB - weekA;
+        // Trier par année puis semaine (plus récent en premier)
+        archives.sort((a, b) => b - a).forEach(year => {
+            const weeks = archivesData[year].sort((a, b) => b - a);
+            weeks.forEach(week => {
+                const label = `S${week.toString().padStart(2, '0')} ${year}`;
+                const value = `${year}-${week}`;
+                options += `<option value="${value}">${label}</option>`;
+            });
         });
         
         return `
-            <div class="year-group">
-                <h5 class="year-header" onclick="downloadbutton.toggleYear('${year}')">${year} 
-                    <span class="toggle-arrow">▼</span>
-                </h5>
-                <div class="weeks-list" id="weeks-${year}">
-                    ${weeks.map(weekLabel => createWeekItem(year, weekLabel, yearData[weekLabel])).join('')}
-                </div>
+            <div class="archive-info">
+                <p>Sélectionnez une semaine à télécharger :</p>
             </div>
-        `;
-    }
-    
-    function createWeekItem(year, weekLabel, weekData) {
-        const weekNumber = weekData.week_number;
-        const filesCount = weekData.files.length;
-        
-        return `
-            <div class="week-item">
-                <div class="week-info">
-                    <span class="week-label">${weekLabel}</span>
-                    <span class="files-count">${filesCount} fichier(s)</span>
-                </div>
-                <button class="btn-download archive" onclick="downloadbutton.downloadWeek(${year}, ${weekNumber})">
-                    <svg class="btn-icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
-                        <path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4"/>
-                        <polyline points="7,10 12,15 17,10"/>
-                        <line x1="12" y1="15" x2="12" y2="3"/>
-                    </svg>
-                    Télécharger
-                </button>
+            <div class="archive-select-container">
+                <select id="archive-select" class="archive-select">
+                    ${options}
+                </select>
             </div>
         `;
     }
@@ -230,7 +143,7 @@ window.downloadbutton = (function() {
             popupElement.style.display = 'flex';
             document.body.style.overflow = 'hidden';
             
-            // Animation d'apparition
+            // Animation d'apparition (comme rebootbutton)
             setTimeout(() => {
                 popupElement.classList.add('show');
             }, 10);
@@ -251,97 +164,77 @@ window.downloadbutton = (function() {
         }
     }
     
-    function toggleYear(year) {
-        const weeksList = document.getElementById(`weeks-${year}`);
-        const arrow = document.querySelector(`[onclick="downloadbutton.toggleYear('${year}')"] .toggle-arrow`);
+    function downloadSelected() {
+        const select = document.getElementById('archive-select');
         
-        if (weeksList && arrow) {
-            if (weeksList.style.display === 'none') {
-                weeksList.style.display = 'block';
-                arrow.textContent = '▼';
-            } else {
-                weeksList.style.display = 'none';
-                arrow.textContent = '▶';
-            }
+        if (!select || !select.value) {
+            showNotification('Veuillez sélectionner une semaine', 'warning');
+            return;
         }
-    }
-    
-    async function downloadCurrent() {
-        try {
-            showNotification('Téléchargement en cours...', 'info');
-            
-            const response = await fetch(`${API_BASE_URL}/download/current`);
-            
-            if (!response.ok) {
-                throw new Error(`Erreur ${response.status}: ${response.statusText}`);
-            }
-            
-            await downloadFile(response, 'tracabilite_courante.zip');
-            showNotification('Téléchargement terminé !', 'success');
+        
+        const [year, week] = select.value.split('-');
+        const weekPadded = week.padStart(2, '0');
+        
+        // URL de téléchargement directe
+        const downloadUrl = `/download-archive.php?year=${year}&week=${week}`;
+        
+        showNotification(`Téléchargement S${weekPadded}/${year}...`, 'info');
+        
+        // Télécharger le fichier
+        const link = document.createElement('a');
+        link.href = downloadUrl;
+        link.download = `MaxLink_S${weekPadded}_${year}_Archives.zip`;
+        document.body.appendChild(link);
+        link.click();
+        document.body.removeChild(link);
+        
+        // Fermer la popup après téléchargement
+        setTimeout(() => {
             hidePopup();
-            
-        } catch (error) {
-            console.error('Erreur téléchargement semaine courante:', error);
-            showNotification('Erreur lors du téléchargement', 'error');
-        }
-    }
-    
-    async function downloadWeek(year, week) {
-        try {
-            showNotification(`Téléchargement S${week.toString().padStart(2, '0')}/${year}...`, 'info');
-            
-            const response = await fetch(`${API_BASE_URL}/download/${year}/${week}`);
-            
-            if (!response.ok) {
-                throw new Error(`Erreur ${response.status}: ${response.statusText}`);
-            }
-            
-            await downloadFile(response, `tracabilite_S${week.toString().padStart(2, '0')}_${year}.zip`);
             showNotification('Téléchargement terminé !', 'success');
-            hidePopup();
-            
-        } catch (error) {
-            console.error('Erreur téléchargement archive:', error);
-            showNotification('Erreur lors du téléchargement', 'error');
-        }
-    }
-    
-    async function downloadFile(response, defaultFilename) {
-        const blob = await response.blob();
-        const url = window.URL.createObjectURL(blob);
-        const a = document.createElement('a');
-        a.href = url;
-        
-        // Extraire le nom de fichier des headers si disponible
-        const contentDisposition = response.headers.get('Content-Disposition');
-        const filename = contentDisposition 
-            ? contentDisposition.split('filename=')[1].replace(/"/g, '')
-            : defaultFilename;
-        
-        a.download = filename;
-        document.body.appendChild(a);
-        a.click();
-        document.body.removeChild(a);
-        window.URL.revokeObjectURL(url);
+        }, 1000);
     }
     
     function showNotification(message, type = 'info') {
-        // Supprimer les notifications existantes
-        const existingNotifications = document.querySelectorAll('.download-notification');
-        existingNotifications.forEach(notif => notif.remove());
-        
+        // Utiliser le même système de notification que rebootbutton
         const notification = document.createElement('div');
-        notification.className = `download-notification download-notification-${type}`;
+        notification.className = `notification notification-${type}`;
         notification.textContent = message;
+        
+        // Styles inline pour éviter les conflits
+        Object.assign(notification.style, {
+            position: 'fixed',
+            top: '20px',
+            right: '20px',
+            padding: '12px 20px',
+            borderRadius: '8px',
+            color: 'white',
+            fontWeight: '500',
+            zIndex: '2000',
+            transform: 'translateX(100%)',
+            transition: 'transform 0.3s ease'
+        });
+        
+        // Couleurs selon le type
+        const colors = {
+            info: 'linear-gradient(135deg, #5E81AC, #81A1C1)',
+            success: 'linear-gradient(135deg, #A3BE8C, #8FBCBB)',
+            warning: 'linear-gradient(135deg, #EBCB8B, #D08770)',
+            error: 'linear-gradient(135deg, #BF616A, #D08770)'
+        };
+        
+        notification.style.background = colors[type] || colors.info;
         
         document.body.appendChild(notification);
         
         // Animation d'apparition
-        setTimeout(() => notification.classList.add('show'), 100);
+        setTimeout(() => {
+            notification.style.transform = 'translateX(0)';
+        }, 100);
         
         // Suppression automatique
         setTimeout(() => {
-            notification.classList.remove('show');
+            notification.style.transform = 'translateX(100%)';
             setTimeout(() => {
                 if (notification.parentNode) {
                     notification.parentNode.removeChild(notification);
@@ -358,13 +251,11 @@ window.downloadbutton = (function() {
         document.body.style.overflow = '';
     }
     
-    // Interface publique
+    // Interface publique (minimal)
     return {
         init: init,
         destroy: destroy,
         hidePopup: hidePopup,
-        toggleYear: toggleYear,
-        downloadCurrent: downloadCurrent,
-        downloadWeek: downloadWeek
+        downloadSelected: downloadSelected
     };
 })();
