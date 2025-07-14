@@ -1,13 +1,13 @@
 /**
  * Widget Download Button avec Traçabilité Hebdomadaire
  * Comportement identique au widget rebootbutton : un clic = popup
- * MaxLink Dashboard v3.0
+ * MaxLink Dashboard v3.0 - URL Relative (pas de CORS)
  */
 
 window.downloadbutton = (function() {
     'use strict';
     
-    const API_BASE_URL = 'http://192.168.4.1:5001/api';
+    const API_BASE_URL = '/api';  // URL relative - pas de CORS !
     
     let widgetElement;
     let downloadButton;
@@ -61,6 +61,11 @@ window.downloadbutton = (function() {
             showNotification('Chargement des archives...', 'info');
             
             const response = await fetch(`${API_BASE_URL}/archives`);
+            
+            if (!response.ok) {
+                throw new Error(`HTTP ${response.status}: ${response.statusText}`);
+            }
+            
             const data = await response.json();
             
             if (data.status === 'success') {
@@ -79,6 +84,11 @@ window.downloadbutton = (function() {
     async function loadCurrentWeek() {
         try {
             const response = await fetch(`${API_BASE_URL}/current`);
+            
+            if (!response.ok) {
+                throw new Error(`HTTP ${response.status}: ${response.statusText}`);
+            }
+            
             const data = await response.json();
             
             if (data.status === 'success') {
