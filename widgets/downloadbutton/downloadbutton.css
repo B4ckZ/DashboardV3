@@ -1,58 +1,525 @@
 /**
- * Widget Reboot Button - Style identique au widget uptime
- * Avec icône parfaitement centrée
+ * Widget Download Button avec Traçabilité Hebdomadaire
+ * Styles neumorphiques cohérents avec le dashboard MaxLink
+ * Version 3.0
  */
 
-/* Cadre enfoncé - reprend exactement le style de uptime-inset */
-.reboot-inset {
-    position: absolute;
-    top: 10px;
-    left: 10px;
-    width: calc(100% - 20px);
-    height: calc(100% - 20px);
+/* ================================
+   BOUTON PRINCIPAL (comme rebootbutton)
+   ================================ */
+
+.download-inset {
+    width: 100%;
+    height: 100%;
+    border-radius: var(--border-radius);
+    padding: 6px;
+    background: var(--nord1);
     
-    border-radius: calc(var(--border-radius) - 4px);
-    
-    background-color: var(--nord0);
-    /* Flexbox pour assurer le centrage parfait */
+    /* Inset neumorphique */
+    box-shadow: 
+        inset 4px 4px 8px var(--shadow-color),
+        inset -4px -4px 8px var(--highlight-color);
+}
+
+.download-button {
+    width: 100%;
+    height: 100%;
+    border: none;
+    background: linear-gradient(135deg, var(--nord8), var(--nord9));
+    border-radius: calc(var(--border-radius) - 2px);
+    cursor: pointer;
     display: flex;
     align-items: center;
     justify-content: center;
+    transition: all 0.2s ease;
+    
+    /* Effet neumorphique surélevé */
+    box-shadow: 
+        2px 2px 4px var(--shadow-color),
+        -2px -2px 4px var(--highlight-color);
+}
+
+.download-button:hover {
+    background: linear-gradient(135deg, var(--nord9), var(--nord8));
+    transform: translateY(-1px);
+    box-shadow: 
+        3px 3px 6px var(--shadow-color),
+        -3px -3px 6px var(--highlight-color);
+}
+
+.download-button:active,
+.download-button.clicked {
+    transform: translateY(0);
     box-shadow: 
         inset 2px 2px 4px var(--shadow-color),
         inset -2px -2px 4px var(--highlight-color);
 }
 
-/* Bouton de redémarrage simple avec centrage parfait */
-.reboot-button {
-    /* Enlever toutes les marges et rembourrages qui pourraient affecter le centrage */
-    background: none;
-    border: none;
-    padding: 0;
-    margin: 0;
-    cursor: pointer;
-    
-    /* Assurer que le bouton lui-même est dimensionné correctement */
+.widget-icon {
+    width: 20px;
+    height: 20px;
+    filter: drop-shadow(0 1px 2px rgba(0, 0, 0, 0.3));
+}
 
-    /* Flexbox pour centrer l'icône à l'intérieur du bouton */
+/* ================================
+   POPUP OVERLAY
+   ================================ */
+
+.download-popup-overlay {
+    position: fixed;
+    top: 0;
+    left: 0;
+    width: 100vw;
+    height: 100vh;
+    background: rgba(46, 52, 64, 0.8);
+    backdrop-filter: blur(4px);
     display: flex;
     align-items: center;
     justify-content: center;
+    z-index: 1000;
+    opacity: 0;
+    transition: opacity 0.3s ease;
+}
+
+.download-popup-overlay.show {
+    opacity: 1;
+}
+
+/* ================================
+   POPUP PRINCIPALE
+   ================================ */
+
+.download-popup {
+    background: var(--nord1);
+    border-radius: 12px;
+    width: 90%;
+    max-width: 500px;
+    max-height: 80vh;
     
-    /* Transition pour l'effet de pression */
-    transition: transform 0.1s ease;
+    /* Neumorphisme pour la popup */
+    box-shadow: 
+        12px 12px 24px var(--shadow-color),
+        -12px -12px 24px var(--highlight-color),
+        inset 1px 1px 2px rgba(255, 255, 255, 0.1);
+    
+    border: 1px solid var(--nord3);
+    overflow: hidden;
+    transform: scale(0.9);
+    transition: transform 0.3s ease;
 }
 
-/* Effet de pression du bouton */
-.reboot-button:active {
-    transform: scale(0.85);
+.download-popup-overlay.show .download-popup {
+    transform: scale(1);
 }
 
-/* Style de l'icône - taille exacte et pas de marges */
-.reboot-button .widget-icon {
-    width: 25px;
-    height: 25px;
-	margin-right: 0px; /* important pour le centrage des icone de widget type button*/
-    /* Assurer qu'il n'y a pas de marges internes sur l'icône */
-    display: block;
+/* ================================
+   HEADER DE POPUP
+   ================================ */
+
+.popup-header {
+    background: linear-gradient(135deg, var(--nord2), var(--nord3));
+    padding: 20px;
+    border-bottom: 1px solid var(--nord3);
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+}
+
+.popup-header h3 {
+    margin: 0;
+    color: var(--nord6);
+    font-size: 20px;
+    font-weight: 600;
+}
+
+.popup-close {
+    background: none;
+    border: none;
+    color: var(--nord4);
+    font-size: 24px;
+    cursor: pointer;
+    padding: 4px;
+    width: 28px;
+    height: 28px;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    border-radius: 50%;
+    transition: all 0.2s ease;
+}
+
+.popup-close:hover {
+    background: var(--nord11);
+    color: var(--nord6);
+}
+
+/* ================================
+   CONTENU DE POPUP
+   ================================ */
+
+.popup-content {
+    padding: 0;
+    max-height: calc(80vh - 140px);
+    overflow-y: auto;
+}
+
+/* Scrollbar personnalisée */
+.popup-content::-webkit-scrollbar {
+    width: 6px;
+}
+
+.popup-content::-webkit-scrollbar-track {
+    background: var(--nord1);
+}
+
+.popup-content::-webkit-scrollbar-thumb {
+    background: var(--nord3);
+    border-radius: 3px;
+}
+
+.popup-content::-webkit-scrollbar-thumb:hover {
+    background: var(--nord4);
+}
+
+/* ================================
+   SECTIONS DE TÉLÉCHARGEMENT
+   ================================ */
+
+.download-section {
+    padding: 20px;
+    border-bottom: 1px solid var(--nord2);
+}
+
+.download-section:last-child {
+    border-bottom: none;
+}
+
+.download-section h4 {
+    margin: 0 0 15px 0;
+    color: var(--nord8);
+    font-size: 16px;
+    font-weight: 600;
+}
+
+/* Section semaine courante */
+.download-section.current-week {
+    background: linear-gradient(135deg, var(--nord1), rgba(136, 192, 208, 0.1));
+}
+
+.download-current {
+    display: flex;
+    flex-direction: column;
+    gap: 12px;
+}
+
+.files-preview {
+    display: flex;
+    gap: 8px;
+    flex-wrap: wrap;
+}
+
+.file-badge {
+    background: var(--nord8);
+    color: var(--nord6);
+    padding: 4px 10px;
+    border-radius: 12px;
+    font-size: 12px;
+    font-weight: 500;
+    box-shadow: 
+        2px 2px 4px rgba(0, 0, 0, 0.1),
+        -1px -1px 2px rgba(255, 255, 255, 0.1);
+}
+
+/* ================================
+   SECTIONS ARCHIVES
+   ================================ */
+
+.years-list {
+    display: flex;
+    flex-direction: column;
+    gap: 10px;
+}
+
+.year-group {
+    border: 1px solid var(--nord3);
+    border-radius: 8px;
+    overflow: hidden;
+    background: var(--nord0);
+    
+    /* Neumorphisme léger */
+    box-shadow: 
+        2px 2px 4px rgba(0, 0, 0, 0.1),
+        -1px -1px 2px rgba(255, 255, 255, 0.05);
+}
+
+.year-header {
+    margin: 0;
+    padding: 12px 16px;
+    background: linear-gradient(135deg, var(--nord2), var(--nord3));
+    color: var(--nord6);
+    font-size: 14px;
+    font-weight: 600;
+    cursor: pointer;
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    transition: background 0.2s ease;
+    border-bottom: 1px solid var(--nord3);
+}
+
+.year-header:hover {
+    background: linear-gradient(135deg, var(--nord3), var(--nord2));
+}
+
+.toggle-arrow {
+    font-size: 12px;
+    transition: transform 0.2s ease;
+}
+
+.weeks-list {
+    padding: 0;
+}
+
+/* ================================
+   ÉLÉMENTS SEMAINES
+   ================================ */
+
+.week-item {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    padding: 10px 16px;
+    border-bottom: 1px solid var(--nord2);
+    transition: background 0.2s ease;
+}
+
+.week-item:last-child {
+    border-bottom: none;
+}
+
+.week-item:hover {
+    background: var(--nord1);
+}
+
+.week-info {
+    display: flex;
+    flex-direction: column;
+    gap: 2px;
+}
+
+.week-label {
+    color: var(--nord6);
+    font-weight: 600;
+    font-size: 13px;
+}
+
+.files-count {
+    color: var(--nord4);
+    font-size: 11px;
+}
+
+/* ================================
+   BOUTONS DE TÉLÉCHARGEMENT
+   ================================ */
+
+.btn-download {
+    border: none;
+    padding: 8px 14px;
+    border-radius: 6px;
+    cursor: pointer;
+    display: flex;
+    align-items: center;
+    gap: 6px;
+    font-size: 13px;
+    font-weight: 500;
+    transition: all 0.2s ease;
+    
+    /* Neumorphisme pour les boutons */
+    box-shadow: 
+        2px 2px 4px rgba(0, 0, 0, 0.2),
+        -1px -1px 2px rgba(255, 255, 255, 0.1);
+}
+
+.btn-download.current {
+    background: linear-gradient(135deg, var(--nord8), var(--nord9));
+    color: var(--nord6);
+    padding: 12px 20px;
+    font-size: 14px;
+    width: 100%;
+    justify-content: center;
+}
+
+.btn-download.archive {
+    background: linear-gradient(135deg, var(--nord7), var(--nord8));
+    color: var(--nord6);
+}
+
+.btn-download:hover {
+    transform: translateY(-1px);
+    box-shadow: 
+        3px 3px 6px rgba(0, 0, 0, 0.25),
+        -2px -2px 4px rgba(255, 255, 255, 0.15);
+}
+
+.btn-download.current:hover {
+    background: linear-gradient(135deg, var(--nord9), var(--nord8));
+}
+
+.btn-download.archive:hover {
+    background: linear-gradient(135deg, var(--nord8), var(--nord7));
+}
+
+.btn-download:active {
+    transform: translateY(0);
+    box-shadow: 
+        inset 2px 2px 4px rgba(0, 0, 0, 0.2),
+        inset -1px -1px 2px rgba(255, 255, 255, 0.1);
+}
+
+.btn-icon {
+    width: 14px;
+    height: 14px;
+    stroke-width: 2;
+}
+
+/* ================================
+   FOOTER DE POPUP
+   ================================ */
+
+.popup-footer {
+    padding: 15px 20px;
+    background: var(--nord2);
+    border-top: 1px solid var(--nord3);
+    display: flex;
+    justify-content: flex-end;
+}
+
+.btn-cancel {
+    background: linear-gradient(135deg, var(--nord3), var(--nord4));
+    color: var(--nord6);
+    border: none;
+    padding: 8px 16px;
+    border-radius: 6px;
+    cursor: pointer;
+    font-size: 13px;
+    font-weight: 500;
+    transition: all 0.2s ease;
+    
+    box-shadow: 
+        2px 2px 4px rgba(0, 0, 0, 0.2),
+        -1px -1px 2px rgba(255, 255, 255, 0.1);
+}
+
+.btn-cancel:hover {
+    background: linear-gradient(135deg, var(--nord4), var(--nord3));
+    transform: translateY(-1px);
+}
+
+.btn-cancel:active {
+    transform: translateY(0);
+    box-shadow: 
+        inset 2px 2px 4px rgba(0, 0, 0, 0.2);
+}
+
+/* ================================
+   NOTIFICATIONS
+   ================================ */
+
+.download-notification {
+    position: fixed;
+    top: 20px;
+    right: 20px;
+    padding: 12px 18px;
+    border-radius: 8px;
+    color: var(--nord6);
+    font-weight: 500;
+    font-size: 14px;
+    z-index: 1100;
+    transform: translateX(100%);
+    transition: transform 0.3s ease;
+    
+    /* Neumorphisme pour notifications */
+    box-shadow: 
+        4px 4px 8px rgba(0, 0, 0, 0.3),
+        -2px -2px 4px rgba(255, 255, 255, 0.1);
+}
+
+.download-notification.show {
+    transform: translateX(0);
+}
+
+.download-notification-info {
+    background: linear-gradient(135deg, var(--nord8), var(--nord9));
+}
+
+.download-notification-success {
+    background: linear-gradient(135deg, var(--nord14), var(--nord13));
+}
+
+.download-notification-error {
+    background: linear-gradient(135deg, var(--nord11), var(--nord12));
+}
+
+/* ================================
+   ÉTAT VIDE
+   ================================ */
+
+.no-data {
+    color: var(--nord4);
+    font-style: italic;
+    text-align: center;
+    padding: 15px;
+    margin: 0;
+    font-size: 14px;
+}
+
+/* ================================
+   RESPONSIVE
+   ================================ */
+
+@media (max-width: 768px) {
+    .download-popup {
+        width: 95%;
+        max-height: 90vh;
+        margin: 0 10px;
+    }
+    
+    .popup-header {
+        padding: 15px;
+    }
+    
+    .popup-header h3 {
+        font-size: 18px;
+    }
+    
+    .download-section {
+        padding: 15px;
+    }
+    
+    .week-item {
+        padding: 8px 12px;
+        flex-direction: column;
+        align-items: stretch;
+        gap: 8px;
+    }
+    
+    .week-info {
+        text-align: center;
+    }
+    
+    .btn-download.archive {
+        width: 100%;
+        justify-content: center;
+    }
+    
+    .download-notification {
+        top: 10px;
+        right: 10px;
+        left: 10px;
+        transform: translateY(-100%);
+    }
+    
+    .download-notification.show {
+        transform: translateY(0);
+    }
 }
