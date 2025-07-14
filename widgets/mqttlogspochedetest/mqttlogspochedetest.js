@@ -20,7 +20,7 @@ window.mqttlogspochedetest = (function() {
             .then(html => {
                 widgetElement.innerHTML = html;
                 
-                logsContainer = widgetElement.querySelector('.logs-container');
+                logsContainer = widgetElement.querySelector('.pochedetest-logs-container');
                 
                 if (!logsContainer) {
                     console.error(`[${widgetId}] Container des logs non trouvé après injection HTML`);
@@ -210,7 +210,7 @@ window.mqttlogspochedetest = (function() {
         
         const logElement = createLogElement(logEntry);
         
-        const systemMsg = logsContainer.querySelector('.system-message');
+        const systemMsg = logsContainer.querySelector('.pochedetest-system-message');
         if (systemMsg) {
             systemMsg.remove();
         }
@@ -230,9 +230,17 @@ window.mqttlogspochedetest = (function() {
         saveToCache();
     }
     
+    function getMachineDisplayNumber(machineId) {
+        switch (machineId) {
+            case '999': return '511';
+            case '998': return '509';
+            default: return machineId;
+        }
+    }
+    
     function createLogElement(log) {
         const div = document.createElement('div');
-        div.className = 'log-line';
+        div.className = 'pochedetest-log-line';
         div.style.opacity = '0';
         div.style.transform = 'translateX(20px)';
         div.style.transition = 'all 0.3s ease';
@@ -240,15 +248,16 @@ window.mqttlogspochedetest = (function() {
         const [date, time] = formatTimestampForDisplay(log.timestamp);
         const statusText = getStatusText(log.result);
         const statusClass = getStatusClass(log.result);
+        const displayMachine = getMachineDisplayNumber(log.machine);
         
         div.innerHTML = `
-            <div class="datetime-container">
-                <span class="log-date">${date}</span>
-                <span class="log-time">${time}</span>
+            <div class="pochedetest-datetime-container">
+                <span class="pochedetest-log-date">${date}</span>
+                <span class="pochedetest-log-time">${time}</span>
             </div>
-            <span class="blue-badge machine">${log.machine}</span>
-            <span class="log-barcode" title="${log.barcode}">${log.barcode}</span>
-            <span class="blue-badge status ${statusClass}">${statusText}</span>
+            <span class="pochedetest-blue-badge machine">${displayMachine}</span>
+            <span class="pochedetest-log-barcode" title="${log.barcode}">${log.barcode}</span>
+            <span class="pochedetest-blue-badge status ${statusClass}">${statusText}</span>
         `;
         
         return div;
@@ -317,7 +326,7 @@ window.mqttlogspochedetest = (function() {
         }
         
         const div = document.createElement('div');
-        div.className = `system-message ${type}`;
+        div.className = `pochedetest-system-message ${type}`;
         div.textContent = message;
         
         logsContainer.innerHTML = '';

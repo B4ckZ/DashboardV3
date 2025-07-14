@@ -1,34 +1,19 @@
 /**
- * Widget MQTT Logs 509/511 - Version avec date/heure verticale
- * Optimisé pour écran PC 1920x1080
- * Gain d'espace horizontal pour code-barres
+ * Widget MQTT Logs 509/511 - Version indépendante
  */
 
-/* =============================================================================== */
-/* VARIABLES POUR AJUSTEMENT RAPIDE DES TAILLES */
-/* =============================================================================== */
-
-:root {
-    /* Tailles des polices */
-    --log-date-size: 14px;          /* Date */
-    --log-time-size: 14px;          /* Heure */
-    --log-barcode-size: 14px;       /* Code-barres */
-    --log-badge-size: 14px;         /* Badges machine/statut */
-    
-    /* Espacement des lettres */
-    --log-letter-spacing: 1px;      /* Espacement */
-    --log-barcode-spacing: 1px;     /* Espacement code-barres */
-    
-    /* Poids des polices */
-    --log-font-weight: 500;         /* Poids normal */
-    --log-badge-weight: bold;       /* Poids badges */
+#mqttlogs509511 {
+    --mqttlogs509511-log-date-size: 14px;
+    --mqttlogs509511-log-time-size: 14px;
+    --mqttlogs509511-log-barcode-size: 14px;
+    --mqttlogs509511-log-badge-size: 14px;
+    --mqttlogs509511-log-letter-spacing: 1px;
+    --mqttlogs509511-log-barcode-spacing: 1px;
+    --mqttlogs509511-log-font-weight: 500;
+    --mqttlogs509511-log-badge-weight: bold;
 }
 
-/* =============================================================================== */
-/* CONTENEUR PRINCIPAL */
-/* =============================================================================== */
-
-.logs-container {
+#mqttlogs509511 .logs-container {
     flex: 1;
     overflow-y: auto;
     padding: 8px;
@@ -43,11 +28,7 @@
     flex-direction: column;
 }
 
-/* =============================================================================== */
-/* LIGNE DE LOG */
-/* =============================================================================== */
-
-.log-line {
+#mqttlogs509511 .log-line {
     display: flex;
     align-items: center;
     padding: 10px 14px;
@@ -56,58 +37,55 @@
     background-color: var(--nord1);
     transition: all 0.3s ease;
     gap: 5px;
+    cursor: default;
 }
 
-.log-line:hover {
-    transform: translateX(4px);
+#mqttlogs509511 .log-line:hover {
+    transform: translateY(-2px);
+    background-color: var(--nord3);
+    box-shadow: 
+        4px 4px 8px var(--shadow-color),
+        -4px -4px 8px var(--highlight-color);
 }
 
-/* =============================================================================== */
-/* DATE ET HEURE - DISPOSITION VERTICALE */
-/* =============================================================================== */
-
-.datetime-container {
+#mqttlogs509511 .datetime-container {
     display: flex;
     flex-direction: column;
     align-items: center;
     justify-content: center;
     flex: 0 1 80px;
     gap: 2px;
-	margin-right: 10px;  /* ← AJOUTEZ CETTE LIGNE */
+    margin-right: 10px;
 }
 
-.log-date {
-    font-size: var(--log-date-size);
+#mqttlogs509511 .log-date {
+    font-size: var(--mqttlogs509511-log-date-size);
     font-family: 'Roboto Mono', monospace;
-    font-weight: var(--log-font-weight);
+    font-weight: var(--mqttlogs509511-log-font-weight);
     color: var(--nord5);
-    letter-spacing: var(--log-letter-spacing);
+    letter-spacing: var(--mqttlogs509511-log-letter-spacing);
     text-align: center;
     white-space: nowrap;
     line-height: 1;
 }
 
-.log-time {
-    font-size: var(--log-time-size);
+#mqttlogs509511 .log-time {
+    font-size: var(--mqttlogs509511-log-time-size);
     font-family: 'Roboto Mono', monospace;
-    font-weight: var(--log-font-weight);
+    font-weight: var(--mqttlogs509511-log-font-weight);
     color: var(--nord5);
-    letter-spacing: var(--log-letter-spacing);
+    letter-spacing: var(--mqttlogs509511-log-letter-spacing);
     text-align: center;
     white-space: nowrap;
     line-height: 1;
 }
 
-/* =============================================================================== */
-/* CODE-BARRES - PLUS D'ESPACE DISPONIBLE */
-/* =============================================================================== */
-
-.log-barcode {
+#mqttlogs509511 .log-barcode {
     font-family: 'Roboto Mono', monospace;
-    font-size: var(--log-barcode-size);
-    font-weight: var(--log-font-weight);
+    font-size: var(--mqttlogs509511-log-barcode-size);
+    font-weight: var(--mqttlogs509511-log-font-weight);
     color: var(--nord5);
-    letter-spacing: var(--log-barcode-spacing);
+    letter-spacing: var(--mqttlogs509511-log-barcode-spacing);
     text-align: center;
     flex: 3 1 300px;
     overflow: hidden;
@@ -115,17 +93,13 @@
     white-space: nowrap;
 }
 
-/* =============================================================================== */
-/* BADGES */
-/* =============================================================================== */
-
-.blue-badge {
+#mqttlogs509511 .blue-badge {
     background-color: var(--nord10);
     color: var(--nord6);
     padding: 2px 4px;
     border-radius: 3px;
-    font-size: var(--log-badge-size);
-    font-weight: var(--log-badge-weight);
+    font-size: var(--mqttlogs509511-log-badge-size);
+    font-weight: var(--mqttlogs509511-log-badge-weight);
     font-family: 'Roboto Mono', monospace;
     letter-spacing: 1px;
     text-align: center;
@@ -135,38 +109,33 @@
     min-width: 20px;
 }
 
-.blue-badge.machine {
+#mqttlogs509511 .blue-badge.machine {
     min-width: 20px; 
 }
 
-.blue-badge.status {
+#mqttlogs509511 .blue-badge.status {
     min-width: 30px;
 }
 
-/* Couleurs des statuts */
-.blue-badge.status-ok {
+#mqttlogs509511 .blue-badge.status-ok {
     background-color: var(--nord14);
     color: var(--nord0);
     box-shadow: 0 1px 2px rgba(163, 190, 140, 0.3);
 }
 
-.blue-badge.status-fv {
+#mqttlogs509511 .blue-badge.status-fv {
     background-color: var(--nord12);
     color: var(--nord0);
     box-shadow: 0 1px 2px rgba(208, 135, 112, 0.3);
 }
 
-.blue-badge.status-fp {
+#mqttlogs509511 .blue-badge.status-fp {
     background-color: var(--nord11);
     color: var(--nord0);
     box-shadow: 0 1px 2px rgba(191, 97, 106, 0.3);
 }
 
-/* =============================================================================== */
-/* MESSAGES SYSTÈME */
-/* =============================================================================== */
-
-.system-message {
+#mqttlogs509511 .system-message {
     padding: 20px;
     text-align: center;
     color: var(--nord4);
@@ -176,10 +145,10 @@
     letter-spacing: 1px;
 }
 
-.system-message.error {
+#mqttlogs509511 .system-message.error {
     color: var(--nord11);
 }
 
-.system-message.success {
+#mqttlogs509511 .system-message.success {
     color: var(--nord14);
 }

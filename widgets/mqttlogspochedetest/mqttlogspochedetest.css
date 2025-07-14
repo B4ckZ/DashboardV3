@@ -1,34 +1,19 @@
 /**
- * Widget MQTT Logs Poche de Test (998/999) - Version avec date/heure verticale
- * Optimisé pour écran PC 1920x1080
- * Gain d'espace horizontal pour code-barres
+ * Widget MQTT Logs Poche de Test 998/999 - Version indépendante
  */
 
-/* =============================================================================== */
-/* VARIABLES POUR AJUSTEMENT RAPIDE DES TAILLES */
-/* =============================================================================== */
-
-:root {
-    /* Tailles des polices */
-    --log-date-size: 14px;          /* Date */
-    --log-time-size: 14px;          /* Heure */
-    --log-barcode-size: 14px;       /* Code-barres */
-    --log-badge-size: 14px;         /* Badges machine/statut */
-    
-    /* Espacement des lettres */
-    --log-letter-spacing: 1px;      /* Espacement */
-    --log-barcode-spacing: 1px;     /* Espacement code-barres */
-    
-    /* Poids des polices */
-    --log-font-weight: 500;         /* Poids normal */
-    --log-badge-weight: bold;       /* Poids badges */
+#mqttlogspochedetest {
+    --pochedetest-log-date-size: 14px;
+    --pochedetest-log-time-size: 14px;
+    --pochedetest-log-barcode-size: 14px;
+    --pochedetest-log-badge-size: 14px;
+    --pochedetest-log-letter-spacing: 1px;
+    --pochedetest-log-barcode-spacing: 1px;
+    --pochedetest-log-font-weight: 500;
+    --pochedetest-log-badge-weight: bold;
 }
 
-/* =============================================================================== */
-/* CONTENEUR PRINCIPAL */
-/* =============================================================================== */
-
-.logs-container {
+#mqttlogspochedetest .pochedetest-logs-container {
     flex: 1;
     overflow-y: auto;
     padding: 8px;
@@ -43,70 +28,64 @@
     flex-direction: column;
 }
 
-/* =============================================================================== */
-/* LIGNE DE LOG */
-/* =============================================================================== */
-
-.log-line {
+#mqttlogspochedetest .pochedetest-log-line {
     display: flex;
     align-items: center;
-    padding: 10px 10px;
+    padding: 10px 14px;
     border-radius: 8px;
-    margin-bottom: 10px;
+    margin-bottom: 8px;
     background-color: var(--nord1);
     transition: all 0.3s ease;
-    gap: 12px;
+    gap: 5px;
+    cursor: default;
 }
 
-.log-line:hover {
-    transform: translateX(4px);
+#mqttlogspochedetest .pochedetest-log-line:hover {
+    transform: translateY(-2px);
+    background-color: var(--nord3);
+    box-shadow: 
+        4px 4px 8px var(--shadow-color),
+        -4px -4px 8px var(--highlight-color);
 }
 
-/* =============================================================================== */
-/* DATE ET HEURE - DISPOSITION VERTICALE */
-/* =============================================================================== */
-
-.datetime-container {
+#mqttlogspochedetest .pochedetest-datetime-container {
     display: flex;
     flex-direction: column;
     align-items: center;
     justify-content: center;
     flex: 0 1 80px;
     gap: 2px;
+    margin-right: 10px;
 }
 
-.log-date {
-    font-size: var(--log-date-size);
+#mqttlogspochedetest .pochedetest-log-date {
+    font-size: var(--pochedetest-log-date-size);
     font-family: 'Roboto Mono', monospace;
-    font-weight: var(--log-font-weight);
+    font-weight: var(--pochedetest-log-font-weight);
     color: var(--nord5);
-    letter-spacing: var(--log-letter-spacing);
+    letter-spacing: var(--pochedetest-log-letter-spacing);
     text-align: center;
     white-space: nowrap;
     line-height: 1;
 }
 
-.log-time {
-    font-size: var(--log-time-size);
+#mqttlogspochedetest .pochedetest-log-time {
+    font-size: var(--pochedetest-log-time-size);
     font-family: 'Roboto Mono', monospace;
-    font-weight: var(--log-font-weight);
+    font-weight: var(--pochedetest-log-font-weight);
     color: var(--nord5);
-    letter-spacing: var(--log-letter-spacing);
+    letter-spacing: var(--pochedetest-log-letter-spacing);
     text-align: center;
     white-space: nowrap;
     line-height: 1;
 }
 
-/* =============================================================================== */
-/* CODE-BARRES - PLUS D'ESPACE DISPONIBLE */
-/* =============================================================================== */
-
-.log-barcode {
+#mqttlogspochedetest .pochedetest-log-barcode {
     font-family: 'Roboto Mono', monospace;
-    font-size: var(--log-barcode-size);
-    font-weight: var(--log-font-weight);
+    font-size: var(--pochedetest-log-barcode-size);
+    font-weight: var(--pochedetest-log-font-weight);
     color: var(--nord5);
-    letter-spacing: var(--log-barcode-spacing);
+    letter-spacing: var(--pochedetest-log-barcode-spacing);
     text-align: center;
     flex: 3 1 300px;
     overflow: hidden;
@@ -114,17 +93,13 @@
     white-space: nowrap;
 }
 
-/* =============================================================================== */
-/* BADGES */
-/* =============================================================================== */
-
-.blue-badge {
+#mqttlogspochedetest .pochedetest-blue-badge {
     background-color: var(--nord10);
     color: var(--nord6);
     padding: 2px 4px;
     border-radius: 3px;
-    font-size: var(--log-badge-size);
-    font-weight: var(--log-badge-weight);
+    font-size: var(--pochedetest-log-badge-size);
+    font-weight: var(--pochedetest-log-badge-weight);
     font-family: 'Roboto Mono', monospace;
     letter-spacing: 1px;
     text-align: center;
@@ -134,38 +109,33 @@
     min-width: 20px;
 }
 
-.blue-badge.machine {
+#mqttlogspochedetest .pochedetest-blue-badge.machine {
     min-width: 20px; 
 }
 
-.blue-badge.status {
+#mqttlogspochedetest .pochedetest-blue-badge.status {
     min-width: 30px;
 }
 
-/* Couleurs des statuts */
-.blue-badge.status-ok {
+#mqttlogspochedetest .pochedetest-blue-badge.status-ok {
     background-color: var(--nord14);
     color: var(--nord0);
     box-shadow: 0 1px 2px rgba(163, 190, 140, 0.3);
 }
 
-.blue-badge.status-fv {
+#mqttlogspochedetest .pochedetest-blue-badge.status-fv {
     background-color: var(--nord12);
     color: var(--nord0);
     box-shadow: 0 1px 2px rgba(208, 135, 112, 0.3);
 }
 
-.blue-badge.status-fp {
+#mqttlogspochedetest .pochedetest-blue-badge.status-fp {
     background-color: var(--nord11);
     color: var(--nord0);
     box-shadow: 0 1px 2px rgba(191, 97, 106, 0.3);
 }
 
-/* =============================================================================== */
-/* MESSAGES SYSTÈME */
-/* =============================================================================== */
-
-.system-message {
+#mqttlogspochedetest .pochedetest-system-message {
     padding: 20px;
     text-align: center;
     color: var(--nord4);
@@ -175,10 +145,10 @@
     letter-spacing: 1px;
 }
 
-.system-message.error {
+#mqttlogspochedetest .pochedetest-system-message.error {
     color: var(--nord11);
 }
 
-.system-message.success {
+#mqttlogspochedetest .pochedetest-system-message.success {
     color: var(--nord14);
 }
