@@ -1,6 +1,73 @@
-<!-- Widget Download Button - Compatible avec le nouveau système ultra-simplifié -->
+<!-- Widget Download Button - Structure EXACTE comme rebootbutton -->
 <div class="download-inset">
     <button id="download-button" class="download-button" title="Télécharger les archives de traçabilité CSV">
         <img src="assets/icons/download.svg" class="widget-icon" alt="Télécharger">
     </button>
+</div>
+
+<!-- Modal de téléchargement - Structure identique à rebootbutton -->
+<div class="download-modal-overlay" id="download-overlay">
+    <div class="download-modal">
+        <!-- Header avec fermeture -->
+        <div class="download-modal-header">
+            <h3>📁 Archives de Traçabilité</h3>
+            <button class="download-close-btn" id="download-close-btn">&times;</button>
+        </div>
+        
+        <!-- Corps de la modal -->
+        <div class="download-modal-body">
+            <!-- Sélecteurs -->
+            <div class="download-selectors-container">
+                <!-- Sélecteur d'année -->
+                <div class="download-year-selector">
+                    <label class="download-selector-label">🗓️ Année</label>
+                    <select class="download-year-select" id="downloadYearSelect">
+                        <option value="">Choisir une année...</option>
+                    </select>
+                </div>
+
+                <!-- Sélecteur de semaine -->
+                <div class="download-week-selector">
+                    <label class="download-selector-label">📊 Semaine</label>
+                    <select class="download-week-select" id="downloadWeekSelect" disabled>
+                        <option value="">Sélectionner d'abord une année...</option>
+                    </select>
+                </div>
+            </div>
+
+            <!-- Informations sur la sélection -->
+            <div class="download-selection-info" id="downloadSelectionInfo" style="display: none;">
+                <h4 id="downloadSelectionTitle">Semaine sélectionnée</h4>
+                <p id="downloadSelectionPeriod">Période: du ... au ...</p>
+                <div class="download-files-info">
+                    <span class="download-file-count" id="downloadFileCount">📁 0 fichiers</span>
+                    <span class="download-file-size" id="downloadFileSize">💾 0 KB</span>
+                </div>
+            </div>
+
+            <!-- Status et messages -->
+            <div class="download-status" id="downloadStatus" style="display: none;">
+                <div class="download-loading" id="downloadLoading">
+                    <div class="download-spinner"></div>
+                    <span>Chargement des archives...</span>
+                </div>
+                <div class="download-error" id="downloadError" style="display: none;">
+                    <span>❌</span>
+                    <span id="downloadErrorMessage">Erreur lors du chargement</span>
+                </div>
+            </div>
+        </div>
+        
+        <!-- Footer avec boutons -->
+        <div class="download-modal-footer">
+            <button class="download-btn download-individual" id="downloadIndividual" disabled>
+                <span>⬇️</span>
+                <span>Télécharger tout</span>
+            </button>
+            <button class="download-btn download-all" id="downloadFileSelector" disabled>
+                <span>📋</span>
+                <span>Choisir fichiers</span>
+            </button>
+        </div>
+    </div>
 </div>

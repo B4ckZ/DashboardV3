@@ -1,157 +1,566 @@
 /**
- * Widget Download Button - Styles Ultra-Simplifiés
- * Réutilise les classes CSS de rebootbutton pour cohérence parfaite
- * MaxLink Dashboard v3.0 - Simplifié
+ * Widget Download Button - Copie EXACTE du style rebootbutton
+ * Avec modal et animations identiques
+ * Version corrigée avec animations smooth sans flash
  */
 
 /* ================================
-   BOUTON PRINCIPAL (identique rebootbutton)
+   BOUTON PRINCIPAL (copie EXACTE rebootbutton)
    ================================ */
 
+/* Cadre enfoncé - reprend exactement le style de reboot-inset */
 .download-inset {
-    width: 100%;
-    height: 100%;
-    border-radius: var(--border-radius);
-    padding: 6px;
-    background: var(--nord1);
+    position: absolute;
+    top: 10px;
+    left: 10px;
+    width: calc(100% - 20px);
+    height: calc(100% - 20px);
     
-    /* Inset neumorphique (identique rebootbutton) */
-    box-shadow: 
-        inset 4px 4px 8px var(--shadow-color),
-        inset -4px -4px 8px var(--highlight-color);
-}
-
-.download-button {
-    width: 100%;
-    height: 100%;
-    border: none;
-    background: linear-gradient(135deg, var(--nord8), var(--nord9));
-    border-radius: calc(var(--border-radius) - 2px);
-    cursor: pointer;
+    border-radius: calc(var(--border-radius) - 4px);
+    
+    background-color: var(--nord0);
+    /* Flexbox pour assurer le centrage parfait */
     display: flex;
     align-items: center;
     justify-content: center;
-    transition: all 0.2s ease;
+    box-shadow: 
+        inset 2px 2px 4px var(--shadow-color),
+        inset -2px -2px 4px var(--highlight-color);
+}
+
+/* Bouton de téléchargement simple avec centrage parfait */
+.download-button {
+    /* Enlever toutes les marges et rembourrages qui pourraient affecter le centrage */
+    background: none;
+    border: none;
+    padding: 0;
+    margin: 0;
+    cursor: pointer;
     
-    /* Effet neumorphique surélevé (identique rebootbutton) */
-    box-shadow: 
-        2px 2px 4px var(--shadow-color),
-        -2px -2px 4px var(--highlight-color);
+    /* Flexbox pour centrer l'icône à l'intérieur du bouton */
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    
+    /* Transition pour l'effet de pression */
+    transition: transform 0.1s ease;
 }
 
-.download-button:hover {
-    background: linear-gradient(135deg, var(--nord9), var(--nord8));
-    transform: translateY(-1px);
-    box-shadow: 
-        3px 3px 6px var(--shadow-color),
-        -3px -3px 6px var(--highlight-color);
-}
-
+/* Effet de pression du bouton */
 .download-button:active,
 .download-button.clicked {
-    transform: translateY(0);
-    box-shadow: 
-        inset 2px 2px 4px var(--shadow-color),
-        inset -2px -2px 4px var(--highlight-color);
+    transform: scale(0.85);
 }
 
-.widget-icon {
-    width: 20px;
-    height: 20px;
-    filter: drop-shadow(0 1px 2px rgba(0, 0, 0, 0.3));
+/* Style de l'icône - taille exacte et pas de marges */
+.download-button .widget-icon {
+    width: 25px;
+    height: 25px;
+    margin-right: 0px; /* important pour le centrage des icone de widget type button*/
+    /* Assurer qu'il n'y a pas de marges internes sur l'icône */
+    display: block;
 }
 
-/* ================================
-   EXTENSIONS SPÉCIFIQUES AU DOWNLOAD
-   ================================ */
+/* ========================================= */
+/* MODAL DE TÉLÉCHARGEMENT - ANIMATIONS SMOOTH */
+/* ========================================= */
 
-/* Style pour le select des archives */
-.archive-select-container {
-    margin: 15px 0;
-}
-
-.archive-select {
+/* Overlay qui couvre tout l'écran - Z-INDEX MAX pour passer devant TOUT */
+.download-modal-overlay {
+    position: fixed;
+    top: 0;
+    left: 0;
     width: 100%;
-    padding: 10px 12px;
-    border: 1px solid var(--nord3);
-    border-radius: var(--border-radius);
+    height: 100%;
+    z-index: 999999;
+    
+    /* Fond semi-transparent */
+    background: rgba(0, 0, 0, 0.7);
+    
+    /* Flexbox pour centrer la modal */
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    
+    /* Par défaut cachée */
+    opacity: 0;
+    visibility: hidden;
+    
+    /* Animation smooth d'apparition */
+    transition: opacity 0.3s ease, visibility 0.3s ease;
+    
+    /* Flou de l'arrière-plan */
+    backdrop-filter: blur(8px);
+    -webkit-backdrop-filter: blur(8px);
+}
+
+/* Overlay visible */
+.download-modal-overlay.show {
+    opacity: 1;
+    visibility: visible;
+}
+
+/* Modal principale */
+.download-modal {
     background: var(--nord1);
+    border-radius: var(--border-radius);
+    width: 90%;
+    max-width: 500px;
+    max-height: 85vh;
+    overflow-y: auto;
+    
+    /* Neumorphisme pour la modal */
+    box-shadow: 
+        8px 8px 16px var(--shadow-color),
+        -8px -8px 16px var(--highlight-color);
+    
+    /* Animation d'apparition */
+    transform: scale(0.7) translateY(-50px);
+    transition: transform 0.3s ease;
+}
+
+/* Modal visible */
+.download-modal-overlay.show .download-modal {
+    transform: scale(1) translateY(0);
+}
+
+/* Header de la modal */
+.download-modal-header {
+    background: linear-gradient(135deg, var(--nord8), var(--nord9));
     color: var(--nord6);
+    padding: 20px 25px;
+    border-radius: var(--border-radius) var(--border-radius) 0 0;
+    position: relative;
+    
+    /* Effet de relief */
+    box-shadow: 0 2px 4px rgba(0, 0, 0, 0.1);
+    
+    /* Dégradé léger pour plus de profondeur */
+    background-image: linear-gradient(
+        135deg,
+        rgba(255, 255, 255, 0.1) 0%,
+        rgba(255, 255, 255, 0.05) 50%,
+        rgba(0, 0, 0, 0.05) 100%
+    );
+    
+    /* Filtre pour adoucir */
+    filter: brightness(95%) contrast(92%);
+}
+
+.download-modal-header h3 {
+    margin: 0;
+    font-size: 18px;
+    font-weight: 600;
+    color: var(--nord6);
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    gap: 10px;
+}
+
+/* Bouton de fermeture */
+.download-close-btn {
+    position: absolute;
+    top: 15px;
+    right: 20px;
+    background: rgba(191, 97, 106, 0.9);
+    border: none;
+    border-radius: 50%;
+    width: 28px;
+    height: 28px;
+    color: var(--nord6);
+    cursor: pointer;
+    font-size: 16px;
+    font-weight: bold;
+    transition: all 0.3s ease;
+    
+    /* Ombre portée pour le bouton */
+    box-shadow: 0 2px 4px rgba(0, 0, 0, 0.2);
+    
+    /* Flexbox pour centrer le X */
+    display: flex;
+    align-items: center;
+    justify-content: center;
+}
+
+.download-close-btn:hover {
+    background: var(--nord11);
+    transform: scale(1.1);
+    box-shadow: 0 4px 8px rgba(0, 0, 0, 0.3);
+}
+
+.download-close-btn:active {
+    transform: scale(0.95);
+}
+
+/* Corps de la modal */
+.download-modal-body {
+    padding: 25px;
+}
+
+/* Sélecteurs */
+.download-selectors-container {
+    display: flex;
+    flex-direction: column;
+    gap: 20px;
+    margin-bottom: 25px;
+}
+
+.download-year-selector,
+.download-week-selector {
+    display: flex;
+    flex-direction: column;
+    gap: 8px;
+}
+
+.download-selector-label {
+    color: var(--nord4);
     font-size: 14px;
     font-weight: 500;
+    margin-left: 5px;
+}
+
+.download-year-select,
+.download-week-select {
+    padding: 12px 15px;
+    background: var(--nord0);
+    border: 2px solid var(--nord3);
+    border-radius: 12px;
+    color: var(--nord6);
+    font-size: 15px;
+    font-weight: 500;
+    cursor: pointer;
+    transition: all 0.3s ease;
     
-    /* Neumorphisme pour le select */
+    /* Neumorphisme pour les selects */
     box-shadow: 
         inset 2px 2px 4px var(--shadow-color),
         inset -2px -2px 4px var(--highlight-color);
     
-    /* Supprime les styles par défaut du navigateur */
+    /* Flèche personnalisée */
     appearance: none;
     -webkit-appearance: none;
     -moz-appearance: none;
-    
-    /* Flèche personnalisée */
     background-image: url("data:image/svg+xml;charset=UTF-8,%3csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 24 24' fill='none' stroke='%23D8DEE9' stroke-width='2' stroke-linecap='round' stroke-linejoin='round'%3e%3cpolyline points='6,9 12,15 18,9'%3e%3c/polyline%3e%3c/svg%3e");
     background-repeat: no-repeat;
-    background-position: right 12px center;
+    background-position: right 15px center;
     background-size: 16px;
-    padding-right: 40px;
+    padding-right: 45px;
 }
 
-.archive-select:focus {
+.download-week-select {
+    max-height: 200px;
+    overflow-y: auto;
+}
+
+.download-year-select:focus,
+.download-week-select:focus {
     outline: none;
-    border-color: var(--nord9);
+    border-color: var(--nord8);
     box-shadow: 
         inset 2px 2px 4px var(--shadow-color),
         inset -2px -2px 4px var(--highlight-color),
-        0 0 0 2px rgba(136, 192, 208, 0.3);
+        0 0 0 3px rgba(136, 192, 208, 0.2);
 }
 
-.archive-select:hover {
+.download-year-select:hover,
+.download-week-select:hover {
     border-color: var(--nord8);
 }
 
+.download-year-select:disabled,
+.download-week-select:disabled {
+    opacity: 0.6;
+    cursor: not-allowed;
+    border-color: var(--nord3);
+}
+
 /* Style pour les options */
-.archive-select option {
+.download-year-select option,
+.download-week-select option {
     background: var(--nord1);
     color: var(--nord6);
+    padding: 10px;
+    font-size: 14px;
+}
+
+.download-year-select option:hover,
+.download-year-select option:checked,
+.download-week-select option:hover,
+.download-week-select option:checked {
+    background: var(--nord8);
+    color: var(--nord0);
+}
+
+/* Groupes d'options stylés */
+.download-week-select optgroup {
+    background: var(--nord2);
+    color: var(--nord4);
+    font-weight: 600;
+    font-size: 13px;
     padding: 8px;
 }
 
-.archive-select option:hover,
-.archive-select option:checked {
-    background: var(--nord8);
-    color: var(--nord6);
+/* Informations de sélection */
+.download-selection-info {
+    background: var(--nord0);
+    border-radius: 12px;
+    padding: 15px;
+    margin-bottom: 20px;
+    border-left: 4px solid var(--nord8);
+    
+    box-shadow: 
+        inset 1px 1px 2px var(--shadow-color),
+        inset -1px -1px 2px var(--highlight-color);
 }
 
-/* Info text */
-.archive-info {
-    margin-bottom: 10px;
+.download-selection-info h4 {
+    margin: 0 0 8px 0;
+    color: var(--nord8);
+    font-size: 16px;
+    font-weight: 600;
 }
 
-.archive-info p {
+.download-selection-info p {
     margin: 0;
     color: var(--nord4);
-    font-size: 13px;
+    font-size: 14px;
+}
+
+.download-files-info {
+    display: flex;
+    justify-content: space-between;
+    margin-top: 8px;
+}
+
+.download-file-count {
+    color: var(--nord14);
+    font-weight: 600;
+    font-size: 14px;
+}
+
+.download-file-size {
+    color: var(--nord13);
+    font-weight: 500;
+    font-size: 14px;
+}
+
+/* Footer avec boutons */
+.download-modal-footer {
+    display: flex;
+    gap: 15px;
+    padding: 15px 25px 20px 25px;
+}
+
+/* Boutons de la modal */
+.download-btn {
+    flex: 1;
+    padding: 12px 20px;
+    border: none;
+    border-radius: calc(var(--border-radius) - 4px);
+    font-size: 14px;
+    font-weight: 600;
+    cursor: pointer;
+    transition: all 0.3s ease;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    gap: 8px;
+    box-shadow: 
+        4px 4px 8px var(--shadow-color),
+        -4px -4px 8px var(--highlight-color);
+}
+
+.download-btn:hover:not(:disabled) {
+    transform: translateY(-2px);
+    box-shadow: 
+        6px 6px 12px var(--shadow-color),
+        -6px -6px 12px var(--highlight-color);
+}
+
+.download-btn:active:not(:disabled) {
+    transform: translateY(0);
+}
+
+/* Bouton télécharger tout */
+.download-individual {
+    background: linear-gradient(135deg, var(--nord8), var(--nord9));
+    color: var(--nord0);
+}
+
+.download-individual:hover:not(:disabled) {
+    background: linear-gradient(135deg, var(--nord9), var(--nord10));
+}
+
+/* Bouton choisir fichiers */
+.download-all {
+    background: linear-gradient(135deg, var(--nord14), var(--nord13));
+    color: var(--nord0);
+}
+
+.download-all:hover:not(:disabled) {
+    background: linear-gradient(135deg, var(--nord13), var(--nord12));
+}
+
+.download-btn:disabled {
+    background: var(--nord3);
+    color: var(--nord4);
+    cursor: not-allowed;
+    opacity: 0.5;
+}
+
+.download-btn:disabled:hover {
+    transform: none;
+    box-shadow: 
+        4px 4px 8px var(--shadow-color),
+        -4px -4px 8px var(--highlight-color);
+}
+
+/* Status et loading */
+.download-status {
+    margin-top: 15px;
     text-align: center;
 }
 
-/* Bouton de téléchargement personnalisé */
-.reboot-btn-download {
-    background: linear-gradient(135deg, var(--nord8), var(--nord9)) !important;
-    color: var(--nord6) !important;
+.download-loading {
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    gap: 10px;
+    color: var(--nord8);
+    font-size: 14px;
 }
 
-.reboot-btn-download:hover {
-    background: linear-gradient(135deg, var(--nord9), var(--nord8)) !important;
+.download-spinner {
+    width: 16px;
+    height: 16px;
+    border: 2px solid var(--nord3);
+    border-top: 2px solid var(--nord8);
+    border-radius: 50%;
+    animation: downloadSpin 1s linear infinite;
 }
 
-/* ================================
-   RESPONSIVE
-   ================================ */
+@keyframes downloadSpin {
+    0% { transform: rotate(0deg); }
+    100% { transform: rotate(360deg); }
+}
 
+.download-error {
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    gap: 8px;
+    color: var(--nord11);
+    font-size: 14px;
+    padding: 10px;
+    background: rgba(191, 97, 106, 0.1);
+    border-radius: 8px;
+    border: 1px solid var(--nord11);
+}
+
+/* Scrollbar personnalisée */
+.download-week-select::-webkit-scrollbar {
+    width: 6px;
+}
+
+.download-week-select::-webkit-scrollbar-track {
+    background: var(--nord2);
+    border-radius: 3px;
+}
+
+.download-week-select::-webkit-scrollbar-thumb {
+    background: var(--nord8);
+    border-radius: 3px;
+}
+
+.download-week-select::-webkit-scrollbar-thumb:hover {
+    background: var(--nord9);
+}
+
+.download-modal::-webkit-scrollbar {
+    width: 8px;
+}
+
+.download-modal::-webkit-scrollbar-track {
+    background: var(--nord2);
+    border-radius: 4px;
+}
+
+.download-modal::-webkit-scrollbar-thumb {
+    background: var(--nord8);
+    border-radius: 4px;
+}
+
+/* ========================================= */
+/* GESTION DES Z-INDEX POUR LES WIDGETS */
+/* ========================================= */
+
+/* Quand la modal est ouverte, forcer tous les widgets à passer derrière */
+body.download-modal-open .widget-container {
+    z-index: 1 !important;
+}
+
+body.download-modal-open .dashboard {
+    z-index: 1 !important;
+}
+
+/* S'assurer que la modal reste au premier plan même avec body.download-modal-open */
+body.download-modal-open .download-modal-overlay {
+    z-index: 999999 !important;
+}
+
+body.download-modal-open .download-modal {
+    z-index: 1000000 !important;
+}
+
+/* Règles préventives pour éviter les conflits de z-index */
+.download-modal-overlay,
+.download-modal,
+.download-modal * {
+    position: relative;
+}
+
+.download-modal-overlay {
+    position: fixed !important;
+}
+
+/* Responsive */
 @media (max-width: 768px) {
-    .archive-select {
+    .download-modal {
+        margin: 10px;
+        max-height: 90vh;
+    }
+    
+    .download-modal-body {
+        padding: 20px;
+    }
+    
+    .download-modal-footer {
+        flex-direction: column;
+    }
+    
+    .download-year-select,
+    .download-week-select {
         font-size: 16px; /* Évite le zoom automatique sur mobile */
+    }
+    
+    .download-modal-header h3 {
+        font-size: 16px;
+    }
+    
+    .download-files-info {
+        flex-direction: column;
+        gap: 4px;
+    }
+}
+
+@media (max-width: 480px) {
+    .download-modal-body {
+        padding: 15px;
+    }
+    
+    .download-btn {
+        padding: 10px 16px;
+        font-size: 13px;
     }
 }
