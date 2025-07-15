@@ -1,17 +1,16 @@
-<!-- Widget Download Button - Structure EXACTE comme rebootbutton -->
+<!-- Widget Download Button - Structure harmonisée avec rebootbutton (sans croix de fermeture) -->
 <div class="download-inset">
     <button id="download-button" class="download-button" title="Télécharger les archives de traçabilité CSV">
         <img src="assets/icons/download.svg" class="widget-icon" alt="Télécharger">
     </button>
 </div>
 
-<!-- Modal de téléchargement - Structure identique à rebootbutton -->
-<div class="download-modal-overlay" id="download-overlay">
+<!-- Modal de téléchargement - Animation identique rebootbutton -->
+<div class="download-modal-overlay" id="download-overlay" style="display: none;">
     <div class="download-modal">
-        <!-- Header avec fermeture -->
+        <!-- Header sans croix de fermeture -->
         <div class="download-modal-header">
             <h3>📁 Archives de Traçabilité</h3>
-            <button class="download-close-btn" id="download-close-btn">&times;</button>
         </div>
         
         <!-- Corps de la modal -->
@@ -45,28 +44,23 @@
                 </div>
             </div>
 
-            <!-- Status et messages -->
-            <div class="download-status" id="downloadStatus" style="display: none;">
-                <div class="download-loading" id="downloadLoading">
-                    <div class="download-spinner"></div>
-                    <span>Chargement des archives...</span>
+            <!-- Zone de progression -->
+            <div class="download-progress-container" id="downloadProgressContainer">
+                <p>Préparation du téléchargement...</p>
+                <div class="download-progress-bar">
+                    <div class="download-progress-fill" id="downloadProgressFill"></div>
                 </div>
-                <div class="download-error" id="downloadError" style="display: none;">
-                    <span>❌</span>
-                    <span id="downloadErrorMessage">Erreur lors du chargement</span>
-                </div>
+                <div class="download-progress-text" id="downloadProgressText">0%</div>
             </div>
         </div>
         
         <!-- Footer avec boutons -->
         <div class="download-modal-footer">
-            <button class="download-btn download-individual" id="downloadIndividual" disabled>
-                <span>⬇️</span>
-                <span>Télécharger tout</span>
+            <button class="download-btn download-btn-cancel" id="download-cancel-btn">
+                Annuler
             </button>
-            <button class="download-btn download-all" id="downloadFileSelector" disabled>
-                <span>📋</span>
-                <span>Choisir fichiers</span>
+            <button class="download-btn download-btn-download" id="download-confirm-btn" disabled>
+                Télécharger l'Archive
             </button>
         </div>
     </div>

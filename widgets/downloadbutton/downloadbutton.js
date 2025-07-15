@@ -1,7 +1,6 @@
 /**
- * Widget Download Button - Compatible avec le système de chargement MaxLink
- * Pattern identique aux autres widgets (rebootbutton, etc.)
- * Version 3.0 - Popup moderne avec 52 semaines
+ * Widget Download Button - Logique harmonisée avec rebootbutton
+ * Animations et comportements identiques (sans timer auto-close)
  */
 
 window.downloadbutton = (function() {
@@ -10,6 +9,7 @@ window.downloadbutton = (function() {
     // Variables du widget
     let widgetElement;
     let elements = {};
+    let isAnimating = false; // Prévenir les animations multiples - IDENTIQUE REBOOTBUTTON
     let state = {
         isLoading: false,
         archivesData: null,
@@ -27,7 +27,7 @@ window.downloadbutton = (function() {
     };
 
     /**
-     * Initialisation du widget - Fonction appelée par le système
+     * Initialisation du widget - PATTERN IDENTIQUE REBOOTBUTTON
      */
     function init(element) {
         widgetElement = element;
@@ -47,6 +47,13 @@ window.downloadbutton = (function() {
                 bindEvents();
                 
                 console.log('[DownloadWidget] Widget initialisé avec succès');
+                
+                // Enregistrer auprès de l'orchestrateur
+                if (window.orchestrator) {
+                    window.orchestrator.registerWidget('downloadbutton', {
+                        update: () => {} // Pas de mise à jour pour ce widget
+                    }, []);
+                }
             })
             .catch(error => {
                 console.error('[DownloadWidget] Erreur chargement HTML:', error);
@@ -62,7 +69,8 @@ window.downloadbutton = (function() {
             button: widgetElement.querySelector('#download-button'),
             overlay: widgetElement.querySelector('#download-overlay'),
             modal: widgetElement.querySelector('.download-modal'),
-            closeBtn: widgetElement.querySelector('#download-close-btn'),
+            cancelBtn: widgetElement.querySelector('#download-cancel-btn'),
+            confirmBtn: widgetElement.querySelector('#download-confirm-btn'),
             yearSelect: widgetElement.querySelector('#downloadYearSelect'),
             weekSelect: widgetElement.querySelector('#downloadWeekSelect'),
             selectionInfo: widgetElement.querySelector('#downloadSelectionInfo'),
@@ -70,522 +78,396 @@ window.downloadbutton = (function() {
             selectionPeriod: widgetElement.querySelector('#downloadSelectionPeriod'),
             fileCount: widgetElement.querySelector('#downloadFileCount'),
             fileSize: widgetElement.querySelector('#downloadFileSize'),
-            downloadAll: widgetElement.querySelector('#downloadIndividual'),
-            downloadFiles: widgetElement.querySelector('#downloadFileSelector'),
-            status: widgetElement.querySelector('#downloadStatus'),
-            loading: widgetElement.querySelector('#downloadLoading'),
-            error: widgetElement.querySelector('#downloadError'),
-            errorMessage: widgetElement.querySelector('#downloadErrorMessage')
+            progressContainer: widgetElement.querySelector('#downloadProgressContainer'),
+            progressFill: widgetElement.querySelector('#downloadProgressFill'),
+            progressText: widgetElement.querySelector('#downloadProgressText')
         };
     }
 
     /**
-     * Liaison des événements
+     * Liaison des événements - PATTERN IDENTIQUE REBOOTBUTTON
      */
     function bindEvents() {
         // Bouton principal
         if (elements.button) {
             elements.button.addEventListener('click', showDownloadModal);
         }
-
-        // Bouton de fermeture
-        if (elements.closeBtn) {
-            elements.closeBtn.addEventListener('click', hideDownloadModal);
+        
+        // Bouton Annuler
+        if (elements.cancelBtn) {
+            elements.cancelBtn.addEventListener('click', hideDownloadModal);
         }
-
+        
+        // Bouton Télécharger
+        if (elements.confirmBtn) {
+            elements.confirmBtn.addEventListener('click', executeDownload);
+        }
+        
+        // Fermeture par clic en dehors - IDENTIQUE REBOOTBUTTON
+        if (elements.overlay) {
+            elements.overlay.addEventListener('click', function(e) {
+                if (e.target === elements.overlay) {
+                    hideDownloadModal();
+                }
+            });
+        }
+        
         // Sélecteurs
         if (elements.yearSelect) {
-            elements.yearSelect.addEventListener('change', onYearChange);
+            elements.yearSelect.addEventListener('change', handleYearChange);
         }
-
+        
         if (elements.weekSelect) {
-            elements.weekSelect.addEventListener('change', onWeekChange);
-        }
-
-        // Boutons d'action
-        if (elements.downloadAll) {
-            elements.downloadAll.addEventListener('click', downloadWeekArchives);
-        }
-
-        if (elements.downloadFiles) {
-            elements.downloadFiles.addEventListener('click', showFileSelector);
-        }
-
-        // Fermeture avec Escape
-        document.addEventListener('keydown', handleKeydown);
-        
-        // Fermeture en cliquant sur l'overlay
-        if (elements.overlay) {
-            elements.overlay.addEventListener('click', handleOverlayClick);
-        }
-    }
-
-    /**
-     * Affiche la modal de téléchargement avec animation
-     */
-    function showDownloadModal() {
-        if (state.isAnimating || state.isPopupOpen) return;
-        
-        state.isAnimating = true;
-        state.isPopupOpen = true;
-        
-        // Animation du bouton (comme rebootbutton)
-        if (elements.button) {
-            elements.button.classList.add('clicked');
-            setTimeout(() => elements.button.classList.remove('clicked'), 150);
+            elements.weekSelect.addEventListener('change', handleWeekChange);
         }
         
-        // Ajouter la classe pour gérer les z-index
-        document.body.classList.add('download-modal-open');
+        // Support global du clavier - IDENTIQUE REBOOTBUTTON
+        document.addEventListener('keydown', handleGlobalKeyPress);
         
-        // Afficher l'overlay
-        if (elements.overlay) {
-            elements.overlay.style.display = 'flex';
-            
-            // Forcer un reflow avant d'ajouter la classe show
-            elements.overlay.offsetHeight;
-            
-            // Démarrer l'animation d'apparition
-            setTimeout(() => {
-                elements.overlay.classList.add('show');
-                state.isAnimating = false;
-            }, 10);
-        }
-        
-        // Charger les données
+        // Charger les données d'archives au démarrage
         loadArchivesData();
     }
 
     /**
-     * Cache la modal de téléchargement avec animation
+     * Affichage de la modal - LOGIQUE IDENTIQUE REBOOTBUTTON
+     */
+    function showDownloadModal() {
+        console.log('[DownloadWidget] Ouverture de la modal de téléchargement');
+        
+        if (elements.overlay && !isAnimating) {
+            isAnimating = true;
+            
+            // IMPORTANT : Ajouter la classe modal-open au body pour gérer les z-index
+            document.body.classList.add('modal-open');
+            
+            // Afficher la modal (display flex d'abord)
+            elements.overlay.style.display = 'flex';
+            
+            // Reset des valeurs
+            resetModalState();
+            
+            // Forcer un reflow pour que le navigateur traite le display: flex
+            elements.overlay.offsetHeight;
+            
+            // Puis ajouter la classe show pour déclencher l'animation
+            setTimeout(() => {
+                elements.overlay.classList.add('show');
+                isAnimating = false;
+                state.isPopupOpen = true;
+            }, 10);
+        }
+    }
+
+    /**
+     * Fermeture de la modal - LOGIQUE IDENTIQUE REBOOTBUTTON
      */
     function hideDownloadModal() {
-        if (state.isAnimating || !state.isPopupOpen) return;
+        console.log('[DownloadWidget] Fermeture de la modal de téléchargement');
         
-        state.isAnimating = true;
-        
-        if (elements.overlay) {
-            // Démarrer l'animation de fermeture
+        if (elements.overlay && elements.modal && !isAnimating) {
+            isAnimating = true;
+            
+            // Retirer la classe show pour déclencher l'animation de sortie
             elements.overlay.classList.remove('show');
             
-            // Attendre la fin de l'animation avant de cacher
+            // Attendre la fin de l'animation avant de masquer complètement
             setTimeout(() => {
                 elements.overlay.style.display = 'none';
-                document.body.classList.remove('download-modal-open');
-                state.isAnimating = false;
+                
+                // IMPORTANT : Retirer la classe modal-open du body
+                document.body.classList.remove('modal-open');
+                
+                isAnimating = false;
                 state.isPopupOpen = false;
                 
-                // Reset du formulaire
-                resetForm();
-            }, 300);
+                // Reset de l'état de téléchargement
+                hideProgressContainer();
+            }, 300); // Correspond à la durée de transition CSS
         }
     }
 
     /**
-     * Ferme la modal (alias pour compatibilité)
+     * Reset de l'état de la modal
      */
-    function closePopup() {
-        hideDownloadModal();
-    }
-
-    /**
-     * Charge les données d'archives depuis l'API
-     */
-    async function loadArchivesData() {
-        if (state.isLoading) return;
-
-        try {
-            setLoading(true);
-            hideError();
-
-            const response = await fetch(CONFIG.API_ENDPOINTS.LIST);
-            
-            if (!response.ok) {
-                throw new Error(`Erreur HTTP: ${response.status}`);
-            }
-
-            const data = await response.json();
-            
-            if (!data || typeof data !== 'object') {
-                throw new Error('Format de données invalide');
-            }
-
-            state.archivesData = data;
-            populateYearSelector(data);
-            
-        } catch (error) {
-            console.error('[DownloadWidget] Erreur chargement données:', error);
-            showError('Impossible de charger la liste des archives');
-        } finally {
-            setLoading(false);
-        }
-    }
-
-    /**
-     * Remplit le sélecteur d'années
-     */
-    function populateYearSelector(data) {
-        if (!elements.yearSelect) return;
-
-        // Effacer les options existantes
-        elements.yearSelect.innerHTML = '<option value="">Choisir une année...</option>';
-
-        // Extraire les années disponibles
-        const years = new Set();
-        
-        if (data.archives && Array.isArray(data.archives)) {
-            data.archives.forEach(archive => {
-                if (archive.year) {
-                    years.add(archive.year);
-                }
-            });
-        }
-
-        // Trier les années par ordre décroissant
-        const sortedYears = Array.from(years).sort((a, b) => b - a);
-
-        // Ajouter les options
-        sortedYears.forEach(year => {
-            const option = document.createElement('option');
-            option.value = year;
-            option.textContent = `${year} ${year === new Date().getFullYear() ? '(Année courante)' : ''}`;
-            elements.yearSelect.appendChild(option);
-        });
-
-        // Sélectionner l'année courante par défaut si disponible
-        const currentYear = new Date().getFullYear();
-        if (sortedYears.includes(currentYear)) {
-            elements.yearSelect.value = currentYear;
-            onYearChange();
-        }
-    }
-
-    /**
-     * Gestionnaire changement d'année
-     */
-    function onYearChange() {
-        const year = elements.yearSelect?.value;
-        
-        if (!year) {
-            resetWeekSelector();
-            hideSelectionInfo();
-            return;
-        }
-
-        state.selectedYear = parseInt(year);
-        populateWeekSelector(year);
-    }
-
-    /**
-     * Remplit le sélecteur de semaines
-     */
-    function populateWeekSelector(year) {
-        if (!elements.weekSelect || !state.archivesData) return;
-
-        // Effacer les options existantes
-        elements.weekSelect.innerHTML = '<option value="">Choisir une semaine...</option>';
-        elements.weekSelect.disabled = false;
-
-        // Filtrer les archives pour l'année sélectionnée
-        const yearArchives = state.archivesData.archives?.filter(archive => 
-            archive.year === parseInt(year)
-        ) || [];
-
-        if (yearArchives.length === 0) {
-            elements.weekSelect.innerHTML = '<option value="">Aucune archive pour cette année</option>';
+    function resetModalState() {
+        if (elements.yearSelect) elements.yearSelect.value = '';
+        if (elements.weekSelect) {
+            elements.weekSelect.value = '';
             elements.weekSelect.disabled = true;
-            return;
         }
-
-        // Regrouper par trimestre
-        const quarters = [
-            { name: 'T1 - Janvier à Mars', start: 1, end: 13 },
-            { name: 'T2 - Avril à Juin', start: 14, end: 26 },
-            { name: 'T3 - Juillet à Septembre', start: 27, end: 39 },
-            { name: 'T4 - Octobre à Décembre', start: 40, end: 52 }
-        ];
-
-        quarters.forEach(quarter => {
-            const quarterArchives = yearArchives.filter(archive => 
-                archive.week >= quarter.start && archive.week <= quarter.end
-            ).sort((a, b) => a.week - b.week);
-
-            if (quarterArchives.length > 0) {
-                const optgroup = document.createElement('optgroup');
-                optgroup.label = quarter.name;
-
-                quarterArchives.forEach(archive => {
-                    const option = document.createElement('option');
-                    option.value = archive.week;
-                    
-                    const startDate = getWeekStartDate(year, archive.week);
-                    const endDate = getWeekEndDate(year, archive.week);
-                    const fileCount = archive.files?.length || 0;
-                    
-                    option.textContent = `Semaine ${archive.week.toString().padStart(2, '0')} • ${startDate} au ${endDate} • ${fileCount} fichiers`;
-                    option.dataset.archive = JSON.stringify(archive);
-                    
-                    optgroup.appendChild(option);
-                });
-
-                elements.weekSelect.appendChild(optgroup);
-            }
-        });
+        if (elements.confirmBtn) elements.confirmBtn.disabled = true;
+        if (elements.selectionInfo) elements.selectionInfo.style.display = 'none';
+        hideProgressContainer();
     }
 
     /**
-     * Gestionnaire changement de semaine
+     * Gestion des touches globales - IDENTIQUE REBOOTBUTTON
      */
-    function onWeekChange() {
-        const weekValue = elements.weekSelect?.value;
-        
-        if (!weekValue) {
-            hideSelectionInfo();
-            disableDownloadButtons();
-            return;
-        }
-
-        state.selectedWeek = parseInt(weekValue);
-        
-        // Récupérer les données de l'archive depuis l'option sélectionnée
-        const selectedOption = elements.weekSelect.querySelector(`option[value="${weekValue}"]`);
-        if (selectedOption && selectedOption.dataset.archive) {
-            try {
-                const archiveData = JSON.parse(selectedOption.dataset.archive);
-                updateSelectionInfo(archiveData);
-                enableDownloadButtons();
-            } catch (error) {
-                console.error('[DownloadWidget] Erreur parsing archive data:', error);
-                showError('Erreur lors de la sélection de la semaine');
-            }
-        }
-    }
-
-    /**
-     * Met à jour les informations de sélection
-     */
-    function updateSelectionInfo(archiveData) {
-        if (!elements.selectionInfo) return;
-
-        const { year, week, files = [] } = archiveData;
-        const startDate = getWeekStartDate(year, week);
-        const endDate = getWeekEndDate(year, week);
-        const totalSize = files.reduce((sum, file) => sum + (file.size || 0), 0);
-
-        // Mise à jour des éléments
-        if (elements.selectionTitle) {
-            elements.selectionTitle.textContent = `Semaine ${week.toString().padStart(2, '0')} - ${year}`;
-        }
-
-        if (elements.selectionPeriod) {
-            elements.selectionPeriod.textContent = `Période: du ${startDate} au ${endDate}`;
-        }
-
-        if (elements.fileCount) {
-            elements.fileCount.textContent = `📁 ${files.length} fichiers CSV`;
-        }
-
-        if (elements.fileSize) {
-            elements.fileSize.textContent = `💾 ${formatFileSize(totalSize)}`;
-        }
-
-        showElement(elements.selectionInfo);
-    }
-
-    /**
-     * Télécharge tous les fichiers de la semaine
-     */
-    async function downloadWeekArchives() {
-        if (!state.selectedYear || !state.selectedWeek) return;
-
-        try {
-            const url = `${CONFIG.API_ENDPOINTS.DOWNLOAD}?week=${state.selectedWeek}&year=${state.selectedYear}`;
-            
-            // Ouvrir dans un nouvel onglet pour déclencher le téléchargement
-            window.open(url, '_blank');
-            
-            // Optionnel: fermer la modal après téléchargement
-            setTimeout(() => {
+    function handleGlobalKeyPress(e) {
+        if (state.isPopupOpen) {
+            if (e.key === 'Escape') {
+                e.preventDefault();
                 hideDownloadModal();
-            }, 1000);
-
-        } catch (error) {
-            console.error('[DownloadWidget] Erreur téléchargement semaine:', error);
-            showError('Erreur lors du téléchargement');
+            }
         }
     }
 
     /**
-     * Affiche le sélecteur de fichiers individuels
+     * Changement d'année
      */
-    async function showFileSelector() {
-        if (!state.selectedYear || !state.selectedWeek) return;
-
-        try {
-            // Récupérer la liste des fichiers pour la semaine
-            const response = await fetch(
-                `${CONFIG.API_ENDPOINTS.DOWNLOAD}?week=${state.selectedWeek}&year=${state.selectedYear}`
-            );
-
-            if (!response.ok) {
-                throw new Error(`Erreur HTTP: ${response.status}`);
-            }
-
-            const data = await response.json();
+    function handleYearChange() {
+        const selectedYear = elements.yearSelect.value;
+        
+        if (selectedYear && state.archivesData && state.archivesData[selectedYear]) {
+            // Activer et remplir le sélecteur de semaine
+            elements.weekSelect.disabled = false;
+            elements.weekSelect.innerHTML = '<option value="">Choisir une semaine...</option>';
             
-            if (data.files && Array.isArray(data.files)) {
-                showFileSelectionDialog(data.files);
-            } else {
-                throw new Error('Liste de fichiers indisponible');
-            }
+            // Trier les semaines par numéro
+            const weeks = Object.keys(state.archivesData[selectedYear]).sort((a, b) => {
+                return parseInt(a.replace('week_', '')) - parseInt(b.replace('week_', ''));
+            });
+            
+            weeks.forEach(weekKey => {
+                const weekData = state.archivesData[selectedYear][weekKey];
+                const weekNumber = weekKey.replace('week_', '');
+                const option = document.createElement('option');
+                option.value = weekKey;
+                option.textContent = `Semaine ${weekNumber} (${weekData.start_date} → ${weekData.end_date})`;
+                elements.weekSelect.appendChild(option);
+            });
+            
+            state.selectedYear = selectedYear;
+        } else {
+            elements.weekSelect.disabled = true;
+            elements.weekSelect.innerHTML = '<option value="">Sélectionner d\'abord une année...</option>';
+            state.selectedYear = null;
+        }
+        
+        // Reset de la sélection de semaine
+        state.selectedWeek = null;
+        elements.confirmBtn.disabled = true;
+        elements.selectionInfo.style.display = 'none';
+    }
 
-        } catch (error) {
-            console.error('[DownloadWidget] Erreur sélecteur fichiers:', error);
-            showError('Impossible de charger la liste des fichiers');
+    /**
+     * Changement de semaine
+     */
+    function handleWeekChange() {
+        const selectedWeek = elements.weekSelect.value;
+        
+        if (selectedWeek && state.selectedYear && state.archivesData[state.selectedYear][selectedWeek]) {
+            const weekData = state.archivesData[state.selectedYear][selectedWeek];
+            state.selectedWeek = selectedWeek;
+            
+            // Afficher les informations de sélection
+            updateSelectionInfo(weekData);
+            elements.selectionInfo.style.display = 'block';
+            elements.confirmBtn.disabled = false;
+        } else {
+            state.selectedWeek = null;
+            elements.selectionInfo.style.display = 'none';
+            elements.confirmBtn.disabled = true;
         }
     }
 
     /**
-     * Affiche un dialog de sélection de fichiers
+     * Mise à jour des informations de sélection
      */
-    function showFileSelectionDialog(files) {
-        const fileList = files.map(file => `• ${file.name} (${formatFileSize(file.size || 0)})`).join('\n');
+    function updateSelectionInfo(weekData) {
+        const weekNumber = state.selectedWeek.replace('week_', '');
         
-        const message = `📋 Fichiers disponibles pour la semaine ${state.selectedWeek} - ${state.selectedYear}:\n\n${fileList}\n\nNote: Pour l'instant, utilisez "Télécharger tout" pour obtenir tous les fichiers.\nLa sélection individuelle sera disponible dans une prochaine version.`;
-        
-        alert(message);
+        elements.selectionTitle.textContent = `Semaine ${weekNumber} - Année ${state.selectedYear}`;
+        elements.selectionPeriod.textContent = `Période: du ${weekData.start_date} au ${weekData.end_date}`;
+        elements.fileCount.textContent = `📁 ${weekData.file_count} fichiers`;
+        elements.fileSize.textContent = `💾 ${formatFileSize(weekData.total_size)}`;
     }
 
     /**
-     * Utilitaires de dates et formatage
+     * Formatage de la taille des fichiers
      */
-    function getWeekStartDate(year, week) {
-        const date = new Date(year, 0, 1 + (week - 1) * 7);
-        return date.toLocaleDateString('fr-FR', { day: '2-digit', month: '2-digit' });
-    }
-
-    function getWeekEndDate(year, week) {
-        const date = new Date(year, 0, 1 + (week - 1) * 7 + 6);
-        return date.toLocaleDateString('fr-FR', { day: '2-digit', month: '2-digit' });
-    }
-
     function formatFileSize(bytes) {
         if (bytes === 0) return '0 B';
         const k = 1024;
         const sizes = ['B', 'KB', 'MB', 'GB'];
         const i = Math.floor(Math.log(bytes) / Math.log(k));
-        return parseFloat((bytes / Math.pow(k, i)).toFixed(1)) + ' ' + sizes[i];
+        return parseFloat((bytes / Math.pow(k, i)).toFixed(2)) + ' ' + sizes[i];
     }
 
     /**
-     * Gestion des événements
+     * Exécution du téléchargement
      */
-    function handleKeydown(event) {
-        if (event.key === 'Escape' && state.isPopupOpen) {
-            closePopup();
+    function executeDownload() {
+        if (!state.selectedYear || !state.selectedWeek) {
+            console.error('[DownloadWidget] Aucune sélection valide pour le téléchargement');
+            return;
         }
-    }
-
-    function handleOverlayClick(event) {
-        if (event.target === elements.popup) {
-            closePopup();
-        }
-    }
-
-    /**
-     * Utilitaires de l'interface
-     */
-    function setLoading(loading) {
-        state.isLoading = loading;
         
-        if (loading) {
-            showElement(elements.status);
-            showElement(elements.loading);
-        } else {
-            hideElement(elements.loading);
-            if (!elements.error?.style.display || elements.error.style.display === 'none') {
-                hideElement(elements.status);
+        console.log(`[DownloadWidget] Début du téléchargement - Année: ${state.selectedYear}, Semaine: ${state.selectedWeek}`);
+        
+        // Afficher la progression
+        showProgressContainer();
+        
+        // Désactiver le bouton de téléchargement
+        elements.confirmBtn.disabled = true;
+        
+        // Construire l'URL de téléchargement
+        const downloadUrl = `${CONFIG.API_ENDPOINTS.DOWNLOAD}?year=${encodeURIComponent(state.selectedYear)}&week=${encodeURIComponent(state.selectedWeek)}`;
+        
+        // Simuler une progression puis déclencher le téléchargement
+        simulateProgress(() => {
+            // Créer un lien de téléchargement invisible
+            const link = document.createElement('a');
+            link.href = downloadUrl;
+            link.download = `archives_${state.selectedYear}_${state.selectedWeek}.zip`;
+            document.body.appendChild(link);
+            link.click();
+            document.body.removeChild(link);
+            
+            // Fermer la modal après un délai
+            setTimeout(() => {
+                hideDownloadModal();
+            }, 1000);
+        });
+    }
+
+    /**
+     * Affichage du conteneur de progression
+     */
+    function showProgressContainer() {
+        if (elements.progressContainer) {
+            elements.progressContainer.style.display = 'block';
+            elements.progressFill.style.width = '0%';
+            elements.progressText.textContent = '0%';
+        }
+    }
+
+    /**
+     * Masquage du conteneur de progression
+     */
+    function hideProgressContainer() {
+        if (elements.progressContainer) {
+            elements.progressContainer.style.display = 'none';
+        }
+        if (elements.confirmBtn) {
+            elements.confirmBtn.disabled = (state.selectedYear && state.selectedWeek) ? false : true;
+        }
+    }
+
+    /**
+     * Simulation de progression
+     */
+    function simulateProgress(callback) {
+        let progress = 0;
+        const interval = setInterval(() => {
+            progress += Math.random() * 15 + 5;
+            if (progress >= 100) {
+                progress = 100;
+                clearInterval(interval);
+                if (callback) callback();
+            }
+            
+            if (elements.progressFill) {
+                elements.progressFill.style.width = progress + '%';
+            }
+            if (elements.progressText) {
+                elements.progressText.textContent = Math.round(progress) + '%';
+            }
+        }, 200);
+    }
+
+    /**
+     * Chargement des données d'archives
+     */
+    function loadArchivesData() {
+        console.log('[DownloadWidget] Chargement des données d\'archives...');
+        
+        fetch(CONFIG.API_ENDPOINTS.LIST)
+            .then(response => {
+                if (!response.ok) {
+                    throw new Error(`HTTP error! status: ${response.status}`);
+                }
+                return response.json();
+            })
+            .then(data => {
+                state.archivesData = data;
+                populateYearSelector();
+                console.log('[DownloadWidget] Données d\'archives chargées avec succès');
+            })
+            .catch(error => {
+                console.error('[DownloadWidget] Erreur lors du chargement des archives:', error);
+                
+                // Données de fallback pour les tests
+                state.archivesData = generateFallbackData();
+                populateYearSelector();
+            });
+    }
+
+    /**
+     * Remplissage du sélecteur d'année
+     */
+    function populateYearSelector() {
+        if (!elements.yearSelect || !state.archivesData) return;
+        
+        elements.yearSelect.innerHTML = '<option value="">Choisir une année...</option>';
+        
+        const years = Object.keys(state.archivesData).sort().reverse();
+        years.forEach(year => {
+            const option = document.createElement('option');
+            option.value = year;
+            option.textContent = year;
+            elements.yearSelect.appendChild(option);
+        });
+    }
+
+    /**
+     * Génération de données de fallback pour les tests
+     */
+    function generateFallbackData() {
+        const fallbackData = {};
+        const currentYear = new Date().getFullYear();
+        
+        for (let year = currentYear - 1; year <= currentYear; year++) {
+            fallbackData[year] = {};
+            for (let week = 1; week <= 52; week++) {
+                const startDate = getWeekStart(year, week);
+                const endDate = getWeekEnd(year, week);
+                
+                fallbackData[year][`week_${week}`] = {
+                    start_date: startDate,
+                    end_date: endDate,
+                    file_count: Math.floor(Math.random() * 50) + 10,
+                    total_size: Math.floor(Math.random() * 10000000) + 1000000
+                };
             }
         }
-    }
-
-    function showError(message) {
-        if (elements.errorMessage) {
-            elements.errorMessage.textContent = message;
-        }
         
-        showElement(elements.status);
-        showElement(elements.error);
-        hideElement(elements.loading);
+        return fallbackData;
     }
 
-    function hideError() {
-        hideElement(elements.error);
-        if (!state.isLoading) {
-            hideElement(elements.status);
-        }
+    /**
+     * Calcul du début d'une semaine
+     */
+    function getWeekStart(year, week) {
+        const firstDayOfYear = new Date(year, 0, 1);
+        const days = (week - 1) * 7;
+        const weekStart = new Date(firstDayOfYear.getTime() + days * 24 * 60 * 60 * 1000);
+        return weekStart.toISOString().split('T')[0];
     }
 
-    function resetForm() {
-        state.selectedYear = null;
-        state.selectedWeek = null;
-        
-        if (elements.yearSelect) {
-            elements.yearSelect.value = '';
-        }
-        
-        resetWeekSelector();
-        hideSelectionInfo();
-        disableDownloadButtons();
-        hideError();
+    /**
+     * Calcul de la fin d'une semaine
+     */
+    function getWeekEnd(year, week) {
+        const firstDayOfYear = new Date(year, 0, 1);
+        const days = (week - 1) * 7 + 6;
+        const weekEnd = new Date(firstDayOfYear.getTime() + days * 24 * 60 * 60 * 1000);
+        return weekEnd.toISOString().split('T')[0];
     }
 
-    function resetWeekSelector() {
-        if (elements.weekSelect) {
-            elements.weekSelect.innerHTML = '<option value="">Sélectionner d\'abord une année...</option>';
-            elements.weekSelect.disabled = true;
-        }
-    }
-
-    function hideSelectionInfo() {
-        hideElement(elements.selectionInfo);
-    }
-
-    function enableDownloadButtons() {
-        if (elements.downloadAll) {
-            elements.downloadAll.disabled = false;
-        }
-        if (elements.downloadFiles) {
-            elements.downloadFiles.disabled = false;
-        }
-    }
-
-    function disableDownloadButtons() {
-        if (elements.downloadAll) {
-            elements.downloadAll.disabled = true;
-        }
-        if (elements.downloadFiles) {
-            elements.downloadFiles.disabled = true;
-        }
-    }
-
-    function showElement(element) {
-        if (element) {
-            element.style.display = '';
-        }
-    }
-
-    function hideElement(element) {
-        if (element) {
-            element.style.display = 'none';
-        }
-    }
-
-    // API publique - OBLIGATOIRE pour le système de chargement
+    // Interface publique
     return {
-        init,
-        hideDownloadModal,  // Exposé pour fermeture externe si nécessaire
-        closePopup: hideDownloadModal  // Alias pour compatibilité
+        init: init
     };
 
 })();

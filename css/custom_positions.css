@@ -90,7 +90,7 @@
     left: calc(var(--base-d) + 485px) !important;
     width: 65px !important;
     height: 65px !important;
-    z-index: 10 !important; /* Z-INDEX CONTRÔLÉ */
+    z-index: 9 !important; /* Z-INDEX CONTRÔLÉ */
 }
 
 #downloadinfo {
