@@ -213,7 +213,7 @@ window.downloadbutton = (function() {
     }
 
     /**
-     * Changement d'année
+     * Changement d'année - ADAPTÉ POUR STRUCTURE TABLEAU
      */
     function handleYearChange() {
         const selectedYear = elements.yearSelect.value;
@@ -223,17 +223,22 @@ window.downloadbutton = (function() {
             elements.weekSelect.disabled = false;
             elements.weekSelect.innerHTML = '<option value="">Choisir une semaine...</option>';
             
-            // Trier les semaines par numéro
-            const weeks = Object.keys(state.archivesData[selectedYear]).sort((a, b) => {
-                return parseInt(a.replace('week_', '')) - parseInt(b.replace('week_', ''));
-            });
+            // Traiter le tableau de semaines au lieu d'un objet
+            const weeksArray = state.archivesData[selectedYear];
             
-            weeks.forEach(weekKey => {
-                const weekData = state.archivesData[selectedYear][weekKey];
-                const weekNumber = weekKey.replace('week_', '');
+            // Trier les semaines par numéro décroissant
+            weeksArray.sort((a, b) => b.week - a.week);
+            
+            weeksArray.forEach(weekData => {
                 const option = document.createElement('option');
-                option.value = weekKey;
-                option.textContent = `Semaine ${weekNumber} (${weekData.start_date} → ${weekData.end_date})`;
+                option.value = weekData.week;
+                
+                // Calculer les dates de début/fin
+                const startDate = getWeekStart(selectedYear, weekData.week);
+                const endDate = getWeekEnd(selectedYear, weekData.week);
+                
+                option.textContent = `Semaine ${weekData.week} (${startDate} → ${endDate})`;
+                option.setAttribute('data-week-data', JSON.stringify(weekData));
                 elements.weekSelect.appendChild(option);
             });
             
@@ -251,13 +256,16 @@ window.downloadbutton = (function() {
     }
 
     /**
-     * Changement de semaine
+     * Changement de semaine - ADAPTÉ POUR STRUCTURE TABLEAU
      */
     function handleWeekChange() {
         const selectedWeek = elements.weekSelect.value;
         
-        if (selectedWeek && state.selectedYear && state.archivesData[state.selectedYear][selectedWeek]) {
-            const weekData = state.archivesData[state.selectedYear][selectedWeek];
+        if (selectedWeek && state.selectedYear) {
+            // Récupérer les données depuis l'attribut data
+            const selectedOption = elements.weekSelect.querySelector(`option[value="${selectedWeek}"]`);
+            const weekData = JSON.parse(selectedOption.getAttribute('data-week-data'));
+            
             state.selectedWeek = selectedWeek;
             
             // Afficher les informations de sélection
@@ -272,15 +280,16 @@ window.downloadbutton = (function() {
     }
 
     /**
-     * Mise à jour des informations de sélection
+     * Mise à jour des informations de sélection - ADAPTÉ AUX NOUVELLES PROPRIÉTÉS
      */
     function updateSelectionInfo(weekData) {
-        const weekNumber = state.selectedWeek.replace('week_', '');
+        const startDate = getWeekStart(state.selectedYear, weekData.week);
+        const endDate = getWeekEnd(state.selectedYear, weekData.week);
         
-        elements.selectionTitle.textContent = `Semaine ${weekNumber} - Année ${state.selectedYear}`;
-        elements.selectionPeriod.textContent = `Période: du ${weekData.start_date} au ${weekData.end_date}`;
-        elements.fileCount.textContent = `📁 ${weekData.file_count} fichiers`;
-        elements.fileSize.textContent = `💾 ${formatFileSize(weekData.total_size)}`;
+        elements.selectionTitle.textContent = `Semaine ${weekData.week} - Année ${state.selectedYear}`;
+        elements.selectionPeriod.textContent = `Période: du ${startDate} au ${endDate}`;
+        elements.fileCount.textContent = `📁 ${weekData.fileCount} fichiers`;
+        elements.fileSize.textContent = `💾 ${weekData.totalSizeFormatted}`;
     }
 
     /**
@@ -295,7 +304,7 @@ window.downloadbutton = (function() {
     }
 
     /**
-     * Exécution du téléchargement
+     * Exécution du téléchargement - UTILISE LES DONNÉES EN MÉMOIRE
      */
     function executeDownload() {
         if (!state.selectedYear || !state.selectedWeek) {
@@ -311,23 +320,86 @@ window.downloadbutton = (function() {
         // Désactiver le bouton de téléchargement
         elements.confirmBtn.disabled = true;
         
-        // Construire l'URL de téléchargement
-        const downloadUrl = `${CONFIG.API_ENDPOINTS.DOWNLOAD}?year=${encodeURIComponent(state.selectedYear)}&week=${encodeURIComponent(state.selectedWeek)}`;
+        // Récupérer les données de la semaine depuis la mémoire (déjà chargées)
+        const yearData = state.archivesData[state.selectedYear];
+        const weekData = yearData.find(week => week.week == state.selectedWeek);
         
-        // Simuler une progression puis déclencher le téléchargement
-        simulateProgress(() => {
-            // Créer un lien de téléchargement invisible
+        if (!weekData || !weekData.files || weekData.files.length === 0) {
+            alert('Aucun fichier trouvé pour cette semaine');
+            elements.confirmBtn.disabled = false;
+            hideProgressContainer();
+            return;
+        }
+        
+        console.log(`[DownloadWidget] ${weekData.files.length} fichiers à télécharger`);
+        
+        // Télécharger chaque fichier avec un délai
+        let downloadedCount = 0;
+        const totalFiles = weekData.files.length;
+        
+        weekData.files.forEach((file, index) => {
+            setTimeout(() => {
+                downloadSingleFilePost(file.filename, state.selectedYear);
+                downloadedCount++;
+                
+                // Mettre à jour la progression
+                const progress = (downloadedCount / totalFiles) * 100;
+                if (elements.progressFill) {
+                    elements.progressFill.style.width = progress + '%';
+                }
+                if (elements.progressText) {
+                    elements.progressText.textContent = Math.round(progress) + '%';
+                }
+                
+                // Fermer la modal quand tous les fichiers sont téléchargés
+                if (downloadedCount === totalFiles) {
+                    setTimeout(() => {
+                        hideDownloadModal();
+                    }, 1000);
+                }
+            }, index * 500); // Délai de 500ms entre chaque téléchargement
+        });
+    }
+
+    /**
+     * Téléchargement d'un fichier individuel - CONTOURNE LE PROBLÈME NGINX
+     */
+    function downloadSingleFilePost(filename, year) {
+        // Utiliser fetch pour récupérer le fichier en blob
+        const url = `${CONFIG.API_ENDPOINTS.DOWNLOAD}`;
+        
+        // Créer FormData pour POST
+        const formData = new FormData();
+        formData.append('file', filename);
+        formData.append('year', year);
+        
+        fetch(url, {
+            method: 'POST',
+            body: formData
+        })
+        .then(response => {
+            if (!response.ok) {
+                throw new Error(`Erreur HTTP: ${response.status}`);
+            }
+            return response.blob();
+        })
+        .then(blob => {
+            // Créer un lien de téléchargement avec le blob
+            const downloadUrl = window.URL.createObjectURL(blob);
             const link = document.createElement('a');
             link.href = downloadUrl;
-            link.download = `archives_${state.selectedYear}_${state.selectedWeek}.zip`;
+            link.download = filename;
+            link.style.display = 'none';
+            
             document.body.appendChild(link);
             link.click();
             document.body.removeChild(link);
             
-            // Fermer la modal après un délai
-            setTimeout(() => {
-                hideDownloadModal();
-            }, 1000);
+            // Libérer la mémoire
+            window.URL.revokeObjectURL(downloadUrl);
+        })
+        .catch(error => {
+            console.error(`[DownloadWidget] Erreur téléchargement ${filename}:`, error);
         });
     }
 
@@ -421,24 +493,22 @@ window.downloadbutton = (function() {
     }
 
     /**
-     * Génération de données de fallback pour les tests
+     * Génération de données de fallback pour les tests - ADAPTÉ À LA NOUVELLE STRUCTURE
      */
     function generateFallbackData() {
         const fallbackData = {};
         const currentYear = new Date().getFullYear();
         
         for (let year = currentYear - 1; year <= currentYear; year++) {
-            fallbackData[year] = {};
+            fallbackData[year] = [];
             for (let week = 1; week <= 52; week++) {
-                const startDate = getWeekStart(year, week);
-                const endDate = getWeekEnd(year, week);
-                
-                fallbackData[year][`week_${week}`] = {
-                    start_date: startDate,
-                    end_date: endDate,
-                    file_count: Math.floor(Math.random() * 50) + 10,
-                    total_size: Math.floor(Math.random() * 10000000) + 1000000
-                };
+                fallbackData[year].push({
+                    week: week,
+                    files: [],
+                    totalSize: Math.floor(Math.random() * 10000000) + 1000000,
+                    fileCount: Math.floor(Math.random() * 50) + 10,
+                    totalSizeFormatted: formatFileSize(Math.floor(Math.random() * 10000000) + 1000000)
+                });
             }
         }
         
@@ -452,7 +522,7 @@ window.downloadbutton = (function() {
         const firstDayOfYear = new Date(year, 0, 1);
         const days = (week - 1) * 7;
         const weekStart = new Date(firstDayOfYear.getTime() + days * 24 * 60 * 60 * 1000);
-        return weekStart.toISOString().split('T')[0];
+        return weekStart.toLocaleDateString('fr-FR');
     }
 
     /**
@@ -462,7 +532,7 @@ window.downloadbutton = (function() {
         const firstDayOfYear = new Date(year, 0, 1);
         const days = (week - 1) * 7 + 6;
         const weekEnd = new Date(firstDayOfYear.getTime() + days * 24 * 60 * 60 * 1000);
-        return weekEnd.toISOString().split('T')[0];
+        return weekEnd.toLocaleDateString('fr-FR');
     }
 
     // Interface publique
