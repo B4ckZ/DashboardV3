@@ -1,6 +1,3 @@
-// widgets/downloadinfo/downloadinfo.js - Widget DownloadInfo
-// ==========================================================
-
 window.downloadinfo = (function() {
     let widgetElement;
     let downloadinfoElement;
@@ -8,42 +5,62 @@ window.downloadinfo = (function() {
     function init(element) {
         widgetElement = element;
         
-        // Charger le HTML du widget
         fetch('widgets/downloadinfo/downloadinfo.html')
             .then(response => response.text())
             .then(html => {
                 widgetElement.innerHTML = html;
                 downloadinfoElement = widgetElement.querySelector('[data-metric="downloadinfo"]');
                 
-                // Enregistrer auprès de l'orchestrateur
                 if (window.orchestrator) {
                     window.orchestrator.registerWidget('downloadinfo', {
                         update: updateValue
                     }, ['download.info']);
                 }
                 
-                // Afficher une date par défaut pour test
-                updateTestDate();
+                loadLastDownload();
             });
     }
     
     function updateValue(topic, data) {
         if (topic === 'download.info' && downloadinfoElement) {
-            downloadinfoElement.textContent = data.date || data.formatted || data;
+            const formatted = formatDownloadInfo(data);
+            downloadinfoElement.textContent = formatted;
             downloadinfoElement.classList.add('downloadinfo-value-stable');
+            saveLastDownload(data);
         }
     }
     
-    // Fonction temporaire pour afficher une date de test
-    function updateTestDate() {
+    function formatDownloadInfo(data) {
+        if (data.date && data.week) {
+            return `${data.date} | Semaine ${data.week}`;
+        }
+        return data.date || data.formatted || data;
+    }
+    
+    function saveLastDownload(data) {
+        try {
+            localStorage.setItem('lastDownload', JSON.stringify(data));
+        } catch (e) {
+            console.warn('Cannot save to localStorage:', e);
+        }
+    }
+    
+    function loadLastDownload() {
+        try {
+            const saved = localStorage.getItem('lastDownload');
+            if (saved && downloadinfoElement) {
+                const data = JSON.parse(saved);
+                const formatted = formatDownloadInfo(data);
+                downloadinfoElement.textContent = formatted;
+                downloadinfoElement.classList.add('downloadinfo-value-stable');
+                return;
+            }
+        } catch (e) {
+            console.warn('Cannot load from localStorage:', e);
+        }
+        
         if (downloadinfoElement) {
-            const now = new Date();
-            const formatted = now.toLocaleDateString('fr-FR', {
-                day: '2-digit',
-                month: '2-digit',
-                year: 'numeric'
-            });
-            downloadinfoElement.textContent = formatted;
+            downloadinfoElement.textContent = '--/--/---- | Semaine --';
             downloadinfoElement.classList.add('downloadinfo-value-stable');
         }
     }

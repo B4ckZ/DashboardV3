@@ -354,6 +354,23 @@ window.downloadbutton = (function() {
                 // Fermer la modal quand tous les fichiers sont téléchargés
                 if (downloadedCount === totalFiles) {
                     setTimeout(() => {
+                        console.log(`[DownloadWidget] Téléchargement terminé avec succès`);
+                        
+                        // Notifier le widget downloadinfo
+                        if (window.orchestrator) {
+                            const now = new Date();
+                            const downloadInfo = {
+                                date: now.toLocaleDateString('fr-FR', {
+                                    day: '2-digit',
+                                    month: '2-digit',
+                                    year: 'numeric'
+                                }),
+                                week: state.selectedWeek
+                            };
+                            
+                            window.orchestrator.distribute('download.info', downloadInfo);
+                        }
+                        
                         hideDownloadModal();
                     }, 1000);
                 }
