@@ -50,7 +50,7 @@
 
 /* Styles pour la date */
 .clock-date {
-    font-size: 18px;
+    font-size: 20px;
     font-weight: 500;
     color: var(--nord8);
     letter-spacing: 2px;
