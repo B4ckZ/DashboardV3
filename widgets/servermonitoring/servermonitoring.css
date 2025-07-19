@@ -1,24 +1,22 @@
-/* widgets/servermonitoring/servermonitoring.css - Widget Server Monitoring V3 */
+/* Server Monitoring Widget */
 
-/* Barres de progression */
 .progress-row {
     display: flex;
     align-items: center;
     margin-bottom: 10px;
 }
 
-/* LABELS UNIFORMISÉS - RÉDUITS POUR PLUS D'ESPACE POUR LES BARRES */
 .progress-label,
 .progress-label-wide,
 .progress-label-short {
-    width: 70px; /* Réduit de 100px à 70px pour libérer de l'espace */
+    width: 70px;
     font-size: 14px;
     color: var(--nord5);
     font-weight: 500;
     text-align: left;
     white-space: nowrap;
     overflow: hidden;
-    text-overflow: ellipsis; /* Au cas où le texte serait trop long */
+    text-overflow: ellipsis;
 }
 
 .progress-container {
@@ -28,7 +26,6 @@
     margin-right: 16px;
     background-color: var(--nord0);
     overflow: hidden;
-    position: relative;
     box-shadow: 
         inset 2px 2px 4px var(--shadow-color),
         inset -2px -2px 4px var(--highlight-color);
@@ -38,61 +35,7 @@
     height: 100%;
     border-radius: 4px;
     transition: width 0.4s ease;
-    width: 0%; /* Largeur initiale à 0 */
-}
-
-/* Classes de couleur pour les barres selon la charge */
-.progress-bar.low {
-    background: linear-gradient(to right, var(--nord14), var(--nord10));
-}
-
-.progress-bar.medium {
-    background: linear-gradient(to right, var(--nord13), var(--nord12));
-}
-
-.progress-bar.high {
-    background: linear-gradient(to right, var(--nord12), var(--nord11));
-}
-
-.progress-bar.critical {
-    background: linear-gradient(to right, var(--nord11), #ff6b6b);
-}
-
-/* CPU Cores - style unifié pour tous les cœurs */
-[data-metric^="cpu-core"] .progress-bar {
-    background: linear-gradient(to right, var(--nord14), var(--nord10));
-}
-
-/* Température - Dégradé vert à rouge pour visualiser facilement les températures critiques */
-[data-metric^="temp-"] .progress-bar {
-    background: linear-gradient(to right, var(--nord14), var(--nord13), var(--nord12), var(--nord11));
-}
-
-/* Fréquence - Dégradé de bleus pour les fréquences */
-[data-metric^="freq-"] .progress-bar {
-    background: linear-gradient(to right, var(--nord10), var(--nord9), var(--nord8));
-}
-
-/* Mémoire - Dégradé de violet à bleu-vert */
-[data-metric^="memory-"] .progress-bar {
-    background: linear-gradient(to right, var(--nord15), var(--nord10), var(--nord7));
-}
-
-/* Style pour la barre de progression USB non disponible */
-.progress-bar.unavailable {
-    background: linear-gradient(135deg, #606060 0%, #505050 100%);
-    opacity: 0.5;
-    width: 0% !important;
-}
-
-/* Style pour griser la valeur quand USB non disponible */
-.progress-row[data-metric="memory-usb"] .progress-value {
-    transition: color 0.3s ease;
-}
-
-.progress-row[data-metric="memory-usb"]:has(.progress-bar.unavailable) .progress-value {
-    color: #808080;
-    font-style: italic;
+    width: 0%;
 }
 
 .progress-value {
@@ -103,6 +46,33 @@
     color: var(--nord5);
     white-space: nowrap;
     font-family: 'Roboto Mono', monospace;
+}
+
+/* CPU Cores */
+[data-metric^="cpu-core"] .progress-bar {
+    background: linear-gradient(to right, var(--nord14), var(--nord10));
+}
+
+/* Température */
+[data-metric^="temp-"] .progress-bar {
+    background: linear-gradient(to right, var(--nord14), var(--nord13), var(--nord12), var(--nord11));
+}
+
+/* Fréquence */
+[data-metric^="freq-"] .progress-bar {
+    background: linear-gradient(to right, var(--nord10), var(--nord9), var(--nord8));
+}
+
+/* Mémoire */
+[data-metric^="memory-"] .progress-bar {
+    background: linear-gradient(to right, var(--nord15), var(--nord10), var(--nord7));
+}
+
+/* USB non disponible */
+.progress-bar.unavailable {
+    background: linear-gradient(135deg, #606060 0%, #505050 100%);
+    opacity: 0.5;
+    width: 0% !important;
 }
 
 /* Colonnes */
@@ -117,7 +87,6 @@
     min-width: 0;
 }
 
-/* Styles pour les séparateurs verticaux */
 .separator {
     width: 1px;
     align-self: stretch;
@@ -129,22 +98,10 @@
     flex: 0 0 2px;
 }
 
-/* Ajustement pour les colonnes avec séparateurs */
 .columns-with-separators {
-    gap: 0; /* Reset le gap car on gère l'espacement avec les séparateurs */
+    gap: 0;
 }
 
 .columns-with-separators .column {
-    padding: 0 5px; /* Petit padding interne */
-}
-
-/* Animation pour les changements de valeur */
-@keyframes pulse {
-    0% { opacity: 1; }
-    50% { opacity: 0.6; }
-    100% { opacity: 1; }
-}
-
-.progress-value.updating {
-    animation: pulse 0.3s ease-in-out;
+    padding: 0 5px;
 }

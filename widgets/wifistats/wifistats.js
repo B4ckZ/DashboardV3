@@ -1,6 +1,4 @@
-// widgets/wifistats/wifistats.js - Widget WiFi Stats V3
-// =====================================================
-
+// WiFi Stats Widget
 window.wifistats = (function() {
     let widgetElement;
     let elements = {};
@@ -9,81 +7,54 @@ window.wifistats = (function() {
     
     function init(element) {
         widgetElement = element;
-        
-        // Charger la base de données des devices
         loadDeviceDatabase();
     }
     
     function loadDeviceDatabase() {
-        // Charger le fichier devices.json
         fetch('widgets/wifistats/devices.json')
             .then(response => response.json())
             .then(data => {
                 deviceDatabase = data;
-                console.log('Device database loaded:', deviceDatabase);
-                
-                // Maintenant charger le HTML
                 return fetch('widgets/wifistats/wifistats.html');
             })
             .then(response => response.text())
             .then(html => {
                 widgetElement.innerHTML = html;
                 
-                // Récupérer les éléments correctement
                 elements.clientsContainer = widgetElement.querySelector('#wifi-clients-container');
                 elements.statusIndicator = widgetElement.querySelector('#wifi-status-indicator');
                 elements.ssidValue = widgetElement.querySelector('.network-value');
                 
-                console.log('WiFi Stats elements:', elements);
-                
-                // Enregistrer auprès de l'orchestrateur
                 if (window.orchestrator) {
                     window.orchestrator.registerWidget('wifistats', {
                         update: updateData
-                    }, [
-                        'network.wifi.clients',
-                        'network.wifi.status'
-                    ]);
+                    }, ['network.wifi.clients', 'network.wifi.status']);
                 }
             })
-            .catch(error => {
-                console.error('Error loading WiFi Stats widget:', error);
-            });
+            .catch(error => console.error('Error loading WiFi Stats widget:', error));
     }
     
     function updateData(topic, data) {
-        console.log('WiFi Stats update:', topic, data);
-        
         if (topic === 'network.wifi.clients') {
             updateClients(data.clients || []);
-        }
-        else if (topic === 'network.wifi.status') {
+        } else if (topic === 'network.wifi.status') {
             updateStatus(data);
         }
     }
     
     function updateClients(clients) {
-        if (!elements.clientsContainer) {
-            console.error('Clients container not found');
-            return;
-        }
+        if (!elements.clientsContainer) return;
         
-        // Si aucun client
         if (clients.length === 0) {
             elements.clientsContainer.innerHTML = '';
             updateStatusIndicator(false);
             return;
         }
         
-        // Mettre à jour le status indicator
         updateStatusIndicator(true);
         
-        // Créer une nouvelle Map pour les clients actuels
         const newClientsMap = new Map();
-        
-        clients.forEach(client => {
-            newClientsMap.set(client.mac, client);
-        });
+        clients.forEach(client => newClientsMap.set(client.mac, client));
         
         // Supprimer les clients déconnectés avec animation
         currentClients.forEach((client, mac) => {
@@ -102,14 +73,11 @@ window.wifistats = (function() {
             const existingElement = widgetElement.querySelector(`[data-mac="${client.mac}"]`);
             
             if (existingElement) {
-                // Mettre à jour l'existant
                 updateClientElement(existingElement, client);
             } else {
-                // Créer nouveau avec délai pour animation
                 setTimeout(() => {
                     const newElement = createClientElement(client);
                     elements.clientsContainer.appendChild(newElement);
-                    // Forcer le reflow pour l'animation
                     newElement.offsetHeight;
                     newElement.style.opacity = '1';
                     newElement.style.transform = 'translateX(0)';
@@ -128,7 +96,6 @@ window.wifistats = (function() {
         div.style.transform = 'translateX(20px)';
         div.style.transition = 'all 0.3s ease';
         
-        // Récupérer les infos depuis la base de données si disponibles
         const deviceInfo = getDeviceInfo(client);
         
         div.innerHTML = `
@@ -159,7 +126,6 @@ window.wifistats = (function() {
         if (uptimeEl) uptimeEl.textContent = client.uptime || '00j 00h 00m 00s';
         if (iconEl) {
             iconEl.src = deviceInfo.icon;
-            // Ajouter un fallback en cas d'erreur
             iconEl.onerror = function() {
                 this.src = 'assets/icons/wifi.svg';
             };
@@ -169,7 +135,6 @@ window.wifistats = (function() {
     function getDeviceInfo(client) {
         const mac = client.mac.toLowerCase();
         
-        // Si dans la base de données, utiliser les infos personnalisées
         if (deviceDatabase[mac]) {
             return {
                 name: deviceDatabase[mac].name,
@@ -177,23 +142,17 @@ window.wifistats = (function() {
             };
         }
         
-        // Sinon, nom générique et icône par défaut
-        // Utiliser un chemin relatif depuis la racine du dashboard
         return {
             name: `Device ${mac.slice(-5).toUpperCase()}`,
-            icon: 'assets/icons/help-circle.svg'  // Chemin depuis la racine
+            icon: 'assets/icons/help-circle.svg'
         };
     }
     
     function updateStatus(status) {
-        console.log('Updating WiFi status:', status);
-        
-        // Mettre à jour le SSID si disponible
         if (elements.ssidValue && status.ssid) {
             elements.ssidValue.textContent = status.ssid;
         }
         
-        // Mettre à jour l'indicateur de statut
         if (elements.statusIndicator) {
             const isConnected = status.mode === 'AP' && status.clients_count > 0;
             updateStatusIndicator(isConnected);
@@ -213,8 +172,5 @@ window.wifistats = (function() {
         }
     }
     
-    return {
-        init: init,
-        destroy: destroy
-    };
+    return { init, destroy };
 })();

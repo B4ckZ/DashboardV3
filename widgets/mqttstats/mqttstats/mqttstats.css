@@ -1,5 +1,9 @@
-/* MQTT Stats Widget */
+/**
+ * Styles pour le widget mqtt-stats
+ * Utilisation directe des variables Nord avec ajout de police monospace
+ */
 
+/* Grid pour les statistiques */
 .mqtt-stats-grid {
     display: grid;
     grid-template-columns: 1fr 1fr;
@@ -7,6 +11,7 @@
     margin-bottom: 10px;
 }
 
+/* Box pour chaque statistique */
 .mqtt-stats-box {
     background-color: var(--nord0);
     border-radius: calc(var(--border-radius) - 4px);
@@ -22,11 +27,20 @@
     margin-bottom: 4px;
 }
 
+/* Styles pour les valeurs numériques - Valeurs de base */
 .mqtt-stats-value {
-    font: 600 18px 'Roboto Mono', monospace;
+    font-size: 18px;
+    font-weight: 600;
     color: var(--nord8);
 }
 
+/* Version stabilisée avec monospace - Classe à ajouter via JS */
+.mqtt-stats-value-stable {
+    font-family: 'Roboto Mono', monospace;
+    /* Supprimer le centrage et laisser le texte s'aligner naturellement */
+}
+
+/* Info box pour uptime et latence */
 .mqtt-info-box {
     background-color: var(--nord0);
     border-radius: calc(var(--border-radius) - 4px);
@@ -44,12 +58,20 @@
     flex: 1;
 }
 
+/* Style des valeurs d'info - valeurs de base */
 .mqtt-info-value {
-    font: 500 14px 'Roboto Mono', monospace;
     color: var(--nord8);
+    font-weight: 500;
+}
+
+/* Version stabilisée avec monospace - Classe à ajouter via JS */
+.mqtt-info-value-stable {
+    font-family: 'Roboto Mono', monospace;
+    /* Supprimer le centrage et laisser le texte s'aligner naturellement */
     white-space: nowrap;
 }
 
+/* Status indicators */
 .status-indicator {
     width: 12px;
     height: 12px;
@@ -67,6 +89,7 @@
     box-shadow: 0 0 8px var(--nord11);
 }
 
+/* MQTT Topics */
 .mqtt-topics {
     overflow-y: auto;
     flex: 1;

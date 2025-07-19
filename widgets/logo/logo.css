@@ -1,11 +1,5 @@
-/* Conteneur principal */
-#logo {
-    display: flex;
-    align-items: center;
-    justify-content: center;
-}
+/* Logo Widget */
 
-/* Conteneur pour le logo */
 .logo-container {
     display: flex;
     align-items: center;
@@ -14,8 +8,8 @@
     height: 100%;
 }
 
-/* Image du logo */
 .logo-image {
     max-height: 115%;
     object-fit: contain;
+    transition: transform 0.2s ease;
 }
