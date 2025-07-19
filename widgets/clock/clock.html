@@ -2,8 +2,6 @@
 <div class="widget-title">
     <img src="assets/icons/clock.svg" class="widget-icon" alt="Horloge">
     <span>Horloge interne RPI</span>
-    
-    <!-- Indicateur de synchronisation IDENTIQUE aux autres widgets -->
     <div class="status-indicator status-error" id="sync-status-indicator"></div>
 </div>
 
@@ -14,55 +12,3 @@
         <span class="clock-date" id="clock-date">00/00/0000</span>
     </div>
 </div>
-
-<style>
-/* =============================================================================== */
-/* INDICATEUR DE STATUT - COPIÉ DEPUIS WIFISTATS/MQTTSTATS */
-/* =============================================================================== */
-
-/* Modification du titre pour inclure l'indicateur */
-.widget-title {
-    position: relative;
-    display: flex;
-    align-items: center;
-    gap: 8px;
-}
-
-/* Indicateur de statut - EXACTEMENT comme WiFiStats et MQTTStats */
-.status-indicator {
-    width: 12px;
-    height: 12px;
-    border-radius: 50%;
-    flex-shrink: 0;
-    transition: all 0.3s ease;
-    margin-left: auto;
-}
-
-.status-ok {
-    background-color: var(--nord14);
-    box-shadow: 0 0 8px var(--nord14);
-}
-
-.status-error {
-    background-color: var(--nord11);
-    box-shadow: 0 0 8px var(--nord11);
-}
-
-/* =============================================================================== */
-/* RESPONSIVE - COHÉRENT AVEC LES AUTRES WIDGETS */
-/* =============================================================================== */
-
-@media (max-width: 768px) {
-    .status-indicator {
-        width: 10px;
-        height: 10px;
-    }
-}
-
-@media (max-width: 480px) {
-    .status-indicator {
-        width: 8px;
-        height: 8px;
-    }
-}
-</style>
