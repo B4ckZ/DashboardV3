@@ -13,3 +13,32 @@
     object-fit: contain;
     transition: transform 0.2s ease;
 }
+
+/* Indicateur MQTT déconnecté */
+#logo.mqtt-disconnected {
+    animation: breathing-border 1s ease-in-out infinite;
+    will-change: border-color, box-shadow;
+}
+
+#logo.mqtt-connected {
+    animation: none;
+    will-change: auto;
+}
+
+@keyframes breathing-border {
+    0%, 100% {
+        border-color: var(--nord11-alpha-30);
+        box-shadow: 
+            0 0 5px var(--nord11-alpha-30),
+            inset 2px 2px 4px var(--shadow-color),
+            inset -2px -2px 4px var(--highlight-color);
+    }
+    50% {
+        border-color: var(--nord11);
+        box-shadow: 
+            0 0 15px var(--nord11), 
+            inset 0 0 10px var(--nord11-alpha-20),
+            inset 2px 2px 4px var(--shadow-color),
+            inset -2px -2px 4px var(--highlight-color);
+    }
+}

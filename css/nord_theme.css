@@ -1,7 +1,3 @@
-/**
- * Nord Theme Color Palette
- * https://www.nordtheme.com/
- */
 
 :root {
     /* Nord Theme Colors */
@@ -29,4 +25,8 @@
     --nord15: #B48EAD; /* Violet / Accent spécial */
 	--nord16: #ee7f00; /* Orange clair werit */
 	--nord17: #f08c19; /* Orange foncé werit */
+    
+    /* Transparences Rouge (Nord11) - Indicateur MQTT déconnecté */
+    --nord11-alpha-20: rgba(191, 97, 106, 2);   /* 20% - Glow interne */
+    --nord11-alpha-30: rgba(191, 97, 106, 0.0);   /* 30% - Border subtile */
 }

@@ -28,6 +28,19 @@ window.logo = (function() {
         }
     }
     
+    function updateMqttStatus(connected) {
+        if (!widgetElement) return;
+        
+        widgetElement.classList.remove('mqtt-connected', 'mqtt-disconnected');
+        widgetElement.classList.add(connected ? 'mqtt-connected' : 'mqtt-disconnected');
+    }
+    
+    function checkMqttStatus() {
+        if (window.orchestrator && typeof window.orchestrator.connected !== 'undefined') {
+            updateMqttStatus(window.orchestrator.connected);
+        }
+    }
+    
     function init(element) {
         widgetElement = element;
         
@@ -37,6 +50,17 @@ window.logo = (function() {
                 widgetElement.innerHTML = html;
                 widgetElement.style.cursor = 'pointer';
                 widgetElement.addEventListener('click', toggleWidgets);
+                
+                // Vérification initiale du statut MQTT
+                checkMqttStatus();
+                
+                // Surveillance périodique du statut MQTT
+                const mqttCheckInterval = setInterval(() => {
+                    checkMqttStatus();
+                }, 2000);
+                
+                // Stocker l'interval pour le nettoyage
+                widgetElement._mqttCheckInterval = mqttCheckInterval;
                 
                 setTimeout(() => {
                     const testWidget = document.getElementById('test');
@@ -51,6 +75,10 @@ window.logo = (function() {
     function destroy() {
         if (widgetElement) {
             widgetElement.removeEventListener('click', toggleWidgets);
+            
+            if (widgetElement._mqttCheckInterval) {
+                clearInterval(widgetElement._mqttCheckInterval);
+            }
         }
     }
     
