@@ -2,8 +2,10 @@
 window.uptime = (function() {
     let widgetElement;
     let uptimeElement;
+	const widgetId = 'Analyse du temps d\'exécution';
     
     function init(element) {
+		console.log(`✅​️ ${widgetId} initialisé.​`);
         widgetElement = element;
         
         fetch('widgets/uptime/uptime.html')

@@ -2,8 +2,10 @@
 window.downloadinfo = (function() {
     let widgetElement;
     let downloadinfoElement;
+	const widgetId = 'Horodatage des archives CSV';
     
     function init(element) {
+		console.log(`✅​️ ${widgetId} initialisé.​`);
         widgetElement = element;
         
         fetch('widgets/downloadinfo/downloadinfo.html')

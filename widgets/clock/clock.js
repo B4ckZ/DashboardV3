@@ -8,6 +8,7 @@ window.clock = (function() {
     let elements = {};
     let clockInterval;
     let timeCheckInterval;
+	const widgetId = 'Horloge interne RPI';
     
     // Configuration
     let config = {
@@ -25,6 +26,7 @@ window.clock = (function() {
     };
     
     function init(element) {
+		console.log(`✅​️ ${widgetId} initialisé.​`);
         widgetElement = element;
         
         // Charger le HTML du widget

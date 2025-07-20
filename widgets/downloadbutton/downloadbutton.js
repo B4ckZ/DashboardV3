@@ -5,6 +5,7 @@
 
 window.downloadbutton = (function() {
     'use strict';
+	const widgetId = 'Bouton DL archives CSV';
 
     // Variables du widget
     let widgetElement;
@@ -30,9 +31,8 @@ window.downloadbutton = (function() {
      * Initialisation du widget - PATTERN IDENTIQUE REBOOTBUTTON
      */
     function init(element) {
+		console.log(`✅​️ ${widgetId} initialisé.​`);
         widgetElement = element;
-        
-        console.log('[DownloadWidget] Initialisation du widget...');
         
         // Charger le HTML du widget
         fetch('widgets/downloadbutton/downloadbutton.html')
@@ -45,8 +45,6 @@ window.downloadbutton = (function() {
                 
                 // Liaison des événements
                 bindEvents();
-                
-                console.log('[DownloadWidget] Widget initialisé avec succès');
                 
                 // Enregistrer auprès de l'orchestrateur
                 if (window.orchestrator) {
@@ -132,7 +130,7 @@ window.downloadbutton = (function() {
      * Affichage de la modal - LOGIQUE IDENTIQUE REBOOTBUTTON
      */
     function showDownloadModal() {
-        console.log('[DownloadWidget] Ouverture de la modal de téléchargement');
+		console.log(`⚙️ ​️Ouverture PopUp de téléchargement.​`);
         
         if (elements.overlay && !isAnimating) {
             isAnimating = true;
@@ -162,7 +160,7 @@ window.downloadbutton = (function() {
      * Fermeture de la modal - LOGIQUE IDENTIQUE REBOOTBUTTON
      */
     function hideDownloadModal() {
-        console.log('[DownloadWidget] Fermeture de la modal de téléchargement');
+		console.log(`⚙️ Fermeture PopUp de téléchargement.​`);
         
         if (elements.overlay && elements.modal && !isAnimating) {
             isAnimating = true;
@@ -312,7 +310,7 @@ window.downloadbutton = (function() {
             return;
         }
         
-        console.log(`[DownloadWidget] Début du téléchargement - Année: ${state.selectedYear}, Semaine: ${state.selectedWeek}`);
+		console.log(`⚙️ Début du téléchargement - Année: ${state.selectedYear}, Semaine: ${state.selectedWeek}`);
         
         // Afficher la progression
         showProgressContainer();
@@ -331,7 +329,7 @@ window.downloadbutton = (function() {
             return;
         }
         
-        console.log(`[DownloadWidget] ${weekData.files.length} fichiers à télécharger`);
+		console.log(`⚙️ ${weekData.files.length} fichiers à télécharger.`);
         
         // Télécharger chaque fichier avec un délai
         let downloadedCount = 0;
@@ -354,7 +352,7 @@ window.downloadbutton = (function() {
                 // Fermer la modal quand tous les fichiers sont téléchargés
                 if (downloadedCount === totalFiles) {
                     setTimeout(() => {
-                        console.log(`[DownloadWidget] Téléchargement terminé avec succès`);
+						console.log(`✅ ${widgetId} Téléchargement terminé avec succès.`);
                         
                         // Notifier le widget downloadinfo
                         if (window.orchestrator) {
@@ -469,7 +467,7 @@ window.downloadbutton = (function() {
      * Chargement des données d'archives
      */
     function loadArchivesData() {
-        console.log('[DownloadWidget] Chargement des données d\'archives...');
+		console.log(`✅​️ ${widgetId} Chargement des données d\'archives.​`);
         
         fetch(CONFIG.API_ENDPOINTS.LIST)
             .then(response => {
@@ -481,7 +479,7 @@ window.downloadbutton = (function() {
             .then(data => {
                 state.archivesData = data;
                 populateYearSelector();
-                console.log('[DownloadWidget] Données d\'archives chargées avec succès');
+				console.log(`✅​️ ${widgetId} Données d\'archives chargées avec succès.​`);
             })
             .catch(error => {
                 console.error('[DownloadWidget] Erreur lors du chargement des archives:', error);

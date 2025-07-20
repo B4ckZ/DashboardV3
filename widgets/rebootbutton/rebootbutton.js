@@ -8,9 +8,11 @@ window.rebootbutton = (function() {
     let confirmTimeout;
     let autoCloseTimer;
     let autoCloseInterval;
-    let isAnimating = false; // Prévenir les animations multiples
+    let isAnimating = false;
+	const widgetId = 'Bouton Redémarrage du Serveur';
     
     function init(element) {
+		console.log(`✅​️ ${widgetId} initialisé.​`);
         widgetElement = element;
         
         // Charger le HTML du widget

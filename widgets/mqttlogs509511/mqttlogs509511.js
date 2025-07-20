@@ -1,7 +1,7 @@
 window.mqttlogs509511 = (function() {
     'use strict';
     
-    const widgetId = 'mqttlogs509511';
+    const widgetId = 'Surveillance Test pression 509 | 511';
     let widgetElement = null;
     let logsContainer = null;
     let logs = [];
@@ -27,7 +27,7 @@ window.mqttlogs509511 = (function() {
                     return;
                 }
                 
-                console.log(`[${widgetId}] Widget initialisé avec succès`);
+                console.log(`✅​️ ${widgetId} initialisé.​`);
                 
                 loadFromCache();
                 

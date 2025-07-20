@@ -107,7 +107,7 @@
         
         // Initialisation
         document.addEventListener('DOMContentLoaded', () => {
-            console.log('MaxLink Dashboard V3 starting...');
+            console.log('🚀 Démarrage du Dashboard MaxLink V3...');
             
             // Timer pour masquer le loader après la durée configurée
             setTimeout(hideLoader, LOADER_DURATION);
@@ -117,7 +117,12 @@
             
             // Charger tous les widgets
             widgetManager.loadAllWidgets().then(() => {
-                console.log('All widgets loaded');
+                console.log('🔃​ initialisation des widgets en cours...');
+                
+                // Attendre un peu que les widgets s'initialisent vraiment
+                setTimeout(() => {
+                    console.log('✅ Tous les widgets ont été correctement chargés !');
+                }, 100);
             });
         });
         

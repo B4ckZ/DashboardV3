@@ -4,8 +4,10 @@ window.wifistats = (function() {
     let elements = {};
     let currentClients = new Map();
     let deviceDatabase = {};
+	const widgetId = 'Statistiques WiFi & clients AP';
     
     function init(element) {
+		console.log(`✅​️ ${widgetId} initialisé.​`);
         widgetElement = element;
         loadDeviceDatabase();
     }

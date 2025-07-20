@@ -2,8 +2,10 @@
 window.servermonitoring = (function() {
     let widgetElement;
     let elements = {};
+	const widgetId = 'Surveillance du Serveur RPI';
     
     function init(element) {
+		console.log(`✅​️ ${widgetId} initialisé.​`);
         widgetElement = element;
         
         fetch('widgets/servermonitoring/servermonitoring.html')

@@ -3,8 +3,10 @@ window.mqttstats = (function() {
     let widgetElement;
     let elements = {};
     let currentTopics = [];
+	const widgetId = 'Statistiques Broker MQTT';
     
     function init(element) {
+		console.log(`✅​️ ${widgetId} initialisé.​`);
         widgetElement = element;
         
         fetch('widgets/mqttstats/mqttstats.html')

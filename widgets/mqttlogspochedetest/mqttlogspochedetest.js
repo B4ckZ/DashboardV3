@@ -1,7 +1,7 @@
 window.mqttlogspochedetest = (function() {
     'use strict';
     
-    const widgetId = 'mqttlogspochedetest';
+    const widgetId = 'Surveillance Poche de Test 998 | 999';
     let widgetElement = null;
     let logsContainer = null;
     let logs = [];
@@ -27,7 +27,7 @@ window.mqttlogspochedetest = (function() {
                     return;
                 }
                 
-                console.log(`[${widgetId}] Widget initialisé avec succès`);
+                console.log(`✅​️ ${widgetId} initialisé.​`);
                 
                 loadFromCache();
                 

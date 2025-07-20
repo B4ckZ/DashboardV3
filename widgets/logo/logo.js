@@ -1,6 +1,7 @@
 // Logo Widget
 window.logo = (function() {
     let widgetElement;
+	const widgetId = 'Logo switch';
     
     function toggleWidgets() {
         const esp32Widget = document.getElementById('esp32stats');
@@ -42,6 +43,7 @@ window.logo = (function() {
     }
     
     function init(element) {
+		console.log(`✅​️ ${widgetId} initialisé.​`);
         widgetElement = element;
         
         fetch('widgets/logo/logo.html')

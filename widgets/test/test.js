@@ -4,7 +4,7 @@
 window.test = (function() {
     'use strict';
     
-    const widgetId = 'test';
+    const widgetId = 'Widget de test';
     let widgetElement = null;
     let logContainer = null;
     let maxLogs = 50; // Nombre maximum de logs à conserver
@@ -70,7 +70,7 @@ window.test = (function() {
      * Initialisation du widget
      */
     function init(element) {
-        console.log(`[${widgetId}] Initialisation`);
+        console.log(`✅​️ ${widgetId} initialisé.​`);
         widgetElement = element;
         
         // Charger le HTML du widget

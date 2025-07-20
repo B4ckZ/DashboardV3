@@ -5,7 +5,7 @@
 window.esp32stats = (function() {
     'use strict';
     
-    const widgetId = 'esp32stats';
+    const widgetId = 'Surveillance ESP32';
     let widgetElement = null;
     let currentTab = 'node1';
     let valueElements = {};
@@ -171,7 +171,7 @@ window.esp32stats = (function() {
      * Initialisation du widget
      */
     function init(element) {
-        console.log(`[${widgetId}] Initialisation`);
+        console.log(`✅​️ ${widgetId} initialisé.​`);
         widgetElement = element;
         
         // Charger le HTML du widget

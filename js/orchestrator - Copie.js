@@ -15,19 +15,7 @@ class Orchestrator {
         if (APP_CONFIG.debug) {
             console.log('🔧 Orchestrateur MaxLink V3 - Démarrage...');
         }
-        
-        // Détecter si c'est un reload de page
-        const isReload = performance.navigation.type === performance.navigation.TYPE_RELOAD ||
-                         performance.getEntriesByType('navigation')[0]?.type === 'reload';
-        
-        if (isReload) {
-            if (APP_CONFIG.debug) {
-                console.log('🔄 Reload détecté, délai de 1 seconde pour éviter les conflits MQTT...');
-            }
-            setTimeout(() => this.connect(), 2000); // 1 seconde de délai pour les reloads
-        } else {
-            this.connect(); // Connexion immédiate pour le premier chargement
-        }
+        this.connect();
     }
     
     connect() {
@@ -41,8 +29,7 @@ class Orchestrator {
         this.client.onConnectionLost = (response) => {
             console.log('⚠️ Connexion MQTT perdue :', response.errorMessage);
             this.connected = false;
-            console.log('🔄 Nouvelle tentative dans 5 secondes...');
-            setTimeout(() => this.connect(), 5000);
+            setTimeout(() => this.connect(), 5000); // Tentative toutes les 5 secondes
         };
         
         this.client.onMessageArrived = (message) => {
@@ -58,8 +45,7 @@ class Orchestrator {
             onFailure: (error) => {
                 console.log('❌ Échec de connexion MQTT :', error.errorMessage);
                 this.connected = false;
-                console.log('🔄 Nouvelle tentative dans 5 secondes...');
-                setTimeout(() => this.connect(), 5000);
+                setTimeout(() => this.connect(), 5000); // Nouvelle tentative si échec
             },
             userName: MQTT_CONFIG.username,
             password: MQTT_CONFIG.password
