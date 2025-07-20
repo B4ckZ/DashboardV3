@@ -1,20 +1,12 @@
-/**
- * Widget DownloadInfo - Basé sur le style du widget Uptime
- */
+/* Download Info Widget */
 
-/* Cadre enfoncé avec marges personnalisables */
 .downloadinfo-inset {
-    /* Positionnement avec les marges définies */
     position: absolute;
     top: 10px;
     left: 10px;
     width: calc(100% - 20px);
     height: calc(100% - 20px);
-    
-    /* Utilisation des variables globales pour l'arrondi */
     border-radius: calc(var(--border-radius) - 4px);
-    
-    /* Styles visuels avec les variables du thème Nord */
     background-color: var(--nord0);
     display: flex;
     align-items: center;
@@ -24,25 +16,9 @@
         inset -2px -2px 4px var(--highlight-color);
 }
 
-/* Icône */
-.downloadinfo-icon {
-    width: 25px;
-    height: 25px;
-    margin-right: 10px;
-    color: var(--nord8);
-}
-
-/* Valeur de date */
 .downloadinfo-value {
-    font-size: 18px;
-    font-weight: 500;
+    font: 500 18px 'Roboto Mono', monospace;
     color: var(--nord8);
     letter-spacing: 2px;
-    font-family: 'Roboto Mono', monospace;
     white-space: nowrap;
-}
-
-/* Classe pour la stabilité numérique avec police monospace */
-.downloadinfo-value-stable {
-    font-family: 'Roboto Mono', monospace;
 }

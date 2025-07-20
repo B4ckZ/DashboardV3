@@ -1,4 +1,3 @@
-// Download Info Widget
 window.downloadinfo = (function() {
     let widgetElement;
     let downloadinfoElement;
@@ -26,6 +25,7 @@ window.downloadinfo = (function() {
         if (topic === 'download.info' && downloadinfoElement) {
             const formatted = formatDownloadInfo(data);
             downloadinfoElement.textContent = formatted;
+            downloadinfoElement.classList.add('downloadinfo-value-stable');
             saveLastDownload(data);
         }
     }
@@ -41,7 +41,7 @@ window.downloadinfo = (function() {
         try {
             localStorage.setItem('lastDownload', JSON.stringify(data));
         } catch (e) {
-            // Silently ignore localStorage errors
+            console.warn('Cannot save to localStorage:', e);
         }
     }
     
@@ -50,15 +50,18 @@ window.downloadinfo = (function() {
             const saved = localStorage.getItem('lastDownload');
             if (saved && downloadinfoElement) {
                 const data = JSON.parse(saved);
-                downloadinfoElement.textContent = formatDownloadInfo(data);
+                const formatted = formatDownloadInfo(data);
+                downloadinfoElement.textContent = formatted;
+                downloadinfoElement.classList.add('downloadinfo-value-stable');
                 return;
             }
         } catch (e) {
-            // Silently ignore localStorage errors
+            console.warn('Cannot load from localStorage:', e);
         }
         
         if (downloadinfoElement) {
             downloadinfoElement.textContent = '--/--/---- | Semaine --';
+            downloadinfoElement.classList.add('downloadinfo-value-stable');
         }
     }
     
@@ -68,5 +71,8 @@ window.downloadinfo = (function() {
         }
     }
     
-    return { init, destroy };
+    return {
+        init: init,
+        destroy: destroy
+    };
 })();
