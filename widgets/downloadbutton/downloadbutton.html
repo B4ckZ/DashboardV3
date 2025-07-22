@@ -1,16 +1,19 @@
-<!-- Widget Download Button - Structure harmonisée avec rebootbutton (sans croix de fermeture) -->
+<!-- Widget Download Button -->
 <div class="download-inset">
     <button id="download-button" class="download-button" title="Télécharger les archives de traçabilité CSV">
         <img src="assets/icons/download.svg" class="widget-icon" alt="Télécharger">
     </button>
 </div>
 
-<!-- Modal de téléchargement - Animation identique rebootbutton -->
+<!-- Modal de téléchargement -->
 <div class="download-modal-overlay" id="download-overlay" style="display: none;">
     <div class="download-modal">
-        <!-- Header sans croix de fermeture -->
+        <!-- Header -->
         <div class="download-modal-header">
-            <h3>📁 Archives de Traçabilité</h3>
+            <h3>
+                <img src="assets/icons/info.svg" class="header-icon" alt="Archives">
+                Téléchargement des Archives de Traçabilité
+            </h3>
         </div>
         
         <!-- Corps de la modal -->
@@ -19,17 +22,23 @@
             <div class="download-selectors-container">
                 <!-- Sélecteur d'année -->
                 <div class="download-year-selector">
-                    <label class="download-selector-label">🗓️ Année</label>
+                    <label class="download-selector-label">
+                        <img src="assets/icons/calendar.svg" class="label-icon" alt="Calendrier">
+                        Année
+                    </label>
                     <select class="download-year-select" id="downloadYearSelect">
-                        <option value="">Choisir une année...</option>
+                        <option value="">Choisir une année</option>
                     </select>
                 </div>
 
                 <!-- Sélecteur de semaine -->
                 <div class="download-week-selector">
-                    <label class="download-selector-label">📊 Semaine</label>
+                    <label class="download-selector-label">
+                        <img src="assets/icons/hash.svg" class="label-icon" alt="Semaine">
+                        Semaine
+                    </label>
                     <select class="download-week-select" id="downloadWeekSelect" disabled>
-                        <option value="">Sélectionner d'abord une année...</option>
+                        <option value="">Sélectionner d'abord une année</option>
                     </select>
                 </div>
             </div>
@@ -39,8 +48,14 @@
                 <h4 id="downloadSelectionTitle">Semaine sélectionnée</h4>
                 <p id="downloadSelectionPeriod">Période: du ... au ...</p>
                 <div class="download-files-info">
-                    <span class="download-file-count" id="downloadFileCount">📁 0 fichiers</span>
-                    <span class="download-file-size" id="downloadFileSize">💾 0 KB</span>
+                    <span class="download-file-count" id="downloadFileCount">
+                        <img src="assets/icons/file-text.svg" class="info-icon" alt="Fichiers">
+                        0 fichiers
+                    </span>
+                    <span class="download-file-size" id="downloadFileSize">
+                        <img src="assets/icons/save.svg" class="info-icon" alt="Taille">
+                        0 KB
+                    </span>
                 </div>
             </div>
 

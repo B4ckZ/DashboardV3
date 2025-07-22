@@ -1,24 +1,16 @@
 /**
- * Widget Download Button - Style EXACTEMENT identique au rebootbutton
- * Avec animations et comportements identiques (sans timer auto-close)
+ * Widget Download Button
  */
 
-/* ================================
-   BOUTON PRINCIPAL (copie EXACTE rebootbutton)
-   ================================ */
-
-/* Cadre enfoncé - reprend exactement le style de reboot-inset */
+/* Bouton principal */
 .download-inset {
     position: absolute;
     top: 10px;
     left: 10px;
     width: calc(100% - 20px);
     height: calc(100% - 20px);
-    
     border-radius: calc(var(--border-radius) - 4px);
-    
     background-color: var(--nord0);
-    /* Flexbox pour assurer le centrage parfait */
     display: flex;
     align-items: center;
     justify-content: center;
@@ -27,43 +19,30 @@
         inset -2px -2px 4px var(--highlight-color);
 }
 
-/* Bouton de téléchargement simple avec centrage parfait */
 .download-button {
-    /* Enlever toutes les marges et rembourrages qui pourraient affecter le centrage */
     background: none;
     border: none;
     padding: 0;
     margin: 0;
     cursor: pointer;
-    
-    /* Flexbox pour centrer l'icône à l'intérieur du bouton */
     display: flex;
     align-items: center;
     justify-content: center;
-    
-    /* Transition pour l'effet de pression */
     transition: transform 0.1s ease;
 }
 
-/* Effet de pression du bouton */
 .download-button:active {
     transform: scale(0.85);
 }
 
-/* Style de l'icône - taille exacte et pas de marges */
 .download-button .widget-icon {
     width: 25px;
     height: 25px;
-    margin-right: 0px; /* important pour le centrage des icone de widget type button*/
-    /* Assurer qu'il n'y a pas de marges internes sur l'icône */
+    margin-right: 0px;
     display: block;
 }
 
-/* ========================================= */
-/* MODAL DE TÉLÉCHARGEMENT - ANIMATIONS IDENTIQUES REBOOTBUTTON */
-/* ========================================= */
-
-/* Overlay qui couvre tout l'écran - Z-INDEX MAXIMUM */
+/* Modal overlay */
 .download-modal-overlay {
     position: fixed;
     top: 0;
@@ -72,25 +51,22 @@
     height: 100vh;
     background: rgba(46, 52, 64, 0.85);
     backdrop-filter: blur(4px);
-    z-index: 999999; /* Z-INDEX TRÈS ÉLEVÉ pour passer devant tous les widgets */
+    z-index: 999999;
     display: flex;
     align-items: center;
     justify-content: center;
-    
-    /* États d'animation par défaut - IDENTIQUE REBOOTBUTTON */
     opacity: 0;
     visibility: hidden;
     transition: opacity 0.3s cubic-bezier(0.4, 0, 0.2, 1), 
                 visibility 0.3s cubic-bezier(0.4, 0, 0.2, 1);
 }
 
-/* État visible de l'overlay - IDENTIQUE REBOOTBUTTON */
 .download-modal-overlay.show {
     opacity: 1;
     visibility: visible;
 }
 
-/* Modal principale - Z-INDEX ENCORE PLUS ÉLEVÉ */
+/* Modal principale */
 .download-modal {
     background: var(--nord1);
     border-radius: var(--border-radius);
@@ -101,22 +77,19 @@
     max-width: 500px;
     margin: 20px;
     position: relative;
-    z-index: 1000000; /* Z-INDEX MAXIMUM pour être au-dessus de l'overlay */
-    
-    /* États d'animation par défaut - IDENTIQUE REBOOTBUTTON */
+    z-index: 1000000;
     transform: scale(0.8) translateY(20px);
     opacity: 0;
     transition: transform 0.3s cubic-bezier(0.4, 0, 0.2, 1),
                 opacity 0.3s cubic-bezier(0.4, 0, 0.2, 1);
 }
 
-/* État visible de la modal - IDENTIQUE REBOOTBUTTON */
 .download-modal-overlay.show .download-modal {
     transform: scale(1) translateY(0);
     opacity: 1;
 }
 
-/* Header de la modal */
+/* Header */
 .download-modal-header {
     display: flex;
     align-items: center;
@@ -134,12 +107,19 @@
     align-items: center;
 }
 
+.header-icon {
+    width: 20px;
+    height: 20px;
+    margin-right: 12px;
+    filter: brightness(0) saturate(100%) invert(88%) sepia(11%) saturate(425%) hue-rotate(165deg) brightness(98%) contrast(89%);
+    flex-shrink: 0;
+}
+
 /* Corps de la modal */
 .download-modal-body {
     padding: 20px 25px;
 }
 
-/* Container des sélecteurs */
 .download-selectors-container {
     display: flex;
     gap: 20px;
@@ -152,14 +132,23 @@
 }
 
 .download-selector-label {
-    display: block;
+    display: flex;
+    align-items: center;
+    gap: 8px;
     margin-bottom: 8px;
     color: var(--nord6);
     font-weight: 500;
     font-size: 14px;
 }
 
-/* Sélecteurs avec style neumorphisme */
+.label-icon {
+    width: 16px;
+    height: 16px;
+    filter: brightness(0) saturate(100%) invert(88%) sepia(11%) saturate(425%) hue-rotate(165deg) brightness(98%) contrast(89%);
+    flex-shrink: 0;
+}
+
+/* Sélecteurs */
 .download-year-select,
 .download-week-select {
     width: 100%;
@@ -192,7 +181,7 @@
     color: var(--nord3);
 }
 
-/* Informations sur la sélection */
+/* Informations de sélection */
 .download-selection-info {
     background: var(--nord0);
     border-radius: calc(var(--border-radius) - 4px);
@@ -224,10 +213,13 @@
 
 .download-file-count,
 .download-file-size {
+    display: flex;
+    align-items: center;
+    gap: 8px;
     padding: 8px 12px;
     background: var(--nord1);
     border-radius: calc(var(--border-radius) - 6px);
-    font-size: 13px;
+    font-size: 14px;
     font-weight: 500;
     box-shadow: 
         2px 2px 4px var(--shadow-color),
@@ -235,21 +227,27 @@
 }
 
 .download-file-count {
-    color: var(--nord10);
+    color: var(--nord6);
 }
 
 .download-file-size {
-    color: var(--nord12);
+    color: var(--nord6);
 }
 
-/* Footer avec boutons */
+.info-icon {
+    width: 14px;
+    height: 14px;
+    filter: brightness(0) saturate(100%) invert(62%) sepia(60%) saturate(1019%) hue-rotate(165deg) brightness(95%) contrast(89%);
+    flex-shrink: 0;
+}
+
+/* Boutons */
 .download-modal-footer {
     display: flex;
     gap: 15px;
     padding: 15px 25px 25px 25px;
 }
 
-/* Boutons de la modal - STYLE IDENTIQUE REBOOTBUTTON */
 .download-btn {
     flex: 1;
     padding: 12px 20px;
@@ -275,7 +273,6 @@
     transform: translateY(0);
 }
 
-/* Bouton Annuler */
 .download-btn-cancel {
     background: var(--nord3);
     color: var(--nord6);
@@ -285,7 +282,6 @@
     background: var(--nord2);
 }
 
-/* Bouton Télécharger */
 .download-btn-download {
     background: var(--nord14);
     color: var(--nord6);
@@ -309,7 +305,7 @@
         -4px -4px 8px var(--highlight-color);
 }
 
-/* Zone de progression de téléchargement */
+/* Progression */
 .download-progress-container {
     display: none;
     padding: 20px;
@@ -345,11 +341,7 @@
     margin-top: 5px;
 }
 
-/* ========================================= */
-/* GESTION DES Z-INDEX POUR LES WIDGETS - IDENTIQUE REBOOTBUTTON */
-/* ========================================= */
-
-/* Quand la modal est ouverte, forcer tous les widgets à passer derrière */
+/* Z-index management */
 body.modal-open .widget-container {
     z-index: 1 !important;
 }
@@ -358,7 +350,6 @@ body.modal-open .dashboard {
     z-index: 1 !important;
 }
 
-/* S'assurer que la modal reste au premier plan même avec body.modal-open */
 body.modal-open .download-modal-overlay {
     z-index: 999999 !important;
 }
@@ -367,7 +358,6 @@ body.modal-open .download-modal {
     z-index: 1000000 !important;
 }
 
-/* Règles préventives pour éviter les conflits de z-index */
 .download-modal-overlay,
 .download-modal,
 .download-modal * {
