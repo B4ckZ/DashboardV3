@@ -1,56 +1,44 @@
 {
-  "38:fc:98:ef:77:75": {
+  "c0:bf:be:b7:82:ea": {
     "name": "PC fix Max",
     "icon": "assets/icons/user-check.svg",
     "time_source": true,
-    "description": ""
+    "heartbeat_enabled": false
   },
   "9c:b1:50:7b:45:3a": {
     "name": "Admin Max",
     "icon": "assets/icons/user-check.svg",
     "time_source": true,
-    "description": ""
+    "heartbeat_enabled": false
   },
   "a8:41:f4:86:96:ec": {
     "name": "PC RE Soufflage",
     "icon": "assets/icons/monitor.svg",
     "time_source": true,
-    "description": ""
+    "heartbeat_enabled": false
   },
   "96:d3:89:ef:7b:6a": {
     "name": "Smartphone Max",
     "icon": "assets/icons/phone.svg",
     "time_source": false,
-    "description": ""
+    "heartbeat_enabled": false
   },
   "9e:07:1d:55:c6:08": {
     "name": "Smartphone Franck",
     "icon": "assets/icons/phone.svg",
     "time_source": false,
-    "description": ""
+    "heartbeat_enabled": false
   },
   "34:cd:b0:35:3c:dc": {
     "name": "ESP32 509",
     "icon": "assets/icons/cpu.svg",
     "time_source": false,
-    "description": ""
+    "heartbeat_enabled": true
   },
   "74:4d:bd:a1:43:40": {
     "name": "ESP32 511",
     "icon": "assets/icons/cpu.svg",
     "time_source": false,
-    "description": ""
-  },
-  "00:00:00:00:00:05": {
-    "name": "Device 1",
-    "icon": "assets/icons/smartphone.svg",
-    "time_source": false,
-    "description": ""
-  },
-  "00:00:00:00:00:06": {
-    "name": "Device 2",
-    "icon": "assets/icons/smartphone.svg",
-    "time_source": false,
-    "description": ""
+    "heartbeat_enabled": true
   }
 }
