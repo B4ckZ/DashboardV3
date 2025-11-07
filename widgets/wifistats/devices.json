@@ -1,12 +1,12 @@
 {
   "c0:bf:be:b7:82:ea": {
-    "name": "PC fix Max",
+    "name": "Maxime Admin",
     "icon": "assets/icons/user-check.svg",
     "time_source": true,
     "heartbeat_enabled": false
   },
   "9c:b1:50:7b:45:3a": {
-    "name": "Admin Max",
+    "name": "BlueBox",
     "icon": "assets/icons/user-check.svg",
     "time_source": true,
     "heartbeat_enabled": false
@@ -35,8 +35,14 @@
     "time_source": false,
     "heartbeat_enabled": true
   },
+   "34:cd:b0:35:7c:dc": {
+    "name": "ESP32 509",
+    "icon": "assets/icons/cpu.svg",
+    "time_source": false,
+    "heartbeat_enabled": true
+  },
   "74:4d:bd:a1:43:40": {
-    "name": "ESP32 511",
+    "name": "ESP32 TEST",
     "icon": "assets/icons/cpu.svg",
     "time_source": false,
     "heartbeat_enabled": true
