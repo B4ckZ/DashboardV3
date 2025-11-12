@@ -41,7 +41,7 @@
     "time_source": false,
     "heartbeat_enabled": true
   },
-  "b8.f8.62.39.e0.14": {
+  "b8:f8:62:39:e0:14": {
     "name": "ESP32 TEST",
     "icon": "assets/icons/cpu.svg",
     "time_source": false,
